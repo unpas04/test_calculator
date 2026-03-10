@@ -1,0 +1,1690 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>고독이의 원가계산기</title>
+<link href="https://fonts.googleapis.com/css2?family=Gowun+Dodum&family=Black+Han+Sans&display=swap" rel="stylesheet">
+<style>
+:root {
+  --bg: #F7F3EE;
+  --card: #FFFFFF;
+  --navy: #1E2D40;
+  --navy-soft: #2E4057;
+  --blue: #4A7FA5;
+  --blue-light: #7FB3D3;
+  --silver: #C8D8E4;
+  --silver-light: #E8F0F5;
+  --orange: #E8833A;
+  --orange-light: #F5B07A;
+  --green: #4A8C6F;
+  --red: #D95F52;
+  --text: #1E2D40;
+  --text-mid: #5A6E82;
+  --text-soft: #8FA3B5;
+  --border: #D8E4EC;
+  --shadow: rgba(30,45,64,0.08);
+  --shadow-md: rgba(30,45,64,0.14);
+}
+
+* { box-sizing: border-box; margin: 0; padding: 0; }
+
+body {
+  background: var(--bg);
+  font-family: 'Gowun Dodum', sans-serif;
+  color: var(--text);
+  min-height: 100vh;
+}
+
+/* ── Canvas 바다 배경 ── */
+#oceanCanvas {
+  position: fixed;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  pointer-events: none;
+  z-index: 0;
+}
+
+/* ── 레이아웃 ── */
+.app {
+  position: relative;
+  z-index: 1;
+  display: flex;
+  min-height: 100vh;
+}
+
+/* ── 사이드바 (메뉴 목록) ── */
+.sidebar {
+  width: 260px;
+  min-height: 100vh;
+  background: var(--navy);
+  display: flex;
+  flex-direction: column;
+  padding: 0;
+  flex-shrink: 0;
+  position: fixed;
+  left: 0; top: 0; bottom: 0;
+  z-index: 10;
+  transition: transform 0.3s ease;
+}
+
+.sidebar-header {
+  padding: 28px 22px 20px;
+  border-bottom: 1px solid rgba(255,255,255,0.07);
+}
+
+.brand {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin-bottom: 6px;
+}
+
+.brand-icon {
+  width: 44px; height: 44px;
+  flex-shrink: 0;
+}
+
+.brand-name {
+  font-family: 'Black Han Sans', sans-serif;
+  font-size: 1.15rem;
+  color: #FFFFFF;
+  line-height: 1.2;
+  letter-spacing: 0.02em;
+}
+
+.brand-sub {
+  font-size: 0.7rem;
+  color: var(--blue-light);
+  letter-spacing: 0.04em;
+  margin-top: 2px;
+}
+
+.tagline {
+  font-size: 0.72rem;
+  color: rgba(200,216,228,0.55);
+  margin-top: 4px;
+  letter-spacing: 0.02em;
+}
+
+.sidebar-section {
+  padding: 16px 16px 8px;
+  font-family: 'Black Han Sans', sans-serif;
+  font-size: 0.68rem;
+  color: rgba(200,216,228,0.4);
+  letter-spacing: 0.08em;
+}
+
+.menu-list {
+  flex: 1;
+  overflow-y: auto;
+  padding: 0 10px;
+}
+
+.menu-item {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 11px 12px;
+  border-radius: 10px;
+  cursor: pointer;
+  transition: background 0.15s;
+  margin-bottom: 3px;
+}
+
+.menu-item:hover { background: rgba(255,255,255,0.07); }
+.menu-item.active { background: rgba(74,127,165,0.25); }
+
+.menu-item-icon {
+  width: 28px; height: 28px;
+  background: rgba(255,255,255,0.07);
+  border-radius: 8px;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 0.9rem;
+  flex-shrink: 0;
+}
+
+.menu-item.active .menu-item-icon { background: rgba(74,127,165,0.4); }
+
+.menu-item-info { flex: 1; min-width: 0; }
+
+.menu-item-name {
+  font-size: 0.85rem;
+  color: rgba(255,255,255,0.85);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  font-weight: 500;
+}
+
+.menu-item.active .menu-item-name { color: #fff; }
+
+.menu-item-cost {
+  font-size: 0.7rem;
+  color: var(--blue-light);
+  margin-top: 1px;
+}
+
+.menu-del {
+  background: none; border: none;
+  color: rgba(255,255,255,0.2);
+  cursor: pointer; font-size: 0.85rem;
+  padding: 3px; border-radius: 5px;
+  transition: color 0.15s;
+  flex-shrink: 0;
+}
+.menu-del:hover { color: var(--red); }
+
+.sidebar-footer {
+  padding: 14px 14px 20px;
+  border-top: 1px solid rgba(255,255,255,0.07);
+}
+
+.new-menu-btn {
+  width: 100%;
+  background: var(--blue);
+  color: #fff;
+  border: none;
+  border-radius: 12px;
+  padding: 12px;
+  font-family: 'Black Han Sans', sans-serif;
+  font-size: 0.9rem;
+  cursor: pointer;
+  transition: background 0.15s, transform 0.12s;
+  letter-spacing: 0.03em;
+  display: flex; align-items: center; justify-content: center; gap: 6px;
+}
+
+.new-menu-btn:hover { background: #3A6F95; transform: translateY(-1px); }
+
+/* ── 메인 컨텐츠 ── */
+.main {
+  margin-left: 260px;
+  flex: 1;
+  padding: 32px 28px 60px;
+  max-width: 860px;
+}
+
+/* ── 상단 바 ── */
+.top-bar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 24px;
+  gap: 12px;
+}
+
+.menu-title-input {
+  font-family: 'Black Han Sans', sans-serif;
+  font-size: 1.5rem;
+  color: var(--navy);
+  background: none;
+  border: none;
+  border-bottom: 2px solid transparent;
+  outline: none;
+  transition: border-color 0.2s;
+  padding: 4px 0;
+  min-width: 0;
+  flex: 1;
+  letter-spacing: 0.02em;
+}
+
+.menu-title-input:focus { border-bottom-color: var(--blue); }
+.menu-title-input::placeholder { color: var(--text-soft); }
+
+.save-btn {
+  background: var(--green);
+  color: #fff;
+  border: none;
+  border-radius: 12px;
+  padding: 10px 22px;
+  font-family: 'Black Han Sans', sans-serif;
+  font-size: 0.9rem;
+  cursor: pointer;
+  transition: background 0.15s, transform 0.12s;
+  white-space: nowrap;
+  display: flex; align-items: center; gap: 6px;
+  flex-shrink: 0;
+}
+
+.save-btn:hover { background: #3A7C5F; transform: translateY(-1px); }
+
+.save-btn.saved {
+  background: #3A7C5F;
+}
+
+/* ── 섹션 카드 ── */
+.card {
+  background: var(--card);
+  border-radius: 20px;
+  box-shadow: 0 2px 16px var(--shadow);
+  padding: 22px 22px;
+  margin-bottom: 16px;
+  border: 1px solid var(--border);
+}
+
+.card-title {
+  font-family: 'Black Han Sans', sans-serif;
+  font-size: 0.85rem;
+  color: var(--text-mid);
+  letter-spacing: 0.05em;
+  margin-bottom: 16px;
+  display: flex; align-items: center; gap: 8px;
+}
+
+.card-title::before {
+  content: '';
+  width: 3px; height: 14px;
+  background: var(--blue);
+  border-radius: 3px;
+  flex-shrink: 0;
+}
+
+/* ── 재료 테이블 ── */
+.ing-scroll { overflow-x: auto; }
+
+table { width: 100%; border-collapse: collapse; }
+
+thead th {
+  font-family: 'Black Han Sans', sans-serif;
+  font-size: 0.7rem;
+  color: var(--text-soft);
+  padding: 0 8px 10px;
+  text-align: center;
+  letter-spacing: 0.04em;
+  white-space: nowrap;
+}
+
+thead th:first-child { text-align: left; padding-left: 4px; }
+
+.ing-row { border-bottom: 1px solid var(--silver-light); }
+.ing-row:last-child { border-bottom: none; }
+
+.ing-row td {
+  padding: 6px 4px;
+  vertical-align: middle;
+}
+
+.ing-row input {
+  width: 100%;
+  background: var(--silver-light);
+  border: 1.5px solid transparent;
+  border-radius: 9px;
+  padding: 8px 10px;
+  font-family: 'Gowun Dodum', sans-serif;
+  font-size: 0.85rem;
+  color: var(--text);
+  text-align: center;
+  outline: none;
+  transition: border-color 0.18s, background 0.18s;
+  min-width: 58px;
+}
+
+.ing-row input[type="text"] { text-align: left; min-width: 88px; }
+
+.ing-row input:focus {
+  border-color: var(--blue);
+  background: #fff;
+}
+
+.ing-cost-cell {
+  font-family: 'Black Han Sans', sans-serif;
+  font-size: 0.88rem;
+  color: var(--blue);
+  text-align: right;
+  padding-right: 8px;
+  white-space: nowrap;
+  min-width: 68px;
+}
+
+.row-del {
+  background: none; border: none;
+  cursor: pointer; color: var(--text-soft);
+  font-size: 0.95rem; padding: 4px 6px;
+  border-radius: 7px;
+  transition: color 0.15s, background 0.15s;
+}
+.row-del:hover { color: var(--red); background: #fdecea; }
+
+.add-row-btn {
+  display: inline-flex; align-items: center; gap: 6px;
+  margin-top: 12px;
+  background: none;
+  border: 1.5px dashed var(--blue-light);
+  color: var(--blue);
+  border-radius: 10px;
+  padding: 8px 18px;
+  font-family: 'Black Han Sans', sans-serif;
+  font-size: 0.82rem;
+  cursor: pointer;
+  transition: background 0.15s, border-color 0.15s;
+  letter-spacing: 0.03em;
+}
+.add-row-btn:hover { background: var(--silver-light); border-color: var(--blue); }
+
+/* ── 추가비용 + 수수료 그리드 ── */
+.fields-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr 1fr;
+  gap: 12px;
+}
+
+@media(max-width:600px) { .fields-grid { grid-template-columns: 1fr 1fr; } }
+
+.field-group { display: flex; flex-direction: column; gap: 5px; }
+
+.field-label {
+  font-size: 0.72rem;
+  color: var(--text-mid);
+  font-family: 'Black Han Sans', sans-serif;
+  letter-spacing: 0.04em;
+}
+
+.field-input {
+  background: var(--silver-light);
+  border: 1.5px solid transparent;
+  border-radius: 10px;
+  padding: 9px 12px;
+  font-family: 'Gowun Dodum', sans-serif;
+  font-size: 0.9rem;
+  color: var(--text);
+  outline: none;
+  transition: border-color 0.18s, background 0.18s;
+  width: 100%;
+}
+.field-input:focus { border-color: var(--blue); background: #fff; }
+
+/* ── 판매가 카드 ── */
+.sale-card {
+  background: linear-gradient(135deg, #EAF3FA 0%, #F0F7FB 100%);
+  border: 1.5px solid var(--silver);
+}
+
+.sale-card .card-title::before { background: var(--orange); }
+
+.sale-input-wrap { max-width: 240px; }
+
+.sale-input {
+  background: #fff;
+  border: 2px solid var(--blue-light);
+  border-radius: 12px;
+  padding: 11px 16px;
+  font-family: 'Black Han Sans', sans-serif;
+  font-size: 1.1rem;
+  color: var(--navy);
+  outline: none;
+  transition: border-color 0.18s;
+  width: 100%;
+  letter-spacing: 0.02em;
+}
+.sale-input:focus { border-color: var(--blue); }
+
+/* ── 결과 카드 ── */
+.result-card {
+  background: var(--navy);
+  border-radius: 20px;
+  padding: 24px 22px;
+  margin-top: 16px;
+  position: relative;
+  overflow: hidden;
+}
+
+.result-card::after {
+  content: '';
+  position: absolute;
+  right: -20px; bottom: -30px;
+  width: 160px; height: 160px;
+  background: rgba(74,127,165,0.08);
+  border-radius: 50%;
+  pointer-events: none;
+}
+
+.result-title {
+  font-family: 'Black Han Sans', sans-serif;
+  font-size: 0.8rem;
+  color: rgba(200,216,228,0.5);
+  letter-spacing: 0.07em;
+  margin-bottom: 16px;
+  display: flex; align-items: center; gap: 8px;
+}
+
+.result-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 12px;
+}
+
+@media(max-width:500px) { .result-grid { grid-template-columns: 1fr; } }
+
+.result-item {
+  background: rgba(255,255,255,0.06);
+  border-radius: 14px;
+  padding: 14px 16px;
+}
+
+.result-item.accent-blue { background: rgba(74,127,165,0.2); }
+.result-item.accent-green { background: rgba(74,140,111,0.2); }
+.result-item.accent-orange { background: rgba(232,131,58,0.2); }
+.result-item.accent-red { background: rgba(217,95,82,0.18); }
+
+.r-label {
+  font-family: 'Black Han Sans', sans-serif;
+  font-size: 0.68rem;
+  color: rgba(200,216,228,0.55);
+  letter-spacing: 0.06em;
+  margin-bottom: 4px;
+}
+
+.r-value {
+  font-family: 'Black Han Sans', sans-serif;
+  font-size: 1.45rem;
+  color: #fff;
+  letter-spacing: -0.01em;
+  line-height: 1.1;
+}
+
+.r-value .unit { font-size: 0.75rem; color: rgba(255,255,255,0.5); margin-left: 2px; }
+
+.godogi-comment {
+  margin-top: 14px;
+  background: rgba(255,255,255,0.05);
+  border-radius: 12px;
+  padding: 10px 14px;
+  display: flex; align-items: center; gap: 10px;
+}
+
+.godogi-mini {
+  width: 32px; height: 32px; flex-shrink: 0;
+}
+
+.godogi-text {
+  font-size: 0.8rem;
+  color: rgba(200,216,228,0.7);
+  line-height: 1.45;
+}
+
+/* ── 모바일 토글 ── */
+.menu-toggle {
+  display: none;
+  position: fixed;
+  top: 16px; left: 16px;
+  z-index: 20;
+  background: var(--navy);
+  color: #fff;
+  border: none;
+  border-radius: 10px;
+  padding: 8px 12px;
+  font-size: 1.1rem;
+  cursor: pointer;
+}
+
+@media(max-width:768px) {
+  .menu-toggle { display: block; }
+  .sidebar { transform: translateX(-100%); }
+  .sidebar.open { transform: translateX(0); }
+  .main { margin-left: 0; padding: 16px 14px 60px; padding-top: 60px; }
+}
+
+/* ── 빈 상태 ── */
+.empty-state {
+  text-align: center;
+  padding: 60px 20px;
+  color: var(--text-soft);
+}
+
+.empty-godogi { margin: 0 auto 16px; width: 80px; height: 80px; opacity: 0.4; }
+.empty-title { font-family: 'Black Han Sans', sans-serif; font-size: 1rem; margin-bottom: 6px; color: var(--text-mid); }
+.empty-sub { font-size: 0.82rem; }
+
+/* ── 애니메이션 ── */
+@keyframes popIn {
+  0% { transform: scale(0.95); opacity: 0.6; }
+  60% { transform: scale(1.02); }
+  100% { transform: scale(1); opacity: 1; }
+}
+.pop { animation: popIn 0.25s ease-out; }
+
+/* ── 자동완성 드롭다운 ── */
+.autocomplete-wrap { position: relative; }
+
+.autocomplete-dropdown {
+  position: absolute;
+  top: calc(100% + 4px);
+  left: 0;
+  width: 220px;
+  background: #fff;
+  border: 1.5px solid var(--border);
+  border-radius: 12px;
+  box-shadow: 0 8px 24px var(--shadow-md);
+  z-index: 200;
+  overflow: hidden;
+  max-height: 220px;
+  overflow-y: auto;
+}
+
+.ac-item {
+  padding: 9px 14px;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  transition: background 0.12s;
+  font-size: 0.83rem;
+}
+
+.ac-item:hover { background: var(--silver-light); }
+
+.ac-item-name { color: var(--text); font-weight: 500; }
+
+.ac-item-price {
+  font-size: 0.72rem;
+  color: var(--text-soft);
+  white-space: nowrap;
+  flex-shrink: 0;
+}
+
+.ac-item mark {
+  background: rgba(74,127,165,0.18);
+  color: var(--blue);
+  border-radius: 2px;
+  font-weight: 700;
+}
+
+/* ── 내보내기 버튼 ── */
+.export-btn {
+  background: var(--navy-soft);
+  color: rgba(255,255,255,0.9);
+  border: none;
+  border-radius: 12px;
+  padding: 10px 18px;
+  font-family: 'Black Han Sans', sans-serif;
+  font-size: 0.85rem;
+  cursor: pointer;
+  transition: background 0.15s, transform 0.12s;
+  white-space: nowrap;
+  display: flex; align-items: center; gap: 6px;
+  flex-shrink: 0;
+  letter-spacing: 0.02em;
+}
+.export-btn:hover { background: #1E2D40; transform: translateY(-1px); }
+
+/* ── 저장 토스트 ── */
+.toast {
+  position: fixed;
+  bottom: 28px; left: 50%;
+  transform: translateX(-50%) translateY(20px);
+  background: var(--navy);
+  color: #fff;
+  padding: 10px 22px;
+  border-radius: 999px;
+  font-family: 'Black Han Sans', sans-serif;
+  font-size: 0.85rem;
+  opacity: 0;
+  transition: opacity 0.25s, transform 0.25s;
+  pointer-events: none;
+  z-index: 100;
+  white-space: nowrap;
+  letter-spacing: 0.03em;
+}
+.toast.show { opacity: 1; transform: translateX(-50%) translateY(0); }
+</style>
+</head>
+<body>
+
+<!-- 바다 캔버스 배경 -->
+<canvas id="oceanCanvas"></canvas>
+
+<button class="menu-toggle" onclick="toggleSidebar()">☰</button>
+
+<div class="app">
+  <!-- ── 사이드바 ── -->
+  <aside class="sidebar" id="sidebar">
+    <div class="sidebar-header">
+      <div class="brand">
+        <svg class="brand-icon" viewBox="0 0 44 44" fill="none" xmlns="http://www.w3.org/2000/svg">
+          <!-- 고독이 캐릭터 (카카오프렌즈 스타일) -->
+          <ellipse cx="22" cy="24" rx="16" ry="11" fill="#5B9EC9"/>
+          <ellipse cx="22" cy="23" rx="14" ry="10" fill="#7FB3D3"/>
+          <!-- 배 -->
+          <ellipse cx="22" cy="25" rx="8" ry="6" fill="#C8E6F5"/>
+          <!-- 꼬리 -->
+          <path d="M36 22 L44 16 L44 28 Z" fill="#5B9EC9"/>
+          <path d="M36 23 L42 18 L42 27 Z" fill="#7FB3D3"/>
+          <!-- 지느러미 위 -->
+          <path d="M16 14 Q20 9 26 13" stroke="#5B9EC9" stroke-width="2.5" fill="none" stroke-linecap="round"/>
+          <!-- 눈 -->
+          <circle cx="17" cy="20" r="3.5" fill="white"/>
+          <circle cx="17" cy="20" r="2" fill="#1E2D40"/>
+          <circle cx="17.8" cy="19.2" r="0.7" fill="white"/>
+          <!-- 볼터치 -->
+          <ellipse cx="14" cy="23" rx="2.5" ry="1.5" fill="#F5A0A0" opacity="0.6"/>
+          <!-- 입 -->
+          <path d="M19 24 Q21 26 23 24" stroke="#4A7FA5" stroke-width="1.5" fill="none" stroke-linecap="round"/>
+        </svg>
+        <div>
+          <div class="brand-name">고독이</div>
+          <div class="brand-sub">원가계산기</div>
+        </div>
+      </div>
+      <div class="tagline">혼자서도 잘해요 🐟</div>
+    </div>
+
+    <div class="sidebar-section">저장된 메뉴</div>
+    <div class="menu-list" id="menuList">
+      <!-- JS로 렌더 -->
+    </div>
+
+    <div class="sidebar-footer">
+      <button class="new-menu-btn" onclick="newMenu()">
+        <span style="font-size:1rem">＋</span> 새 메뉴 추가
+      </button>
+    </div>
+  </aside>
+
+  <!-- ── 메인 ── -->
+  <main class="main" id="mainContent">
+    <div id="calcArea">
+      <!-- JS로 렌더 -->
+    </div>
+  </main>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script>
+// ── Canvas 바다 + 파도 + 고독이 점프 ──
+(function() {
+  const canvas = document.getElementById('oceanCanvas');
+  const ctx = canvas.getContext('2d');
+  let W, H;
+
+  function resize() {
+    W = canvas.width  = window.innerWidth;
+    H = canvas.height = window.innerHeight;
+  }
+  resize();
+  window.addEventListener('resize', resize);
+
+  // ── 파도 레이어 ──
+  const waves = [
+    { amp: 22, period: 0.008, speed: 0.012, offset: 0,    yRatio: 0.72, alpha: 0.07, color: '#4A7FA5' },
+    { amp: 16, period: 0.011, speed: 0.018, offset: 2.1,  yRatio: 0.76, alpha: 0.06, color: '#7FB3D3' },
+    { amp: 28, period: 0.006, speed: 0.008, offset: 4.5,  yRatio: 0.80, alpha: 0.05, color: '#4A7FA5' },
+    { amp: 12, period: 0.014, speed: 0.022, offset: 1.3,  yRatio: 0.84, alpha: 0.045,'color': '#C8E6F5' },
+    { amp: 18, period: 0.009, speed: 0.014, offset: 3.8,  yRatio: 0.88, alpha: 0.04, color: '#7FB3D3' },
+    { amp: 10, period: 0.016, speed: 0.026, offset: 0.7,  yRatio: 0.92, alpha: 0.035,color: '#C8E6F5' },
+  ];
+
+  // ── 고독이 물고기들 ──
+  function makeGodogi(x, y, size, speed, dir, depthAlpha) {
+    return {
+      x, y,
+      baseY: y,
+      size,
+      speed,
+      dir,           // 1=오른쪽, -1=왼쪽
+      alpha: depthAlpha,
+      wobble: Math.random() * Math.PI * 2,
+      wobbleSpeed: 0.025 + Math.random() * 0.02,
+      // 점프 상태
+      jumping: false,
+      jumpT: 0,
+      jumpDuration: 0,
+      jumpHeight: 0,
+      jumpCooldown: Math.random() * 400 + 200,
+      jumpTimer: Math.random() * 300,
+    };
+  }
+
+  const godogis = [
+    makeGodogi(W*0.15, H*0.74, 52, 0.55,  1,  0.10),
+    makeGodogi(W*0.70, H*0.79, 42, 0.70, -1,  0.08),
+    makeGodogi(W*0.40, H*0.83, 36, 0.45,  1,  0.07),
+    makeGodogi(W*0.85, H*0.71, 58, 0.60, -1,  0.11),
+    makeGodogi(W*0.25, H*0.88, 30, 0.80,  1,  0.06),
+    makeGodogi(W*0.60, H*0.76, 44, 0.50, -1,  0.09),
+  ];
+
+  // 고독이 그리기 함수
+  function drawGodogi(ctx, x, y, size, dir, alpha, jumpFrac) {
+    ctx.save();
+    ctx.globalAlpha = alpha;
+    ctx.translate(x, y);
+    if(dir < 0) ctx.scale(-1, 1);
+
+    // 점프시 회전
+    if(jumpFrac > 0) {
+      const rot = Math.sin(jumpFrac * Math.PI) * 0.35;
+      ctx.rotate(-rot);
+    }
+
+    const s = size / 44;
+    ctx.scale(s, s);
+
+    // 몸통
+    ctx.beginPath();
+    ctx.ellipse(0, 0, 18, 11, 0, 0, Math.PI*2);
+    ctx.fillStyle = '#4A7FA5';
+    ctx.fill();
+
+    ctx.beginPath();
+    ctx.ellipse(0, -1, 15, 9, 0, 0, Math.PI*2);
+    ctx.fillStyle = '#7FB3D3';
+    ctx.fill();
+
+    // 배
+    ctx.beginPath();
+    ctx.ellipse(2, 2, 8, 5.5, 0.15, 0, Math.PI*2);
+    ctx.fillStyle = '#C8E6F5';
+    ctx.fill();
+
+    // 꼬리
+    ctx.beginPath();
+    ctx.moveTo(16, 0);
+    ctx.lineTo(26, -8);
+    ctx.lineTo(26, 8);
+    ctx.closePath();
+    ctx.fillStyle = '#4A7FA5';
+    ctx.fill();
+
+    ctx.beginPath();
+    ctx.moveTo(16, 0);
+    ctx.lineTo(23, -5);
+    ctx.lineTo(23, 5);
+    ctx.closePath();
+    ctx.fillStyle = '#7FB3D3';
+    ctx.fill();
+
+    // 위 지느러미
+    ctx.beginPath();
+    ctx.moveTo(-4, -9);
+    ctx.quadraticCurveTo(2, -16, 8, -10);
+    ctx.strokeStyle = '#5B9EC9';
+    ctx.lineWidth = 2;
+    ctx.stroke();
+
+    // 눈 흰자
+    ctx.beginPath();
+    ctx.arc(-10, -3, 4, 0, Math.PI*2);
+    ctx.fillStyle = 'white';
+    ctx.fill();
+
+    // 눈동자
+    ctx.beginPath();
+    ctx.arc(-9.5, -3, 2.3, 0, Math.PI*2);
+    ctx.fillStyle = '#1E2D40';
+    ctx.fill();
+
+    // 눈 하이라이트
+    ctx.beginPath();
+    ctx.arc(-8.8, -3.8, 0.8, 0, Math.PI*2);
+    ctx.fillStyle = 'white';
+    ctx.fill();
+
+    // 점프시 눈 커짐 / 놀란 표정
+    if(jumpFrac > 0.1 && jumpFrac < 0.9) {
+      // 놀란 입
+      ctx.beginPath();
+      ctx.arc(-4, 3, 2.5, 0, Math.PI*2);
+      ctx.fillStyle = '#1E2D40';
+      ctx.fill();
+    } else {
+      // 볼터치
+      ctx.beginPath();
+      ctx.ellipse(-13, 1, 3, 1.8, 0, 0, Math.PI*2);
+      ctx.fillStyle = 'rgba(245,160,160,0.55)';
+      ctx.fill();
+      // 입
+      ctx.beginPath();
+      ctx.moveTo(-6, 4);
+      ctx.quadraticCurveTo(-3, 7, 0, 4);
+      ctx.strokeStyle = '#4A7FA5';
+      ctx.lineWidth = 1.4;
+      ctx.stroke();
+    }
+
+    // 점프시 물방울 효과
+    if(jumpFrac > 0.05 && jumpFrac < 0.4) {
+      ctx.restore();
+      ctx.save();
+      ctx.globalAlpha = alpha * (1 - jumpFrac/0.4) * 0.6;
+      ctx.translate(x, y + size*0.15);
+      const dropScale = jumpFrac / 0.4;
+      for(let d=0; d<5; d++) {
+        const angle = (d/5)*Math.PI*2;
+        const dist = dropScale * 22;
+        const dx = Math.cos(angle)*dist;
+        const dy = Math.sin(angle)*dist*0.4;
+        ctx.beginPath();
+        ctx.arc(dx, dy, 2.5*(1-dropScale*0.5), 0, Math.PI*2);
+        ctx.fillStyle = '#7FB3D3';
+        ctx.fill();
+      }
+    }
+
+    ctx.restore();
+  }
+
+  // ── 파도 경계선 y값 반환 ──
+  function waveY(wave, x, t) {
+    return H * wave.yRatio + Math.sin(x * wave.period + t * wave.speed + wave.offset) * wave.amp;
+  }
+
+  let t = 0;
+
+  function draw() {
+    ctx.clearRect(0, 0, W, H);
+    t++;
+
+    // ── 파도 그리기 ──
+    waves.forEach(wave => {
+      ctx.beginPath();
+      ctx.moveTo(0, H);
+      for(let x=0; x<=W; x+=4) {
+        const y = waveY(wave, x, t);
+        x===0 ? ctx.moveTo(x, y) : ctx.lineTo(x, y);
+      }
+      ctx.lineTo(W, H);
+      ctx.lineTo(0, H);
+      ctx.closePath();
+      ctx.fillStyle = wave.color;
+      ctx.globalAlpha = wave.alpha;
+      ctx.fill();
+      ctx.globalAlpha = 1;
+    });
+
+    // ── 고독이 업데이트 & 그리기 ──
+    godogis.forEach(g => {
+      // 수평 이동
+      g.x += g.speed * g.dir;
+      if(g.x > W + g.size*2)  g.x = -g.size*2;
+      if(g.x < -g.size*2)     g.x = W + g.size*2;
+
+      // wobble
+      g.wobble += g.wobbleSpeed;
+
+      // 점프 타이머
+      if(!g.jumping) {
+        g.jumpTimer++;
+        if(g.jumpTimer >= g.jumpCooldown) {
+          g.jumping = true;
+          g.jumpT = 0;
+          g.jumpDuration = 55 + Math.random()*25;
+          g.jumpHeight = g.size * (1.8 + Math.random()*1.2);
+          g.jumpTimer = 0;
+          g.jumpCooldown = 300 + Math.random()*500;
+        }
+      }
+
+      // 점프 위치 계산
+      let jumpOffsetY = 0;
+      let jumpFrac = 0;
+      if(g.jumping) {
+        g.jumpT++;
+        jumpFrac = g.jumpT / g.jumpDuration;
+        jumpOffsetY = -Math.sin(jumpFrac * Math.PI) * g.jumpHeight;
+        if(g.jumpT >= g.jumpDuration) g.jumping = false;
+      }
+
+      // 파도면 기준 y
+      const closestWave = waves[1]; // 두번째 파도에 얹혀 있는 느낌
+      const surfaceY = waveY(closestWave, g.x, t) + Math.sin(g.wobble)*3;
+      const drawY = surfaceY + jumpOffsetY;
+
+      drawGodogi(ctx, g.x, drawY, g.size, g.dir, g.alpha, jumpFrac);
+    });
+
+    requestAnimationFrame(draw);
+  }
+
+  draw();
+})();
+
+// ── 데이터 관리 (localStorage) ──
+const STORAGE_KEY = 'godogi_menus_v1';
+
+function loadMenus() {
+  try { return JSON.parse(localStorage.getItem(STORAGE_KEY)) || []; }
+  catch { return []; }
+}
+
+function saveMenus(menus) {
+  localStorage.setItem(STORAGE_KEY, JSON.stringify(menus));
+}
+
+function genId() { return 'menu_' + Date.now() + '_' + Math.random().toString(36).slice(2,7); }
+
+// 현재 작업중인 메뉴 상태
+let state = {
+  currentId: null,
+  menus: loadMenus()
+};
+
+// 기본 재료 행
+function defaultRow(name='',price='',qty='',yield_='100',use='') {
+  return { id: genId(), name, price, qty, yield_, use };
+}
+
+function defaultMenu() {
+  return {
+    id: genId(),
+    name: '새 메뉴',
+    ingredients: [defaultRow(), defaultRow(), defaultRow()],
+    packaging: 0,
+    labor: 0,
+    overhead: 0,
+    deliveryFee: 0,
+    cardFee: 0,
+    salePrice: 0,
+  };
+}
+
+// ── 계산 ──
+function calcMenu(menu) {
+  let ingTotal = 0;
+  const ingCosts = menu.ingredients.map(row => {
+    const price = parseFloat(row.price)||0;
+    const qty   = parseFloat(row.qty)||0;
+    const yield_= parseFloat(row.yield_)||100;
+    const use   = parseFloat(row.use)||0;
+    if(qty<=0||price<=0||use<=0) return 0;
+    const eff = qty * (yield_/100);
+    const cost = eff>0 ? (price/eff)*use : 0;
+    ingTotal += cost;
+    return cost;
+  });
+
+  const packaging = parseFloat(menu.packaging)||0;
+  const labor     = parseFloat(menu.labor)||0;
+  const overhead  = parseFloat(menu.overhead)||0;
+  const delivFee  = parseFloat(menu.deliveryFee)||0;
+  const cardFee   = parseFloat(menu.cardFee)||0;
+  const salePrice = parseFloat(menu.salePrice)||0;
+
+  const baseCost  = ingTotal + packaging + labor + overhead;
+  const feeAmount = salePrice * ((delivFee+cardFee)/100);
+  const totalCost = baseCost + feeAmount;
+  const profit    = salePrice - totalCost;
+  const costRate  = salePrice>0 ? (totalCost/salePrice)*100 : 0;
+
+  return { ingTotal, baseCost, feeAmount, totalCost, profit, costRate, ingCosts, salePrice };
+}
+
+function fmt(n) { return Math.round(n).toLocaleString('ko-KR'); }
+
+// ── 고독이 멘트 ──
+function godogiComment(profit, costRate, salePrice) {
+  if(salePrice<=0) return '판매가를 입력해줘야 고독이도 계산할 수 있어요... 🐟';
+  if(profit<0) return `적자예요... 🐟 고독이도 슬퍼요. 가격을 올리거나 원가를 줄여봐요.`;
+  if(costRate>80) return `원가율이 ${costRate.toFixed(1)}%네요. 고독이가 걱정돼요 🐟 인건비나 재료를 점검해보세요.`;
+  if(costRate>60) return `원가율 ${costRate.toFixed(1)}%. 나쁘진 않지만... 조금 더 줄일 수 있을 것 같아요 🐟`;
+  if(costRate>40) return `원가율 ${costRate.toFixed(1)}%. 괜찮아요! 고독이도 흡족해요 🐟`;
+  return `원가율 ${costRate.toFixed(1)}%! 훌륭해요 🐟 고독이가 자랑스러워해요!`;
+}
+
+// ── 사이드바 렌더 ──
+function renderSidebar() {
+  const list = document.getElementById('menuList');
+  if(state.menus.length===0) {
+    list.innerHTML = `<div style="padding:20px 12px;text-align:center;color:rgba(200,216,228,0.3);font-size:0.78rem;line-height:1.6">저장된 메뉴가 없어요<br>새 메뉴를 추가해보세요</div>`;
+    return;
+  }
+  list.innerHTML = state.menus.map(menu => {
+    const calc = calcMenu(menu);
+    const isActive = menu.id === state.currentId;
+    return `<div class="menu-item ${isActive?'active':''}" onclick="loadMenu('${menu.id}')">
+      <div class="menu-item-icon">🍽️</div>
+      <div class="menu-item-info">
+        <div class="menu-item-name">${menu.name||'이름 없는 메뉴'}</div>
+        <div class="menu-item-cost">${calc.salePrice>0 ? '원가율 '+calc.costRate.toFixed(1)+'%' : '판매가 미입력'}</div>
+      </div>
+      <button class="menu-del" onclick="event.stopPropagation();deleteMenu('${menu.id}')" title="삭제">✕</button>
+    </div>`;
+  }).join('');
+}
+
+// ── 메인 계산기 렌더 ──
+function renderCalc() {
+  const area = document.getElementById('calcArea');
+  const menu = state.menus.find(m => m.id === state.currentId);
+
+  if(!menu) {
+    area.innerHTML = `<div class="empty-state">
+      <svg class="empty-godogi" viewBox="0 0 80 55" fill="none">
+        <ellipse cx="38" cy="28" rx="26" ry="18" fill="#7FB3D3" opacity="0.5"/>
+        <ellipse cx="38" cy="27" rx="23" ry="16" fill="#C8E6F5" opacity="0.5"/>
+        <path d="M62 27 L76 18 L76 36 Z" fill="#7FB3D3" opacity="0.5"/>
+        <circle cx="24" cy="22" r="5" fill="white" opacity="0.6"/>
+        <circle cx="24" cy="22" r="3" fill="#4A7FA5" opacity="0.5"/>
+      </svg>
+      <div class="empty-title">메뉴를 선택하거나 새로 만들어봐요</div>
+      <div class="empty-sub">왼쪽에서 메뉴를 선택하거나<br>새 메뉴 추가 버튼을 눌러보세요</div>
+    </div>`;
+    return;
+  }
+
+  const calc = calcMenu(menu);
+
+  area.innerHTML = `
+  <!-- 상단 바 -->
+  <div class="top-bar">
+    <input class="menu-title-input" id="menuTitleInput" value="${menu.name}" placeholder="메뉴 이름 입력" oninput="onTitleChange(this.value)" maxlength="30">
+    <button class="save-btn" onclick="saveCurrentMenu()" id="saveBtn">💾 저장</button>
+    <button class="export-btn" onclick="exportPNG()">🖼️ 내보내기</button>
+  </div>
+
+  <!-- 재료 카드 -->
+  <div class="card">
+    <div class="card-title">재료 원가</div>
+    <div class="ing-scroll">
+    <table>
+      <thead>
+        <tr>
+          <th style="text-align:left;min-width:90px">재료명</th>
+          <th>구매가격(원)</th>
+          <th>구매량(g)</th>
+          <th>수율(%)</th>
+          <th>사용량(g)</th>
+          <th style="text-align:right">원가(원)</th>
+          <th></th>
+        </tr>
+      </thead>
+      <tbody id="ingBody">
+        ${menu.ingredients.map((row,i) => renderIngRow(row, i, calc.ingCosts[i])).join('')}
+      </tbody>
+    </table>
+    </div>
+    <button class="add-row-btn" onclick="addIngRow()">＋ 재료 추가</button>
+  </div>
+
+  <!-- 추가 비용 -->
+  <div class="card">
+    <div class="card-title">추가 비용</div>
+    <div class="fields-grid">
+      <div class="field-group">
+        <label class="field-label">📦 포장비 (원)</label>
+        <input class="field-input" type="number" min="0" value="${menu.packaging||0}" oninput="onFieldChange('packaging',this.value)">
+      </div>
+      <div class="field-group">
+        <label class="field-label">👩‍🍳 인건비 (원)</label>
+        <input class="field-input" type="number" min="0" value="${menu.labor||0}" oninput="onFieldChange('labor',this.value)">
+      </div>
+      <div class="field-group">
+        <label class="field-label">🏠 간접비 (원)</label>
+        <input class="field-input" type="number" min="0" value="${menu.overhead||0}" oninput="onFieldChange('overhead',this.value)">
+      </div>
+    </div>
+  </div>
+
+  <!-- 수수료 -->
+  <div class="card">
+    <div class="card-title">수수료</div>
+    <div class="fields-grid">
+      <div class="field-group">
+        <label class="field-label">🛵 배달 수수료 (%)</label>
+        <input class="field-input" type="number" min="0" max="100" value="${menu.deliveryFee||0}" oninput="onFieldChange('deliveryFee',this.value)">
+      </div>
+      <div class="field-group">
+        <label class="field-label">💳 카드 수수료 (%)</label>
+        <input class="field-input" type="number" min="0" max="100" value="${menu.cardFee||0}" oninput="onFieldChange('cardFee',this.value)">
+      </div>
+    </div>
+  </div>
+
+  <!-- 판매가 -->
+  <div class="card sale-card">
+    <div class="card-title">판매가</div>
+    <div class="sale-input-wrap">
+      <input class="sale-input" type="number" min="0" value="${menu.salePrice||''}" placeholder="판매 가격 입력 (원)" oninput="onFieldChange('salePrice',this.value)">
+    </div>
+  </div>
+
+  <!-- 결과 -->
+  <div class="result-card" id="resultCard">
+    <div class="result-title">📊 계산 결과</div>
+    <div class="result-grid">
+      <div class="result-item accent-blue">
+        <div class="r-label">🥬 총 재료 원가</div>
+        <div class="r-value" id="rIng">${fmt(calc.ingTotal)}<span class="unit">원</span></div>
+      </div>
+      <div class="result-item">
+        <div class="r-label">💰 총 원가</div>
+        <div class="r-value" id="rTotal">${fmt(calc.totalCost)}<span class="unit">원</span></div>
+      </div>
+      <div class="result-item ${calc.profit<0&&calc.salePrice>0?'accent-red':'accent-green'}">
+        <div class="r-label">✨ 순이익</div>
+        <div class="r-value" id="rProfit">${calc.salePrice>0?(calc.profit>=0?'+':'')+fmt(calc.profit):'—'}<span class="unit">${calc.salePrice>0?'원':''}</span></div>
+      </div>
+      <div class="result-item accent-orange">
+        <div class="r-label">📈 원가율</div>
+        <div class="r-value" id="rRate">${calc.salePrice>0?calc.costRate.toFixed(1):'—'}<span class="unit">${calc.salePrice>0?'%':''}</span></div>
+      </div>
+    </div>
+    <div class="godogi-comment">
+      <svg class="godogi-mini" viewBox="0 0 44 30" fill="none">
+        <ellipse cx="20" cy="15" rx="14" ry="9" fill="#7FB3D3"/>
+        <ellipse cx="20" cy="16" rx="7" ry="5" fill="#C8E6F5"/>
+        <path d="M33 14 L42 8 L42 20 Z" fill="#5B9EC9"/>
+        <circle cx="11" cy="12" r="3" fill="white"/>
+        <circle cx="11" cy="12" r="1.8" fill="#1E2D40"/>
+        <circle cx="11.6" cy="11.4" r="0.6" fill="white"/>
+        <ellipse cx="8" cy="15" rx="2" ry="1.2" fill="#F5A0A0" opacity="0.5"/>
+        <path d="M13 16 Q15 18 17 16" stroke="#4A7FA5" stroke-width="1.2" fill="none" stroke-linecap="round"/>
+      </svg>
+      <div class="godogi-text" id="godogiMsg">${godogiComment(calc.profit, calc.costRate, calc.salePrice)}</div>
+    </div>
+  </div>
+  `;
+}
+
+function renderIngRow(row, i, cost) {
+  const costDisplay = cost>0 ? fmt(cost) : '—';
+  return `<tr class="ing-row" data-rowid="${row.id}">
+    <td>
+      <div class="autocomplete-wrap">
+        <input type="text" placeholder="재료명" value="${row.name}"
+          oninput="onIngChange('${row.id}','name',this.value); showAC('${row.id}', this)"
+          onfocus="showAC('${row.id}', this)"
+          onblur="hideAC('${row.id}')"
+          autocomplete="off">
+        <div class="autocomplete-dropdown" id="ac-${row.id}" style="display:none"></div>
+      </div>
+    </td>
+    <td><input type="number" placeholder="0" min="0" value="${row.price}" oninput="onIngChange('${row.id}','price',this.value)"></td>
+    <td><input type="number" placeholder="0" min="0" value="${row.qty}" oninput="onIngChange('${row.id}','qty',this.value)"></td>
+    <td><input type="number" placeholder="100" min="1" max="100" value="${row.yield_}" oninput="onIngChange('${row.id}','yield_',this.value)"></td>
+    <td><input type="number" placeholder="0" min="0" value="${row.use}" oninput="onIngChange('${row.id}','use',this.value)"></td>
+    <td class="ing-cost-cell" id="icost-${row.id}">${costDisplay}</td>
+    <td><button class="row-del" onclick="deleteIngRow('${row.id}')">✕</button></td>
+  </tr>`;
+}
+
+// ── 이벤트 핸들러 ──
+function getCurrentMenu() {
+  return state.menus.find(m => m.id === state.currentId);
+}
+
+function onTitleChange(val) {
+  const menu = getCurrentMenu(); if(!menu) return;
+  menu.name = val;
+  renderSidebar();
+}
+
+function onFieldChange(field, val) {
+  const menu = getCurrentMenu(); if(!menu) return;
+  menu[field] = parseFloat(val)||0;
+  updateResults();
+}
+
+function onIngChange(rowId, field, val) {
+  const menu = getCurrentMenu(); if(!menu) return;
+  const row = menu.ingredients.find(r => r.id===rowId); if(!row) return;
+  row[field] = val;
+  updateResults();
+}
+
+function updateResults() {
+  const menu = getCurrentMenu(); if(!menu) return;
+  const calc = calcMenu(menu);
+
+  // 개별 원가 셀 업데이트
+  menu.ingredients.forEach((row,i) => {
+    const el = document.getElementById(`icost-${row.id}`);
+    if(el) el.textContent = calc.ingCosts[i]>0 ? fmt(calc.ingCosts[i]) : '—';
+  });
+
+  // 결과 업데이트
+  const update = (id, val) => {
+    const el = document.getElementById(id); if(!el) return;
+    el.classList.remove('pop'); void el.offsetWidth; el.classList.add('pop');
+  };
+
+  setResult('rIng',   fmt(calc.ingTotal)+'원');
+  setResult('rTotal', fmt(calc.totalCost)+'원');
+  setResult('rProfit', calc.salePrice>0 ? (calc.profit>=0?'+':'')+fmt(calc.profit)+'원' : '—');
+  setResult('rRate',   calc.salePrice>0 ? calc.costRate.toFixed(1)+'%' : '—');
+
+  const profitCard = document.querySelector('.result-item.accent-green, .result-item.accent-red');
+  if(profitCard) {
+    profitCard.className = 'result-item ' + (calc.profit<0&&calc.salePrice>0 ? 'accent-red' : 'accent-green');
+  }
+
+  const msg = document.getElementById('godogiMsg');
+  if(msg) msg.textContent = godogiComment(calc.profit, calc.costRate, calc.salePrice);
+
+  renderSidebar();
+}
+
+function setResult(id, text) {
+  const el = document.getElementById(id); if(!el) return;
+  // 숫자만 추출해서 .unit span 유지
+  const unit = text.slice(-1)==='%' ? '%' : text.slice(-1)==='원' ? '원' : '';
+  const num  = text.replace('원','').replace('%','');
+  el.innerHTML = `${num}<span class="unit">${unit}</span>`;
+  el.classList.remove('pop'); void el.offsetWidth; el.classList.add('pop');
+}
+
+function addIngRow() {
+  const menu = getCurrentMenu(); if(!menu) return;
+  const row = defaultRow();
+  menu.ingredients.push(row);
+  const tbody = document.getElementById('ingBody'); if(!tbody) return;
+  const tr = document.createElement('tr');
+  tr.className = 'ing-row';
+  tr.dataset.rowid = row.id;
+  tr.innerHTML = renderIngRow(row, menu.ingredients.length-1, 0).replace(/^<tr[^>]*>/,'').replace(/<\/tr>$/,'');
+  tbody.appendChild(tr);
+}
+
+function deleteIngRow(rowId) {
+  const menu = getCurrentMenu(); if(!menu) return;
+  if(menu.ingredients.length<=1) return showToast('재료는 최소 1개 이상 필요해요 🐟');
+  menu.ingredients = menu.ingredients.filter(r => r.id!==rowId);
+  const tr = document.querySelector(`[data-rowid="${rowId}"]`);
+  if(tr) { tr.style.opacity='0'; tr.style.transition='opacity 0.18s'; setTimeout(()=>tr.remove(), 180); }
+  setTimeout(updateResults, 200);
+}
+
+// ── 메뉴 관리 ──
+function newMenu() {
+  const menu = defaultMenu();
+  state.menus.unshift(menu);
+  state.currentId = menu.id;
+  saveMenus(state.menus);
+  renderSidebar();
+  renderCalc();
+  closeSidebar();
+}
+
+function loadMenu(id) {
+  state.currentId = id;
+  renderSidebar();
+  renderCalc();
+  closeSidebar();
+}
+
+function deleteMenu(id) {
+  if(!confirm('이 메뉴를 삭제할까요?')) return;
+  state.menus = state.menus.filter(m => m.id!==id);
+  if(state.currentId === id) state.currentId = state.menus[0]?.id || null;
+  saveMenus(state.menus);
+  renderSidebar();
+  renderCalc();
+}
+
+function saveCurrentMenu() {
+  const menu = getCurrentMenu(); if(!menu) return;
+  // 타이틀 인풋에서 최신값 반영
+  const titleInput = document.getElementById('menuTitleInput');
+  if(titleInput) menu.name = titleInput.value || '이름 없는 메뉴';
+  saveMenus(state.menus);
+  renderSidebar();
+  showToast('💾 저장됐어요!');
+}
+
+function showToast(msg) {
+  const t = document.getElementById('toast');
+  t.textContent = msg;
+  t.classList.add('show');
+  setTimeout(() => t.classList.remove('show'), 2200);
+}
+
+// ── 모바일 사이드바 ──
+function toggleSidebar() {
+  document.getElementById('sidebar').classList.toggle('open');
+}
+function closeSidebar() {
+  if(window.innerWidth<=768) document.getElementById('sidebar').classList.remove('open');
+}
+
+// ── 재료 DB 50개 ──
+const ING_DB = [
+  // 축산
+  { name:'삼겹살',       unit:'g',  price:2800, per:100, category:'축산' },
+  { name:'목살',         unit:'g',  price:2600, per:100, category:'축산' },
+  { name:'앞다리살',     unit:'g',  price:1800, per:100, category:'축산' },
+  { name:'소불고기',     unit:'g',  price:4500, per:100, category:'축산' },
+  { name:'닭가슴살',     unit:'g',  price:1200, per:100, category:'축산' },
+  { name:'닭다리살',     unit:'g',  price:1400, per:100, category:'축산' },
+  { name:'닭날개',       unit:'g',  price:900,  per:100, category:'축산' },
+  { name:'달걀',         unit:'개', price:250,  per:1,   category:'축산' },
+  { name:'베이컨',       unit:'g',  price:2200, per:100, category:'축산' },
+  // 수산
+  { name:'고등어',       unit:'g',  price:800,  per:100, category:'수산' },
+  { name:'갈치',         unit:'g',  price:1200, per:100, category:'수산' },
+  { name:'오징어',       unit:'g',  price:1000, per:100, category:'수산' },
+  { name:'새우',         unit:'g',  price:2500, per:100, category:'수산' },
+  { name:'바지락',       unit:'g',  price:600,  per:100, category:'수산' },
+  { name:'연어',         unit:'g',  price:3800, per:100, category:'수산' },
+  { name:'참치(통조림)', unit:'g',  price:700,  per:100, category:'수산' },
+  // 채소
+  { name:'대파',         unit:'g',  price:280,  per:100, category:'채소' },
+  { name:'양파',         unit:'g',  price:150,  per:100, category:'채소' },
+  { name:'마늘',         unit:'g',  price:600,  per:100, category:'채소' },
+  { name:'감자',         unit:'g',  price:180,  per:100, category:'채소' },
+  { name:'당근',         unit:'g',  price:200,  per:100, category:'채소' },
+  { name:'무',           unit:'g',  price:120,  per:100, category:'채소' },
+  { name:'배추',         unit:'g',  price:100,  per:100, category:'채소' },
+  { name:'상추',         unit:'g',  price:500,  per:100, category:'채소' },
+  { name:'깻잎',         unit:'g',  price:800,  per:100, category:'채소' },
+  { name:'애호박',       unit:'g',  price:350,  per:100, category:'채소' },
+  { name:'브로콜리',     unit:'g',  price:450,  per:100, category:'채소' },
+  { name:'버섯(느타리)', unit:'g',  price:400,  per:100, category:'채소' },
+  { name:'두부',         unit:'g',  price:180,  per:100, category:'채소' },
+  { name:'콩나물',       unit:'g',  price:150,  per:100, category:'채소' },
+  // 곡류/전분
+  { name:'쌀',           unit:'g',  price:200,  per:100, category:'곡류' },
+  { name:'밀가루',       unit:'g',  price:80,   per:100, category:'곡류' },
+  { name:'전분',         unit:'g',  price:120,  per:100, category:'곡류' },
+  { name:'당면',         unit:'g',  price:250,  per:100, category:'곡류' },
+  { name:'라면사리',     unit:'g',  price:180,  per:100, category:'곡류' },
+  // 조미료/소스
+  { name:'소금',         unit:'g',  price:30,   per:100, category:'조미료' },
+  { name:'설탕',         unit:'g',  price:80,   per:100, category:'조미료' },
+  { name:'간장',         unit:'ml', price:200,  per:100, category:'조미료' },
+  { name:'된장',         unit:'g',  price:350,  per:100, category:'조미료' },
+  { name:'고추장',       unit:'g',  price:400,  per:100, category:'조미료' },
+  { name:'참기름',       unit:'ml', price:1200, per:100, category:'조미료' },
+  { name:'식용유',       unit:'ml', price:200,  per:100, category:'조미료' },
+  { name:'고춧가루',     unit:'g',  price:800,  per:100, category:'조미료' },
+  { name:'후추',         unit:'g',  price:500,  per:100, category:'조미료' },
+  { name:'굴소스',       unit:'ml', price:350,  per:100, category:'조미료' },
+  { name:'미림',         unit:'ml', price:250,  per:100, category:'조미료' },
+  { name:'케첩',         unit:'g',  price:300,  per:100, category:'조미료' },
+  { name:'마요네즈',     unit:'g',  price:400,  per:100, category:'조미료' },
+  { name:'버터',         unit:'g',  price:1500, per:100, category:'조미료' },
+  { name:'올리브오일',   unit:'ml', price:1800, per:100, category:'조미료' },
+];
+
+// ── 자동완성 ──
+let acHideTimer = {};
+
+function showAC(rowId, input) {
+  clearTimeout(acHideTimer[rowId]);
+  const q = input.value.trim();
+  const dropdown = document.getElementById(`ac-${rowId}`);
+  if(!dropdown) return;
+
+  const matches = q.length === 0
+    ? ING_DB.slice(0, 8)
+    : ING_DB.filter(d => d.name.includes(q)).slice(0, 8);
+
+  if(matches.length === 0) { dropdown.style.display='none'; return; }
+
+  dropdown.innerHTML = matches.map(d => {
+    const highlighted = q ? d.name.replace(q, `<mark>${q}</mark>`) : d.name;
+    const priceLabel = `평균 ${d.price.toLocaleString()}원/${d.per}${d.unit}`;
+    return `<div class="ac-item" onmousedown="selectAC('${rowId}','${d.name}',${d.price},${d.per},'${d.unit}')">
+      <span class="ac-item-name">${highlighted}</span>
+      <span class="ac-item-price">${priceLabel}</span>
+    </div>`;
+  }).join('');
+
+  dropdown.style.display = 'block';
+}
+
+function hideAC(rowId) {
+  acHideTimer[rowId] = setTimeout(() => {
+    const d = document.getElementById(`ac-${rowId}`);
+    if(d) d.style.display='none';
+  }, 180);
+}
+
+function selectAC(rowId, name, price, per, unit) {
+  const menu = getCurrentMenu(); if(!menu) return;
+  const row = menu.ingredients.find(r => r.id===rowId); if(!row) return;
+
+  // 재료명, 구매가격, 구매량 자동 채우기
+  row.name  = name;
+  row.price = price;
+  row.qty   = per;
+  row.yield_= '100';
+
+  // DOM 반영
+  const tr = document.querySelector(`[data-rowid="${rowId}"]`);
+  if(tr) {
+    const inputs = tr.querySelectorAll('input');
+    inputs[0].value = name;
+    inputs[1].value = price;
+    inputs[2].value = per;
+    inputs[3].value = 100;
+  }
+
+  const dropdown = document.getElementById(`ac-${rowId}`);
+  if(dropdown) dropdown.style.display='none';
+
+  updateResults();
+  showToast(`🐟 ${name} 평균가로 채워줬어요!`);
+}
+
+// ── PNG 내보내기 ──
+function exportPNG() {
+  const menu = getCurrentMenu();
+  if(!menu) return showToast('메뉴를 먼저 선택해주세요');
+
+  const calc = calcMenu(menu);
+  const date = new Date().toLocaleDateString('ko-KR');
+
+  // 오프스크린 캔버스
+  const cw = 640, ch = 820;
+  const c = document.createElement('canvas');
+  c.width = cw * 2; c.height = ch * 2;
+  const g = c.getContext('2d');
+  g.scale(2, 2);
+
+  // 배경
+  g.fillStyle = '#1E2D40';
+  roundRect(g, 0, 0, cw, ch, 0);
+  g.fill();
+
+  // 헤더 그라데이션 띠
+  const grad = g.createLinearGradient(0,0,cw,0);
+  grad.addColorStop(0,'#2E4A6A'); grad.addColorStop(1,'#1E2D40');
+  g.fillStyle = grad;
+  roundRect(g, 0, 0, cw, 90, 0);
+  g.fill();
+
+  // 고독이 작은 SVG를 이미지로 넣기 (텍스트로 대체)
+  g.font = 'bold 28px serif';
+  g.fillText('🐟', 28, 52);
+
+  // 타이틀
+  g.fillStyle = '#FFFFFF';
+  g.font = 'bold 22px "Apple SD Gothic Neo", "Malgun Gothic", sans-serif';
+  g.fillText(menu.name || '메뉴', 68, 38);
+  g.font = '13px "Apple SD Gothic Neo", "Malgun Gothic", sans-serif';
+  g.fillStyle = 'rgba(200,216,228,0.6)';
+  g.fillText('고독이의 원가계산기  ·  ' + date, 68, 60);
+
+  // 재료 테이블 헤더
+  let y = 106;
+  g.fillStyle = 'rgba(74,127,165,0.3)';
+  roundRect(g, 24, y, cw-48, 28, 8);
+  g.fill();
+
+  const cols = [140, 90, 90, 60, 90, 90];
+  const headers = ['재료명','구매가','구매량','수율','사용량','원가'];
+  let cx = 36;
+  g.fillStyle = 'rgba(200,216,228,0.7)';
+  g.font = 'bold 11px "Apple SD Gothic Neo","Malgun Gothic",sans-serif';
+  headers.forEach((h,i) => {
+    g.textAlign = i===0 ? 'left' : 'right';
+    g.fillText(h, i===0 ? cx : cx+cols[i], y+18);
+    cx += cols[i];
+  });
+
+  // 재료 행
+  g.font = '12px "Apple SD Gothic Neo","Malgun Gothic",sans-serif';
+  y += 36;
+  menu.ingredients.forEach((row, i) => {
+    if(!row.name && !row.price) return;
+    const cost = calc.ingCosts[i];
+    if(i%2===0) {
+      g.fillStyle = 'rgba(255,255,255,0.04)';
+      roundRect(g, 24, y-14, cw-48, 26, 6);
+      g.fill();
+    }
+    cx = 36;
+    const cells = [
+      row.name||'—',
+      row.price ? row.price+'원' : '—',
+      row.qty ? row.qty+'g' : '—',
+      (row.yield_||100)+'%',
+      row.use ? row.use+'g' : '—',
+      cost>0 ? fmt(cost)+'원' : '—',
+    ];
+    cells.forEach((cell,ci) => {
+      g.fillStyle = ci===5 ? '#7FB3D3' : 'rgba(255,255,255,0.85)';
+      g.textAlign = ci===0 ? 'left' : 'right';
+      g.fillText(cell, ci===0 ? cx : cx+cols[ci], y+6);
+      cx += cols[ci];
+    });
+    y += 26;
+  });
+
+  // 구분선
+  y += 10;
+  g.strokeStyle = 'rgba(255,255,255,0.08)';
+  g.lineWidth = 1;
+  g.beginPath(); g.moveTo(24,y); g.lineTo(cw-24,y); g.stroke();
+  y += 16;
+
+  // 추가비용 요약
+  g.font = '12px "Apple SD Gothic Neo","Malgun Gothic",sans-serif';
+  const extras = [
+    ['포장비', menu.packaging],
+    ['인건비', menu.labor],
+    ['간접비', menu.overhead],
+    ['배달수수료', menu.deliveryFee ? (parseFloat(menu.salePrice)*parseFloat(menu.deliveryFee)/100) : 0],
+    ['카드수수료', menu.cardFee ? (parseFloat(menu.salePrice)*parseFloat(menu.cardFee)/100) : 0],
+  ].filter(e => parseFloat(e[1])>0);
+
+  if(extras.length>0) {
+    extras.forEach(([label, val]) => {
+      g.fillStyle = 'rgba(200,216,228,0.55)';
+      g.textAlign = 'left';
+      g.fillText(label, 36, y);
+      g.fillStyle = 'rgba(255,255,255,0.7)';
+      g.textAlign = 'right';
+      g.fillText(fmt(val)+'원', cw-36, y);
+      y += 22;
+    });
+    y += 6;
+    g.strokeStyle = 'rgba(255,255,255,0.08)';
+    g.beginPath(); g.moveTo(24,y); g.lineTo(cw-24,y); g.stroke();
+    y += 16;
+  }
+
+  // 결과 4칸
+  const results = [
+    { label:'총 재료 원가', value: fmt(calc.ingTotal)+'원', color:'#7FB3D3' },
+    { label:'총 원가',       value: fmt(calc.totalCost)+'원', color:'#C8E6F5' },
+    { label:'순이익',        value: (calc.salePrice>0?(calc.profit>=0?'+':'')+fmt(calc.profit)+'원':'—'), color: calc.profit>=0?'#6DC89A':'#E8836A' },
+    { label:'원가율',        value: calc.salePrice>0?calc.costRate.toFixed(1)+'%':'—', color:'#F5B07A' },
+  ];
+
+  const rw = (cw-48-18)/2, rh = 80;
+  results.forEach((r,i) => {
+    const rx = 24 + (i%2)*(rw+12);
+    const ry = y + Math.floor(i/2)*(rh+12);
+    g.fillStyle = 'rgba(255,255,255,0.06)';
+    roundRect(g, rx, ry, rw, rh, 12);
+    g.fill();
+    g.fillStyle = 'rgba(200,216,228,0.5)';
+    g.font = 'bold 10px "Apple SD Gothic Neo","Malgun Gothic",sans-serif';
+    g.textAlign = 'left';
+    g.fillText(r.label, rx+14, ry+20);
+    g.fillStyle = r.color;
+    g.font = 'bold 22px "Apple SD Gothic Neo","Malgun Gothic",sans-serif';
+    g.fillText(r.value, rx+14, ry+56);
+  });
+
+  y += rh*2 + 12*3 + 20;
+
+  // 판매가
+  g.fillStyle = 'rgba(255,255,255,0.06)';
+  roundRect(g, 24, y, cw-48, 44, 10);
+  g.fill();
+  g.fillStyle = 'rgba(200,216,228,0.5)';
+  g.font = 'bold 11px "Apple SD Gothic Neo","Malgun Gothic",sans-serif';
+  g.textAlign = 'left';
+  g.fillText('판매가', 38, y+16);
+  g.fillStyle = '#FFFFFF';
+  g.font = 'bold 18px "Apple SD Gothic Neo","Malgun Gothic",sans-serif';
+  g.textAlign = 'right';
+  g.fillText(calc.salePrice>0 ? fmt(calc.salePrice)+'원' : '미입력', cw-38, y+30);
+
+  y += 56;
+
+  // 고독이 멘트
+  g.fillStyle = 'rgba(74,127,165,0.18)';
+  roundRect(g, 24, y, cw-48, 42, 10);
+  g.fill();
+  g.font = '12px "Apple SD Gothic Neo","Malgun Gothic",sans-serif';
+  g.fillStyle = 'rgba(200,216,228,0.75)';
+  g.textAlign = 'left';
+  g.fillText('🐟  ' + godogiComment(calc.profit, calc.costRate, calc.salePrice), 36, y+26);
+
+  // 하단 워터마크
+  g.fillStyle = 'rgba(255,255,255,0.15)';
+  g.font = '11px "Apple SD Gothic Neo","Malgun Gothic",sans-serif';
+  g.textAlign = 'center';
+  g.fillText('고독이의 원가계산기', cw/2, ch-14);
+
+  // 다운로드
+  const link = document.createElement('a');
+  link.download = `${menu.name||'원가계산'}_${date.replace(/\./g,'-')}.png`;
+  link.href = c.toDataURL('image/png');
+  link.click();
+
+  showToast('🖼️ PNG로 저장됐어요!');
+}
+
+function roundRect(ctx, x, y, w, h, r) {
+  ctx.beginPath();
+  ctx.moveTo(x+r, y);
+  ctx.lineTo(x+w-r, y);
+  ctx.quadraticCurveTo(x+w, y, x+w, y+r);
+  ctx.lineTo(x+w, y+h-r);
+  ctx.quadraticCurveTo(x+w, y+h, x+w-r, y+h);
+  ctx.lineTo(x+r, y+h);
+  ctx.quadraticCurveTo(x, y+h, x, y+h-r);
+  ctx.lineTo(x, y+r);
+  ctx.quadraticCurveTo(x, y, x+r, y);
+  ctx.closePath();
+}
+
+
+function init() {
+  if(state.menus.length===0) {
+    // 예시 메뉴 하나 넣어주기
+    const sample = defaultMenu();
+    sample.name = '제육볶음';
+    sample.ingredients = [
+      defaultRow('돼지고기(앞다리)','12000','1000','90','200'),
+      defaultRow('양파','1500','1000','88','100'),
+      defaultRow('대파','2000','500','80','50'),
+      defaultRow('고추장','4500','500','100','40'),
+    ];
+    sample.packaging = 300;
+    sample.labor = 800;
+    sample.overhead = 500;
+    sample.deliveryFee = 7;
+    sample.cardFee = 1.5;
+    sample.salePrice = 12000;
+    state.menus = [sample];
+    state.currentId = sample.id;
+    saveMenus(state.menus);
+  } else {
+    state.currentId = state.menus[0].id;
+  }
+  renderSidebar();
+  renderCalc();
+}
+
+init();
+</script>
+</body>
+</html>
