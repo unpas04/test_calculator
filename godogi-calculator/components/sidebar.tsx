@@ -39,14 +39,13 @@ export default function Sidebar({ menus, currentId, onSelect, onNew, onDelete, u
       >
         ☰
       </button>
-
         <aside style={{
-        width: 260, minHeight: '100vh',
+        width: 260,
+        height: '100vh',  // minHeight → height
         background: 'var(--navy)',
         display: 'flex', flexDirection: 'column',
         position: 'fixed', top: 0, left: 0, bottom: 0,
         zIndex: 10,
-        overflowY: 'auto',  // ← 이거 추가
         transition: 'transform 0.25s'
         }}>
         {/* 헤더 */}
