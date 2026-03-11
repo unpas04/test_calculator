@@ -147,7 +147,7 @@ export default function Calculator({ menu, onChange, onSave }: Props) {
         color: 'var(--navy)', background: 'none',
         border: 'none', borderBottom: '2px solid var(--border)',
         outline: 'none', padding: '4px 0',
-        cursor: 'text'
+        cursor: 'text', maxWidth: '100%', width: '100%'
       }}
     />
         <button onClick={onSave} className="save-btn" style={{
