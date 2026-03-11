@@ -1,14 +1,6 @@
 <!DOCTYPE html>
 <html lang="ko">
 <head>
-    <script async src="https://www.googletagmanager.com/gtag/js?id=G-16J02P5QST"></script>
-    <script>
-    window.dataLayer = window.dataLayer || [];
-    function gtag(){dataLayer.push(arguments);}
-    gtag('js', new Date());
-
-    gtag('config', 'G-16J02P5QST');
-    </script>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>고독이의 원가계산기</title>
@@ -618,6 +610,209 @@ thead th:first-child { text-align: left; padding-left: 4px; }
 }
 .export-btn:hover { background: #1E2D40; transform: translateY(-1px); }
 
+/* ── 사이드바 탭 ── */
+.sidebar-tabs {
+  display: flex;
+  padding: 10px 12px 0;
+  gap: 6px;
+  border-bottom: 1px solid rgba(255,255,255,0.07);
+}
+
+.sidebar-tab {
+  flex: 1;
+  background: none;
+  border: none;
+  border-bottom: 2px solid transparent;
+  color: rgba(200,216,228,0.4);
+  font-family: 'Black Han Sans', sans-serif;
+  font-size: 0.8rem;
+  padding: 8px 4px;
+  cursor: pointer;
+  transition: color 0.15s, border-color 0.15s;
+  letter-spacing: 0.03em;
+  white-space: nowrap;
+}
+
+.sidebar-tab.active {
+  color: #fff;
+  border-bottom-color: var(--blue);
+}
+
+/* ── 냉장고 패널 ── */
+.fridge-panel {
+  flex: 1;
+  overflow-y: auto;
+  padding: 10px 10px 0;
+}
+
+.fridge-category {
+  margin-bottom: 6px;
+}
+
+.fridge-cat-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 7px 10px;
+  border-radius: 8px;
+  cursor: pointer;
+  transition: background 0.12s;
+  user-select: none;
+}
+
+.fridge-cat-header:hover { background: rgba(255,255,255,0.05); }
+
+.fridge-cat-name {
+  font-family: 'Black Han Sans', sans-serif;
+  font-size: 0.75rem;
+  color: rgba(200,216,228,0.55);
+  letter-spacing: 0.05em;
+  display: flex; align-items: center; gap: 6px;
+}
+
+.fridge-cat-arrow {
+  font-size: 0.65rem;
+  color: rgba(200,216,228,0.3);
+  transition: transform 0.2s;
+}
+
+.fridge-cat-arrow.open { transform: rotate(90deg); }
+
+.fridge-items { padding: 0 4px 6px; }
+
+.fridge-item {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 7px 8px;
+  border-radius: 9px;
+  transition: background 0.12s;
+  margin-bottom: 2px;
+}
+
+.fridge-item:hover { background: rgba(255,255,255,0.05); }
+
+.fridge-item-name {
+  flex: 1;
+  font-size: 0.8rem;
+  color: rgba(255,255,255,0.8);
+  min-width: 0;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.fridge-item-price {
+  font-family: 'Black Han Sans', sans-serif;
+  font-size: 0.72rem;
+  color: var(--blue-light);
+  white-space: nowrap;
+  flex-shrink: 0;
+}
+
+.fridge-edit-btn {
+  background: none; border: none;
+  color: rgba(200,216,228,0.25);
+  cursor: pointer; font-size: 0.8rem;
+  padding: 2px 4px; border-radius: 5px;
+  transition: color 0.12s;
+  flex-shrink: 0;
+}
+.fridge-edit-btn:hover { color: var(--orange-light); }
+
+/* ── 냉장고 편집 모달 ── */
+.modal-overlay {
+  position: fixed; inset: 0;
+  background: rgba(10,18,28,0.7);
+  z-index: 300;
+  display: flex; align-items: center; justify-content: center;
+  padding: 20px;
+  backdrop-filter: blur(4px);
+}
+
+.modal {
+  background: #1E2D40;
+  border: 1.5px solid rgba(74,127,165,0.3);
+  border-radius: 20px;
+  padding: 24px;
+  width: 100%;
+  max-width: 360px;
+  box-shadow: 0 20px 60px rgba(0,0,0,0.5);
+}
+
+.modal-title {
+  font-family: 'Black Han Sans', sans-serif;
+  font-size: 1rem;
+  color: #fff;
+  margin-bottom: 18px;
+  display: flex; align-items: center; gap: 8px;
+  letter-spacing: 0.03em;
+}
+
+.modal-field { margin-bottom: 14px; }
+
+.modal-label {
+  font-family: 'Black Han Sans', sans-serif;
+  font-size: 0.72rem;
+  color: rgba(200,216,228,0.5);
+  letter-spacing: 0.05em;
+  margin-bottom: 6px;
+}
+
+.modal-input {
+  width: 100%;
+  background: rgba(255,255,255,0.07);
+  border: 1.5px solid rgba(74,127,165,0.3);
+  border-radius: 10px;
+  padding: 10px 14px;
+  font-family: 'Gowun Dodum', sans-serif;
+  font-size: 0.9rem;
+  color: #fff;
+  outline: none;
+  transition: border-color 0.18s;
+}
+.modal-input:focus { border-color: var(--blue); }
+
+.modal-btns {
+  display: flex; gap: 10px; margin-top: 20px;
+}
+
+.modal-btn {
+  flex: 1;
+  border: none; border-radius: 10px;
+  padding: 11px;
+  font-family: 'Black Han Sans', sans-serif;
+  font-size: 0.88rem;
+  cursor: pointer;
+  transition: opacity 0.15s;
+  letter-spacing: 0.03em;
+}
+.modal-btn:hover { opacity: 0.85; }
+.modal-btn.confirm { background: var(--blue); color: #fff; }
+.modal-btn.cancel  { background: rgba(255,255,255,0.08); color: rgba(255,255,255,0.7); }
+.modal-btn.danger  { background: rgba(217,95,82,0.25); color: #E8836A; }
+
+/* ── 냉장고 추가 버튼 ── */
+.fridge-add-btn {
+  width: 100%;
+  background: none;
+  border: 1.5px dashed rgba(74,127,165,0.35);
+  color: rgba(200,216,228,0.45);
+  border-radius: 10px;
+  padding: 9px;
+  font-family: 'Black Han Sans', sans-serif;
+  font-size: 0.78rem;
+  cursor: pointer;
+  transition: all 0.15s;
+  margin-top: 6px;
+  letter-spacing: 0.03em;
+}
+.fridge-add-btn:hover {
+  border-color: var(--blue-light);
+  color: var(--blue-light);
+  background: rgba(74,127,165,0.08);
+}
+
 /* ── 저장 토스트 ── */
 .toast {
   position: fixed;
@@ -679,16 +874,32 @@ thead th:first-child { text-align: left; padding-left: 4px; }
       <div class="tagline">혼자서도 잘해요 🐟</div>
     </div>
 
-    <div class="sidebar-section">저장된 메뉴</div>
-    <div class="menu-list" id="menuList">
-      <!-- JS로 렌더 -->
+    <!-- 탭 -->
+    <div class="sidebar-tabs">
+      <button class="sidebar-tab active" id="tabMenu" onclick="switchTab('menu')">🍽️ 메뉴</button>
+      <button class="sidebar-tab" id="tabFridge" onclick="switchTab('fridge')">🧊 냉장고</button>
     </div>
 
-    <div class="sidebar-footer">
-      <button class="new-menu-btn" onclick="newMenu()">
-        <span style="font-size:1rem">＋</span> 새 메뉴 추가
-      </button>
+    <!-- 메뉴 패널 -->
+    <div id="panelMenu" style="display:flex;flex-direction:column;flex:1;overflow:hidden;">
+      <div class="menu-list" id="menuList"></div>
+      <div class="sidebar-footer">
+        <button class="new-menu-btn" onclick="newMenu()">
+          <span style="font-size:1rem">＋</span> 새 메뉴 추가
+        </button>
+      </div>
     </div>
+
+    <!-- 냉장고 패널 -->
+    <div id="panelFridge" style="display:none;flex-direction:column;flex:1;overflow:hidden;">
+      <div class="fridge-panel" id="fridgePanel"></div>
+      <div class="sidebar-footer">
+        <button class="new-menu-btn" style="background:rgba(74,127,165,0.35)" onclick="openAddIngModal()">
+          <span style="font-size:1rem">＋</span> 재료 추가
+        </button>
+      </div>
+    </div>
+
   </aside>
 
   <!-- ── 메인 ── -->
@@ -697,6 +908,49 @@ thead th:first-child { text-align: left; padding-left: 4px; }
       <!-- JS로 렌더 -->
     </div>
   </main>
+</div>
+
+<!-- 냉장고 편집 모달 -->
+<div class="modal-overlay" id="modalOverlay" style="display:none" onclick="closeModal(event)">
+  <div class="modal" onclick="event.stopPropagation()">
+    <div class="modal-title" id="modalTitle">🧊 재료 편집</div>
+    <div class="modal-field">
+      <div class="modal-label">재료명</div>
+      <input class="modal-input" id="modalName" placeholder="예: 삼겹살">
+    </div>
+    <div class="modal-field">
+      <div class="modal-label">구매가격</div>
+      <input class="modal-input" id="modalPrice" type="number" placeholder="예: 12000">
+    </div>
+    <div class="modal-field">
+      <div class="modal-label">기준량</div>
+      <input class="modal-input" id="modalPer" type="number" placeholder="예: 1000">
+    </div>
+    <div class="modal-field">
+      <div class="modal-label">단위</div>
+      <select class="modal-input" id="modalUnit">
+        <option value="g">g</option>
+        <option value="ml">ml</option>
+        <option value="개">개</option>
+        <option value="팩">팩</option>
+      </select>
+    </div>
+    <div class="modal-field">
+      <div class="modal-label">카테고리</div>
+      <select class="modal-input" id="modalCategory">
+        <option value="축산">🥩 축산</option>
+        <option value="수산">🐟 수산</option>
+        <option value="채소">🥬 채소</option>
+        <option value="곡류">🌾 곡류</option>
+        <option value="조미료">🧂 조미료</option>
+        <option value="기타">📦 기타</option>
+      </select>
+    </div>
+    <div class="modal-btns" id="modalBtns">
+      <button class="modal-btn cancel" onclick="closeModal()">취소</button>
+      <button class="modal-btn confirm" id="modalConfirm" onclick="confirmModal()">저장</button>
+    </div>
+  </div>
 </div>
 
 <div class="toast" id="toast"></div>
@@ -971,8 +1225,8 @@ let state = {
 };
 
 // 기본 재료 행
-function defaultRow(name='',price='',qty='',yield_='100',use='') {
-  return { id: genId(), name, price, qty, yield_, use };
+function defaultRow(name='',price='',qty='',yield_='100',use='',unit='g') {
+  return { id: genId(), name, price, qty, yield_, use, unit };
 }
 
 function defaultMenu() {
@@ -1092,9 +1346,10 @@ function renderCalc() {
         <tr>
           <th style="text-align:left;min-width:90px">재료명</th>
           <th>구매가격(원)</th>
-          <th>구매량(g)</th>
+          <th>구매량</th>
+          <th>단위</th>
           <th>수율(%)</th>
-          <th>사용량(g)</th>
+          <th>사용량</th>
           <th style="text-align:right">원가(원)</th>
           <th></th>
         </tr>
@@ -1189,6 +1444,9 @@ function renderCalc() {
 
 function renderIngRow(row, i, cost) {
   const costDisplay = cost>0 ? fmt(cost) : '—';
+  const unit = row.unit || 'g';
+  const units = ['g','ml','개','팩','kg','L'];
+  const unitOptions = units.map(u => `<option value="${u}" ${u===unit?'selected':''}>${u}</option>`).join('');
   return `<tr class="ing-row" data-rowid="${row.id}">
     <td>
       <div class="autocomplete-wrap">
@@ -1202,6 +1460,12 @@ function renderIngRow(row, i, cost) {
     </td>
     <td><input type="number" placeholder="0" min="0" value="${row.price}" oninput="onIngChange('${row.id}','price',this.value)"></td>
     <td><input type="number" placeholder="0" min="0" value="${row.qty}" oninput="onIngChange('${row.id}','qty',this.value)"></td>
+    <td>
+      <select style="width:100%;background:var(--silver-light);border:1.5px solid transparent;border-radius:9px;padding:8px 4px;font-family:'Gowun Dodum',sans-serif;font-size:0.82rem;color:var(--text);outline:none;cursor:pointer;text-align:center;"
+        onchange="onIngChange('${row.id}','unit',this.value)">
+        ${unitOptions}
+      </select>
+    </td>
     <td><input type="number" placeholder="100" min="1" max="100" value="${row.yield_}" oninput="onIngChange('${row.id}','yield_',this.value)"></td>
     <td><input type="number" placeholder="0" min="0" value="${row.use}" oninput="onIngChange('${row.id}','use',this.value)"></td>
     <td class="ing-cost-cell" id="icost-${row.id}">${costDisplay}</td>
@@ -1444,11 +1708,11 @@ function selectAC(rowId, name, price, per, unit) {
   const menu = getCurrentMenu(); if(!menu) return;
   const row = menu.ingredients.find(r => r.id===rowId); if(!row) return;
 
-  // 재료명, 구매가격, 구매량 자동 채우기
   row.name  = name;
   row.price = price;
   row.qty   = per;
   row.yield_= '100';
+  row.unit  = unit;
 
   // DOM 반영
   const tr = document.querySelector(`[data-rowid="${rowId}"]`);
@@ -1457,7 +1721,10 @@ function selectAC(rowId, name, price, per, unit) {
     inputs[0].value = name;
     inputs[1].value = price;
     inputs[2].value = per;
-    inputs[3].value = 100;
+    // 단위 셀렉트
+    const sel = tr.querySelector('select');
+    if(sel) sel.value = unit;
+    inputs[3].value = 100; // 수율
   }
 
   const dropdown = document.getElementById(`ac-${rowId}`);
@@ -1641,13 +1908,32 @@ function exportPNG() {
   g.textAlign = 'center';
   g.fillText('고독이의 원가계산기', cw/2, ch-14);
 
-  // 다운로드
-  const link = document.createElement('a');
-  link.download = `${menu.name||'원가계산'}_${date.replace(/\./g,'-')}.png`;
-  link.href = c.toDataURL('image/png');
-  link.click();
-
-  showToast('🖼️ PNG로 저장됐어요!');
+  // 모바일/데스크탑 분기 저장
+  const isMobile = /iPhone|iPad|iPod|Android/i.test(navigator.userAgent);
+  if(isMobile) {
+    // 모바일: 새 탭에서 이미지 열기 → 꾹 눌러서 저장
+    const img = c.toDataURL('image/png');
+    const win = window.open('', '_blank');
+    win.document.write(`
+      <html><head><meta name="viewport" content="width=device-width">
+      <style>body{margin:0;background:#1E2D40;display:flex;flex-direction:column;align-items:center;justify-content:center;min-height:100vh;gap:16px;}
+      img{max-width:100%;border-radius:12px;}
+      p{color:rgba(255,255,255,0.6);font-family:sans-serif;font-size:13px;text-align:center;padding:0 20px;}
+      </style></head>
+      <body>
+        <p>이미지를 꾹 눌러서 저장하세요 🐟</p>
+        <img src="${img}">
+      </body></html>
+    `);
+    win.document.close();
+    showToast('🐟 새 탭에서 꾹 눌러 저장하세요!');
+  } else {
+    const link = document.createElement('a');
+    link.download = `${menu.name||'원가계산'}_${date.replace(/\./g,'-')}.png`;
+    link.href = c.toDataURL('image/png');
+    link.click();
+    showToast('🖼️ PNG로 저장됐어요!');
+  }
 }
 
 function roundRect(ctx, x, y, w, h, r) {
@@ -1667,7 +1953,6 @@ function roundRect(ctx, x, y, w, h, r) {
 
 function init() {
   if(state.menus.length===0) {
-    // 예시 메뉴 하나 넣어주기
     const sample = defaultMenu();
     sample.name = '제육볶음';
     sample.ingredients = [
@@ -1688,8 +1973,164 @@ function init() {
   } else {
     state.currentId = state.menus[0].id;
   }
+
+  // 냉장고 DB → 자동완성 동기화
+  syncFridgeToAC();
   renderSidebar();
   renderCalc();
+}
+
+// ── 냉장고 데이터 ──
+const FRIDGE_KEY = 'godogi_fridge_v1';
+const CAT_ICONS = { '축산':'🥩','수산':'🐟','채소':'🥬','곡류':'🌾','조미료':'🧂','기타':'📦' };
+const CAT_ORDER = ['축산','수산','채소','곡류','조미료','기타'];
+
+function loadFridge() {
+  try {
+    const saved = JSON.parse(localStorage.getItem(FRIDGE_KEY));
+    if(saved && saved.length > 0) return saved;
+  } catch {}
+  return ING_DB.map(d => ({ ...d, id: 'f_'+Math.random().toString(36).slice(2,9) }));
+}
+
+function saveFridge() {
+  localStorage.setItem(FRIDGE_KEY, JSON.stringify(fridgeDB));
+}
+
+let fridgeDB = loadFridge();
+let catOpen = {};
+let currentTab = 'menu';
+
+function switchTab(tab) {
+  currentTab = tab;
+  document.getElementById('tabMenu').classList.toggle('active', tab==='menu');
+  document.getElementById('tabFridge').classList.toggle('active', tab==='fridge');
+  document.getElementById('panelMenu').style.display   = tab==='menu'   ? 'flex' : 'none';
+  document.getElementById('panelFridge').style.display = tab==='fridge' ? 'flex' : 'none';
+  if(tab==='fridge') renderFridge();
+}
+
+function renderFridge() {
+  const panel = document.getElementById('fridgePanel');
+  if(!panel) return;
+  const grouped = {};
+  CAT_ORDER.forEach(c => grouped[c] = []);
+  fridgeDB.forEach(item => {
+    const cat = item.category || '기타';
+    if(!grouped[cat]) grouped[cat] = [];
+    grouped[cat].push(item);
+  });
+
+  panel.innerHTML = CAT_ORDER.map(cat => {
+    const items = grouped[cat];
+    const isOpen = catOpen[cat] !== false;
+    return `
+    <div class="fridge-category">
+      <div class="fridge-cat-header" onclick="toggleCat('${cat}')">
+        <span class="fridge-cat-name">${CAT_ICONS[cat]||'📦'} ${cat} <span style="opacity:0.4;font-size:0.65rem">${items.length}</span></span>
+        <span class="fridge-cat-arrow ${isOpen?'open':''}" id="arrow-${cat}">▶</span>
+      </div>
+      <div class="fridge-items" id="cat-${cat}" style="display:${isOpen?'block':'none'}">
+        ${items.map(item => `
+          <div class="fridge-item">
+            <span class="fridge-item-name">${item.name}</span>
+            <span class="fridge-item-price">${item.price.toLocaleString()}원/${item.per}${item.unit}</span>
+            <button class="fridge-edit-btn" onclick="openEditIngModal('${item.id}')">✏️</button>
+          </div>
+        `).join('')}
+        <button class="fridge-add-btn" onclick="openAddIngModal('${cat}')">＋ ${cat} 재료 추가</button>
+      </div>
+    </div>`;
+  }).join('');
+}
+
+function toggleCat(cat) {
+  catOpen[cat] = !(catOpen[cat] !== false);
+  const el = document.getElementById(`cat-${cat}`);
+  const arrow = document.getElementById(`arrow-${cat}`);
+  if(el) el.style.display = catOpen[cat] ? 'block' : 'none';
+  if(arrow) arrow.classList.toggle('open', catOpen[cat]);
+}
+
+let modalMode = 'add';
+let modalEditId = null;
+
+function openAddIngModal(cat='기타') {
+  modalMode = 'add';
+  document.getElementById('modalTitle').textContent = '🧊 재료 추가';
+  document.getElementById('modalName').value = '';
+  document.getElementById('modalPrice').value = '';
+  document.getElementById('modalPer').value = '100';
+  document.getElementById('modalUnit').value = 'g';
+  document.getElementById('modalCategory').value = cat;
+  document.getElementById('modalBtns').innerHTML = `
+    <button class="modal-btn cancel" onclick="closeModal()">취소</button>
+    <button class="modal-btn confirm" onclick="confirmModal()">추가</button>`;
+  document.getElementById('modalOverlay').style.display = 'flex';
+  setTimeout(() => document.getElementById('modalName').focus(), 100);
+}
+
+function openEditIngModal(id) {
+  const item = fridgeDB.find(f => f.id===id);
+  if(!item) return;
+  modalMode = 'edit';
+  modalEditId = id;
+  document.getElementById('modalTitle').textContent = '✏️ ' + item.name + ' 수정';
+  document.getElementById('modalName').value = item.name;
+  document.getElementById('modalPrice').value = item.price;
+  document.getElementById('modalPer').value = item.per;
+  document.getElementById('modalUnit').value = item.unit;
+  document.getElementById('modalCategory').value = item.category || '기타';
+  document.getElementById('modalBtns').innerHTML = `
+    <button class="modal-btn danger" onclick="deleteIngModal('${id}')">삭제</button>
+    <button class="modal-btn cancel" onclick="closeModal()">취소</button>
+    <button class="modal-btn confirm" onclick="confirmModal()">저장</button>`;
+  document.getElementById('modalOverlay').style.display = 'flex';
+}
+
+function closeModal(e) {
+  if(e && e.target !== document.getElementById('modalOverlay')) return;
+  document.getElementById('modalOverlay').style.display = 'none';
+}
+
+function confirmModal() {
+  const name  = document.getElementById('modalName').value.trim();
+  const price = parseFloat(document.getElementById('modalPrice').value)||0;
+  const per   = parseFloat(document.getElementById('modalPer').value)||100;
+  const unit  = document.getElementById('modalUnit').value;
+  const cat   = document.getElementById('modalCategory').value;
+  if(!name) return showToast('재료명을 입력해주세요 🐟');
+  if(!price) return showToast('가격을 입력해주세요 🐟');
+
+  if(modalMode === 'add') {
+    fridgeDB.push({ id:'f_'+Math.random().toString(36).slice(2,9), name, price, per, unit, category:cat });
+    showToast(`🧊 ${name} 냉장고에 추가됐어요!`);
+  } else {
+    const item = fridgeDB.find(f => f.id===modalEditId);
+    if(item) Object.assign(item, { name, price, per, unit, category:cat });
+    showToast(`✏️ ${name} 수정됐어요!`);
+  }
+  saveFridge();
+  syncFridgeToAC();
+  document.getElementById('modalOverlay').style.display = 'none';
+  renderFridge();
+}
+
+function deleteIngModal(id) {
+  const item = fridgeDB.find(f => f.id===id);
+  if(!item) return;
+  if(!confirm(`'${item.name}'을 냉장고에서 삭제할까요?`)) return;
+  fridgeDB = fridgeDB.filter(f => f.id!==id);
+  saveFridge();
+  syncFridgeToAC();
+  document.getElementById('modalOverlay').style.display = 'none';
+  renderFridge();
+  showToast('🗑️ 삭제됐어요');
+}
+
+function syncFridgeToAC() {
+  ING_DB.length = 0;
+  fridgeDB.forEach(f => ING_DB.push({ name:f.name, unit:f.unit, price:f.price, per:f.per, category:f.category||'기타' }));
 }
 
 init();
