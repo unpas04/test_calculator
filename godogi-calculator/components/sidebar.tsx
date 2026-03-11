@@ -138,7 +138,7 @@ export default function Sidebar({ menus, currentId, onSelect, onNew, onDelete, u
           }}>
             로그아웃
           </button>
-        </div>
+ ㅊ       </div>
       </aside>
     </>
   )
