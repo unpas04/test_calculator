@@ -1,0 +1,25 @@
+@import url('https://fonts.googleapis.com/css2?family=Black+Han+Sans&family=Gowun+Dodum&display=swap');
+
+* { box-sizing: border-box; margin: 0; padding: 0; }
+
+:root {
+  --navy: #1E2D40;
+  --blue: #4A7FA5;
+  --blue-light: #7FB3D3;
+  --silver: #C8D8E4;
+  --silver-light: #EEF4F8;
+  --border: #D8E4EC;
+  --text: #2C3E50;
+  --text-mid: #5A6E82;
+  --text-soft: #8FA3B5;
+  --green: #4A8C6F;
+  --orange: #E8833A;
+  --red: #D95F52;
+  --bg: #F0F4F8;
+}
+
+body {
+  font-family: 'Gowun Dodum', sans-serif;
+  background: var(--bg);
+  color: var(--text);
+}
