@@ -2,7 +2,7 @@
 
 import { createClient } from '../lib/supabase'
 import { useState, useEffect } from 'react'
-import Sidebar from '../components/Sidebar'
+import AppSidebar from '../components/AppSidebar'
 import Calculator from '../components/Calculator'
 
 function genId() {
@@ -245,7 +245,7 @@ export default function Home() {
 
   return (
     <div style={{ display: 'flex', minHeight: '100vh' }}>
-      <Sidebar
+      <AppSidebar
         menus={menus.map(m => ({ ...m, costRate: calcCostRate(m) }))}
         currentId={currentId}
         onSelect={setCurrentId}
