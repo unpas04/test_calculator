@@ -2,7 +2,7 @@
 
 import { createClient } from '@/lib/supabase'
 import { useState, useEffect } from 'react'
-import Sidebar from '@/components/sidebar'
+import Sidebar from '@/components/Sidebar'
 import Calculator from '@/components/Calculator'
 
 function genId() {
