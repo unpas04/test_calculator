@@ -40,15 +40,15 @@ export default function Sidebar({ menus, currentId, onSelect, onNew, onDelete, u
         ☰
       </button>
 
-      <aside style={{
+        <aside style={{
         width: 260, minHeight: '100vh',
         background: 'var(--navy)',
         display: 'flex', flexDirection: 'column',
         position: 'fixed', top: 0, left: 0, bottom: 0,
         zIndex: 10,
-        transform: isOpen ? 'translateX(0)' : undefined,
+        overflowY: 'auto',  // ← 이거 추가
         transition: 'transform 0.25s'
-      }}>
+        }}>
         {/* 헤더 */}
         <div style={{ padding: '24px 16px 12px', borderBottom: '1px solid rgba(255,255,255,0.07)' }}>
           <div style={{ display: 'flex', alignItems: 'center', gap: 10, marginBottom: 4 }}>
