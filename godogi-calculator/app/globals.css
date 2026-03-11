@@ -34,9 +34,26 @@ body {
 
 /* 모바일에서 메인 컨텐츠 */
 @media (max-width: 768px) {
+  .sidebar-toggle { display: block !important; }
+  .sidebar-overlay { display: block !important; }
+  .sidebar-close { display: block !important; }
+  .sidebar { transform: translateX(-100%); }
+  .sidebar-open { transform: translateX(0) !important; }
+
   main {
     margin-left: 0 !important;
-    padding: 60px 16px 40px !important;
+    padding: 16px 16px 40px !important;
     max-width: 100% !important;
+  }
+}
+
+/* 모바일 저장 버튼 위치 */
+@media (max-width: 768px) {
+  .save-btn {
+    position: fixed;
+    bottom: 20px;
+    right: 20px;
+    top: auto !important;
+    z-index: 25;
   }
 }

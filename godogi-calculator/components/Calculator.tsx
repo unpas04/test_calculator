@@ -137,7 +137,7 @@ export default function Calculator({ menu, onChange, onSave }: Props) {
   return (
     <div>
       {/* 상단 바 */}
-      <div style={{ display: 'flex', alignItems: 'center', gap: 12, marginBottom: 24 }}>
+      <div style={{ display: 'flex', alignItems: 'center', gap: 12, marginBottom: 24, paddingLeft: 48}}>
         <input
           value={menu.name}
           onChange={e => onChange({ ...menu, name: e.target.value })}
@@ -148,7 +148,7 @@ export default function Calculator({ menu, onChange, onSave }: Props) {
             borderBottom: '2px solid transparent', outline: 'none', padding: '4px 0'
           }}
         />
-        <button onClick={onSave} style={{
+        <button onClick={onSave} className="save-btn" style={{
           background: 'var(--green)', color: 'white', border: 'none',
           borderRadius: 12, padding: '10px 18px',
           fontFamily: 'Black Han Sans', fontSize: '0.85rem', cursor: 'pointer'
