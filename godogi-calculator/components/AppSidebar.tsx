@@ -1,5 +1,5 @@
 'use client'
-
+import Fridge from '@/components/Fridge'
 import { useState } from 'react'
 
 interface Menu {
@@ -95,12 +95,10 @@ export default function Sidebar({ menus, currentId, onSelect, onNew, onDelete, u
         </div>
       )}
 
-      {/* 냉장고 패널 */}
-      {tab === 'fridge' && (
-        <div style={{ flex: 1, padding: 16, color: 'rgba(200,216,228,0.4)', fontSize: '0.82rem', textAlign: 'center', paddingTop: 40 }}>
-          🧊 냉장고 곧 나와요!
-        </div>
-      )}
+    {/* 냉장고 패널 */}
+    {tab === 'fridge' && (
+      <Fridge user={user} />
+    )}
 
       {/* 하단 버튼 */}
       <div style={{ flexShrink: 0, padding: '12px 16px', borderTop: '1px solid rgba(255,255,255,0.07)', display: 'flex', flexDirection: 'column', gap: 8 }}>
