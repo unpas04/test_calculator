@@ -1,9 +1,9 @@
 'use client'
 
-import { createClient } from '@/lib/supabase'
+import { createClient } from '../lib/supabase'
 import { useState, useEffect } from 'react'
-import Sidebar from '@/components/Sidebar'
-import Calculator from '@/components/Calculator'
+import Sidebar from '../components/Sidebar'
+import Calculator from '../components/Calculator'
 
 function genId() {
   return crypto.randomUUID()
