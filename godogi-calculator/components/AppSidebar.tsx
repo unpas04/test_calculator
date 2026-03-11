@@ -27,7 +27,7 @@ export default function Sidebar({ menus, currentId, onSelect, onNew, onDelete, u
     <>
       {/* 모바일 토글 버튼 */}
       <button onClick={() => setIsOpen(!isOpen)} style={{
-        position: 'fixed', top: 16, left: 16, zIndex: 30,
+        position: 'fixed', top: 12, left: 12, zIndex: 30,
         background: 'var(--navy)', color: '#fff',
         border: 'none', borderRadius: 10,
         padding: '8px 12px', fontSize: '1.1rem', cursor: 'pointer',
@@ -57,7 +57,7 @@ export default function Sidebar({ menus, currentId, onSelect, onNew, onDelete, u
       }} className={`sidebar ${isOpen ? 'sidebar-open' : ''}`}>
 
         {/* 헤더 */}
-        <div style={{ flexShrink: 0, padding: '24px 16px 12px', borderBottom: '1px solid rgba(255,255,255,0.07)' }}>
+        <div style={{ flexShrink: 0, padding: '48px 16px 12px', borderBottom: '1px solid rgba(255,255,255,0.07)' }}>
           <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
             <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
               <span style={{ fontSize: '1.4rem' }}>🐟</span>
