@@ -77,9 +77,10 @@ export default function Calculator({ menu, onChange, onSave }: Props) {
   const [showSugg, setShowSugg] = useState<{[key: string]: boolean}>({})
   const [openRows, setOpenRows] = useState<Set<string>>(new Set())
   const [showOverheadModal, setShowOverheadModal] = useState(false)
+  const [overheadForm, setOverheadForm] = useState({ fixed: '', days: '', count: '' })
   const [showLaborModal, setShowLaborModal] = useState(false)
   const [laborForm, setLaborForm] = useState({ labor: '', days: '', count: '' })
-  const [overheadForm, setOverheadForm] = useState({ fixed: '', days: '', count: '' })
+
   useEffect(() => {
     const loadFridge = async () => {
       const { data: { session } } = await supabase.auth.getSession()
@@ -91,19 +92,18 @@ export default function Calculator({ menu, onChange, onSave }: Props) {
   }, [])
 
   const handleNameInput = (id: string, val: string) => {
-  updateIng(id, 'name', val)
-  if (val.length < 1) {
-    setSuggestions(prev => ({ ...prev, [id]: [] }))
-    return
-  }
-  // 냉장고 재료 먼저, 그 다음 기본 DB
-  const fromFridge = fridgeItems.filter(f => f.name.includes(val))
-  const fromDB = INGREDIENT_DB
-    .filter(d => d.name.includes(val) && !fromFridge.find(f => f.name === d.name))
-    .map(d => ({ ...d, per: d.per, id: 'db_' + d.name }))
-  const merged = [...fromFridge, ...fromDB].slice(0, 8)
-  setSuggestions(prev => ({ ...prev, [id]: merged }))
-  setShowSugg(prev => ({ ...prev, [id]: true }))
+    updateIng(id, 'name', val)
+    if (val.length < 1) {
+      setSuggestions(prev => ({ ...prev, [id]: [] }))
+      return
+    }
+    const fromFridge = fridgeItems.filter(f => f.name.includes(val))
+    const fromDB = INGREDIENT_DB
+      .filter(d => d.name.includes(val) && !fromFridge.find(f => f.name === d.name))
+      .map(d => ({ ...d, per: d.per, id: 'db_' + d.name }))
+    const merged = [...fromFridge, ...fromDB].slice(0, 8)
+    setSuggestions(prev => ({ ...prev, [id]: merged }))
+    setShowSugg(prev => ({ ...prev, [id]: true }))
   }
 
   const selectSuggestion = (ingId: string, item: any) => {
@@ -139,14 +139,15 @@ export default function Calculator({ menu, onChange, onSave }: Props) {
       )
     })
   }
+
   const syncToFridge = async (ing: any) => {
-  const { data: { session } } = await supabase.auth.getSession()
-  if (!session) return
-  const { data } = await supabase.from('fridge').select('id').eq('user_id', session.user.id).eq('name', ing.name).single()
-  if (data) {
-    await supabase.from('fridge').update({
-      price: ing.price, per: ing.qty, unit: ing.unit, yield_: ing.yield_
-    }).eq('id', data.id)
+    const { data: { session } } = await supabase.auth.getSession()
+    if (!session) return
+    const { data } = await supabase.from('fridge').select('id').eq('user_id', session.user.id).eq('name', ing.name).single()
+    if (data) {
+      await supabase.from('fridge').update({
+        price: ing.price, per: ing.qty, unit: ing.unit, yield_: ing.yield_
+      }).eq('id', data.id)
     }
   }
 
@@ -196,6 +197,24 @@ export default function Calculator({ menu, onChange, onSave }: Props) {
     textAlign: 'center', outline: 'none'
   }
 
+  const helpBtn = (onClick: () => void) => (
+    <button onClick={onClick} style={{
+      background: 'var(--blue)', color: 'white', border: 'none',
+      borderRadius: '50%', width: 15, height: 15, fontSize: '0.55rem',
+      cursor: 'pointer', lineHeight: 1,
+      display: 'inline-flex', alignItems: 'center', justifyContent: 'center',
+      flexShrink: 0
+    }}>?</button>
+  )
+
+  const overheadResult = overheadForm.fixed && overheadForm.days && overheadForm.count
+    ? Math.round(fromComma(overheadForm.fixed) / (parseFloat(overheadForm.days) * parseFloat(overheadForm.count)))
+    : null
+
+  const laborResult = laborForm.labor && laborForm.days && laborForm.count
+    ? Math.round(fromComma(laborForm.labor) / (parseFloat(laborForm.days) * parseFloat(laborForm.count)))
+    : null
+
   return (
     <div>
       {/* 상단 바 */}
@@ -242,7 +261,6 @@ export default function Calculator({ menu, onChange, onSave }: Props) {
                   <table style={{ width: '100%', borderCollapse: 'collapse' }}>
                     <tbody>
                       <tr style={{ borderBottom: openRows.has(ing.id) ? 'none' : '1px solid var(--silver-light)' }}>
-                        {/* 재료명 + 자동완성 */}
                         <td style={{ padding: '5px 3px', width: '38%', position: 'relative' }}>
                           <input
                             style={{ ...inputStyle, textAlign: 'left', paddingLeft: 8 }}
@@ -322,10 +340,10 @@ export default function Calculator({ menu, onChange, onSave }: Props) {
                                     style={{ ...inputStyle, background: 'white', border: '1.5px solid var(--border)' }}
                                     value={toComma(ing[field])} inputMode="numeric"
                                     onChange={e => {
-                                        const val = fromComma(e.target.value)
-                                        updateIng(ing.id, field, val)
-                                        syncToFridge({ ...ing, [field]: val })
-                                      }}
+                                      const val = fromComma(e.target.value)
+                                      updateIng(ing.id, field, val)
+                                      syncToFridge({ ...ing, [field]: val })
+                                    }}
                                   />
                                 </div>
                               ))}
@@ -358,37 +376,32 @@ export default function Calculator({ menu, onChange, onSave }: Props) {
       {card(<>
         {cardTitle('추가 비용')}
         <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: 12 }}>
+          {/* 포장비 */}
           <div style={{ display: 'flex', flexDirection: 'column', gap: 5 }}>
-            <label style={{ fontSize: '0.72rem', color: 'var(--text-mid)', fontFamily: 'Black Han Sans' }}>📦 포장비 (원)</label>
+            <label style={{ fontSize: '0.72rem', color: 'var(--text-mid)', fontFamily: 'Black Han Sans' }}>
+              📦 포장비 (원)
+            </label>
             <input style={{ ...inputStyle, textAlign: 'left', padding: '9px 12px' }}
               value={toComma(menu.packaging)} inputMode="numeric"
               onChange={e => onChange({ ...menu, packaging: fromComma(e.target.value) })}
             />
           </div>
+          {/* 인건비 */}
           <div style={{ display: 'flex', flexDirection: 'column', gap: 5 }}>
             <label style={{ fontSize: '0.72rem', color: 'var(--text-mid)', fontFamily: 'Black Han Sans', display: 'flex', alignItems: 'center', gap: 4 }}>
               👩‍🍳 인건비
-              <button onClick={() => setShowLaborModal(true)} style={{
-                background: 'var(--blue)', color: 'white', border: 'none',
-                borderRadius: '50%', width: 15, height: 15, fontSize: '0.55rem',
-                cursor: 'pointer', lineHeight: 1,
-                display: 'inline-flex', alignItems: 'center', justifyContent: 'center'
-              }}>?</button>
+              {helpBtn(() => setShowLaborModal(true))}
             </label>
             <input style={{ ...inputStyle, textAlign: 'left', padding: '9px 12px' }}
               value={toComma(menu.labor)} inputMode="numeric"
               onChange={e => onChange({ ...menu, labor: fromComma(e.target.value) })}
             />
           </div>
+          {/* 간접비 */}
           <div style={{ display: 'flex', flexDirection: 'column', gap: 5 }}>
             <label style={{ fontSize: '0.72rem', color: 'var(--text-mid)', fontFamily: 'Black Han Sans', display: 'flex', alignItems: 'center', gap: 4 }}>
               🏠 간접비
-              <button onClick={() => setShowLaborModal(true)} style={{
-                background: 'var(--blue)', color: 'white', border: 'none',
-                borderRadius: '50%', width: 15, height: 15, fontSize: '0.55rem',
-                cursor: 'pointer', lineHeight: 1,
-                display: 'inline-flex', alignItems: 'center', justifyContent: 'center'
-              }}>?</button>
+              {helpBtn(() => setShowOverheadModal(true))}
             </label>
             <input style={{ ...inputStyle, textAlign: 'left', padding: '9px 12px' }}
               value={toComma(menu.overhead)} inputMode="numeric"
@@ -397,204 +410,6 @@ export default function Calculator({ menu, onChange, onSave }: Props) {
           </div>
         </div>
       </>)}
-
-      {/* 간접비 계산 모달 */}
-      {showOverheadModal && (
-        <div style={{
-          position: 'fixed', inset: 0, zIndex: 100,
-          background: 'rgba(0,0,0,0.5)',
-          display: 'flex', alignItems: 'center', justifyContent: 'center',
-          padding: '0 20px'
-        }}>
-          <div style={{
-            background: 'white', borderRadius: 20, padding: 24,
-            width: '100%', maxWidth: 340,
-            display: 'flex', flexDirection: 'column', gap: 16
-          }}>
-            <div>
-              <div style={{ fontFamily: 'Black Han Sans', fontSize: '1rem', color: 'var(--navy)', marginBottom: 4 }}>
-                🏠 간접비 계산기
-              </div>
-              <div style={{ fontSize: '0.72rem', color: 'var(--text-soft)' }}>
-                전기/가스/임대료 등 월 고정비를 입력하면 메뉴 1개당 간접비를 계산해줘요
-              </div>
-            </div>
-
-            <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
-              <div style={{ display: 'flex', flexDirection: 'column', gap: 5 }}>
-                <label style={{ fontSize: '0.72rem', color: 'var(--text-mid)', fontFamily: 'Black Han Sans' }}>
-                  💰 월 고정비 합계 (원)
-                </label>
-                <input
-                  style={{ ...inputStyle, textAlign: 'left', padding: '9px 12px', background: 'var(--silver-light)' }}
-                  value={toComma(overheadForm.fixed)} inputMode="numeric" placeholder="예) 1,500,000"
-                  onChange={e => setOverheadForm({ ...overheadForm, fixed: e.target.value })}
-                />
-                <span style={{ fontSize: '0.65rem', color: 'var(--text-soft)' }}>전기세 + 가스비 + 임대료 + 기타</span>
-              </div>
-
-              <div style={{ display: 'flex', flexDirection: 'column', gap: 5 }}>
-                <label style={{ fontSize: '0.72rem', color: 'var(--text-mid)', fontFamily: 'Black Han Sans' }}>
-                  📅 월 영업일수 (일)
-                </label>
-                <input
-                  style={{ ...inputStyle, textAlign: 'left', padding: '9px 12px', background: 'var(--silver-light)' }}
-                  value={overheadForm.days} inputMode="numeric" placeholder="예) 25"
-                  onChange={e => setOverheadForm({ ...overheadForm, days: e.target.value })}
-                />
-              </div>
-
-              <div style={{ display: 'flex', flexDirection: 'column', gap: 5 }}>
-                <label style={{ fontSize: '0.72rem', color: 'var(--text-mid)', fontFamily: 'Black Han Sans' }}>
-                  🍽️ 하루 전체 판매량 (개)
-                </label>
-                <input
-                  style={{ ...inputStyle, textAlign: 'left', padding: '9px 12px', background: 'var(--silver-light)' }}
-                  value={overheadForm.count} inputMode="numeric" placeholder="예) 100"
-                  onChange={e => setOverheadForm({ ...overheadForm, count: e.target.value })}
-                />
-                <span style={{ fontSize: '0.65rem', color: 'var(--text-soft)' }}>모든 메뉴 합산 판매량이에요</span>
-              </div>
-            </div>
-      {/* 인건비 계산 모달 */}
-      {showLaborModal && (
-        <div style={{
-          position: 'fixed', inset: 0, zIndex: 100,
-          background: 'rgba(0,0,0,0.5)',
-          display: 'flex', alignItems: 'center', justifyContent: 'center',
-          padding: '0 20px'
-        }}>
-          <div style={{
-            background: 'white', borderRadius: 20, padding: 24,
-            width: '100%', maxWidth: 340,
-            display: 'flex', flexDirection: 'column', gap: 16
-          }}>
-            <div>
-              <div style={{ fontFamily: 'Black Han Sans', fontSize: '1rem', color: 'var(--navy)', marginBottom: 4 }}>
-                👩‍🍳 인건비 계산기
-              </div>
-              <div style={{ fontSize: '0.72rem', color: 'var(--text-soft)' }}>
-                월 인건비 총합을 입력하면 메뉴 1개당 인건비를 계산해줘요
-              </div>
-            </div>
-
-            <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
-              <div style={{ display: 'flex', flexDirection: 'column', gap: 5 }}>
-                <label style={{ fontSize: '0.72rem', color: 'var(--text-mid)', fontFamily: 'Black Han Sans' }}>
-                  💰 월 인건비 합계 (원)
-                </label>
-                <input
-                  style={{ ...inputStyle, textAlign: 'left', padding: '9px 12px', background: 'var(--silver-light)' }}
-                  value={toComma(laborForm.labor)} inputMode="numeric" placeholder="예) 2,000,000"
-                  onChange={e => setLaborForm({ ...laborForm, labor: e.target.value })}
-                />
-                <span style={{ fontSize: '0.65rem', color: 'var(--text-soft)' }}>알바비 + 내 인건비 등 합산</span>
-              </div>
-
-              <div style={{ display: 'flex', flexDirection: 'column', gap: 5 }}>
-                <label style={{ fontSize: '0.72rem', color: 'var(--text-mid)', fontFamily: 'Black Han Sans' }}>
-                  📅 월 영업일수 (일)
-                </label>
-                <input
-                  style={{ ...inputStyle, textAlign: 'left', padding: '9px 12px', background: 'var(--silver-light)' }}
-                  value={laborForm.days} inputMode="numeric" placeholder="예) 25"
-                  onChange={e => setLaborForm({ ...laborForm, days: e.target.value })}
-                />
-              </div>
-
-              <div style={{ display: 'flex', flexDirection: 'column', gap: 5 }}>
-                <label style={{ fontSize: '0.72rem', color: 'var(--text-mid)', fontFamily: 'Black Han Sans' }}>
-                  🍽️ 하루 전체 판매량 (개)
-                </label>
-                <input
-                  style={{ ...inputStyle, textAlign: 'left', padding: '9px 12px', background: 'var(--silver-light)' }}
-                  value={laborForm.count} inputMode="numeric" placeholder="예) 100"
-                  onChange={e => setLaborForm({ ...laborForm, count: e.target.value })}
-                />
-                <span style={{ fontSize: '0.65rem', color: 'var(--text-soft)' }}>모든 메뉴 합산 판매량이에요</span>
-              </div>
-            </div>
-
-      {/* 계산 결과 미리보기 */}
-      {laborForm.labor && laborForm.days && laborForm.count && (() => {
-        const result = Math.round(fromComma(laborForm.labor) / (parseFloat(laborForm.days) * parseFloat(laborForm.count)))
-        return (
-          <div style={{
-            background: 'var(--navy)', borderRadius: 14, padding: '14px 16px',
-            display: 'flex', justifyContent: 'space-between', alignItems: 'center'
-          }}>
-            <span style={{ fontSize: '0.78rem', color: 'rgba(200,216,228,0.7)' }}>메뉴 1개당 인건비</span>
-            <span style={{ fontFamily: 'Black Han Sans', fontSize: '1.2rem', color: 'white' }}>
-              {result.toLocaleString()}원
-            </span>
-          </div>
-        )
-      })()}
-
-      <div style={{ display: 'flex', gap: 8 }}>
-        <button onClick={() => setShowLaborModal(false)} style={{
-          flex: 1, padding: '10px 0',
-          background: 'var(--silver-light)', border: 'none',
-          borderRadius: 10, color: 'var(--text-soft)',
-          fontFamily: 'Black Han Sans', fontSize: '0.82rem', cursor: 'pointer'
-        }}>취소</button>
-        <button onClick={() => {
-          const result = Math.round(fromComma(laborForm.labor) / (parseFloat(laborForm.days) * parseFloat(laborForm.count)))
-          if (!isNaN(result)) {
-            onChange({ ...menu, labor: result })
-            setShowLaborModal(false)
-          }
-        }} style={{
-          flex: 1, padding: '10px 0',
-          background: 'var(--green)', border: 'none',
-          borderRadius: 10, color: 'white',
-          fontFamily: 'Black Han Sans', fontSize: '0.82rem', cursor: 'pointer'
-        }}>적용하기 ✓</button>
-      </div>
-    </div>
-  </div>
-)}
-
-
-            {/* 계산 결과 미리보기 */}
-            {overheadForm.fixed && overheadForm.days && overheadForm.count && (() => {
-              const result = Math.round(fromComma(overheadForm.fixed) / (parseFloat(overheadForm.days) * parseFloat(overheadForm.count)))
-              return (
-                <div style={{
-                  background: 'var(--navy)', borderRadius: 14, padding: '14px 16px',
-                  display: 'flex', justifyContent: 'space-between', alignItems: 'center'
-                }}>
-                  <span style={{ fontSize: '0.78rem', color: 'rgba(200,216,228,0.7)' }}>메뉴 1개당 간접비</span>
-                  <span style={{ fontFamily: 'Black Han Sans', fontSize: '1.2rem', color: 'white' }}>
-                    {result.toLocaleString()}원
-                  </span>
-                </div>
-              )
-            })()}
-
-            <div style={{ display: 'flex', gap: 8 }}>
-              <button onClick={() => setShowOverheadModal(false)} style={{
-                flex: 1, padding: '10px 0',
-                background: 'var(--silver-light)', border: 'none',
-                borderRadius: 10, color: 'var(--text-soft)',
-                fontFamily: 'Black Han Sans', fontSize: '0.82rem', cursor: 'pointer'
-              }}>취소</button>
-              <button onClick={() => {
-                const result = Math.round(fromComma(overheadForm.fixed) / (parseFloat(overheadForm.days) * parseFloat(overheadForm.count)))
-                if (!isNaN(result)) {
-                  onChange({ ...menu, overhead: result })
-                  setShowOverheadModal(false)
-                }
-              }} style={{
-                flex: 1, padding: '10px 0',
-                background: 'var(--green)', border: 'none',
-                borderRadius: 10, color: 'white',
-                fontFamily: 'Black Han Sans', fontSize: '0.82rem', cursor: 'pointer'
-              }}>적용하기 ✓</button>
-            </div>
-          </div>
-        </div>
-      )}
 
       {/* 수수료 */}
       {card(<>
@@ -659,6 +474,163 @@ export default function Calculator({ menu, onChange, onSave }: Props) {
           <span style={{ fontSize: '0.8rem', color: 'rgba(200,216,228,0.7)' }}>{godogiComment()}</span>
         </div>
       </div>
+
+      {/* ── 인건비 계산 모달 ── */}
+      {showLaborModal && (
+        <div style={{
+          position: 'fixed', inset: 0, zIndex: 100,
+          background: 'rgba(0,0,0,0.5)',
+          display: 'flex', alignItems: 'center', justifyContent: 'center',
+          padding: '0 20px'
+        }}>
+          <div style={{
+            background: 'white', borderRadius: 20, padding: 24,
+            width: '100%', maxWidth: 340,
+            display: 'flex', flexDirection: 'column', gap: 16
+          }}>
+            <div>
+              <div style={{ fontFamily: 'Black Han Sans', fontSize: '1rem', color: 'var(--navy)', marginBottom: 4 }}>
+                👩‍🍳 인건비 계산기
+              </div>
+              <div style={{ fontSize: '0.72rem', color: 'var(--text-soft)' }}>
+                월 인건비 총합을 입력하면 메뉴 1개당 인건비를 계산해줘요
+              </div>
+            </div>
+            <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
+              <div style={{ display: 'flex', flexDirection: 'column', gap: 5 }}>
+                <label style={{ fontSize: '0.72rem', color: 'var(--text-mid)', fontFamily: 'Black Han Sans' }}>💰 월 인건비 합계 (원)</label>
+                <input style={{ ...inputStyle, textAlign: 'left', padding: '9px 12px', background: 'var(--silver-light)' }}
+                  value={toComma(laborForm.labor)} inputMode="numeric" placeholder="예) 2,000,000"
+                  onChange={e => setLaborForm({ ...laborForm, labor: e.target.value })}
+                />
+                <span style={{ fontSize: '0.65rem', color: 'var(--text-soft)' }}>알바비 + 내 인건비 등 합산</span>
+              </div>
+              <div style={{ display: 'flex', flexDirection: 'column', gap: 5 }}>
+                <label style={{ fontSize: '0.72rem', color: 'var(--text-mid)', fontFamily: 'Black Han Sans' }}>📅 월 영업일수 (일)</label>
+                <input style={{ ...inputStyle, textAlign: 'left', padding: '9px 12px', background: 'var(--silver-light)' }}
+                  value={laborForm.days} inputMode="numeric" placeholder="예) 25"
+                  onChange={e => setLaborForm({ ...laborForm, days: e.target.value })}
+                />
+              </div>
+              <div style={{ display: 'flex', flexDirection: 'column', gap: 5 }}>
+                <label style={{ fontSize: '0.72rem', color: 'var(--text-mid)', fontFamily: 'Black Han Sans' }}>🍽️ 하루 전체 판매량 (개)</label>
+                <input style={{ ...inputStyle, textAlign: 'left', padding: '9px 12px', background: 'var(--silver-light)' }}
+                  value={laborForm.count} inputMode="numeric" placeholder="예) 100"
+                  onChange={e => setLaborForm({ ...laborForm, count: e.target.value })}
+                />
+                <span style={{ fontSize: '0.65rem', color: 'var(--text-soft)' }}>모든 메뉴 합산 판매량이에요</span>
+              </div>
+            </div>
+            {laborResult !== null && !isNaN(laborResult) && (
+              <div style={{
+                background: 'var(--navy)', borderRadius: 14, padding: '14px 16px',
+                display: 'flex', justifyContent: 'space-between', alignItems: 'center'
+              }}>
+                <span style={{ fontSize: '0.78rem', color: 'rgba(200,216,228,0.7)' }}>메뉴 1개당 인건비</span>
+                <span style={{ fontFamily: 'Black Han Sans', fontSize: '1.2rem', color: 'white' }}>
+                  {laborResult.toLocaleString()}원
+                </span>
+              </div>
+            )}
+            <div style={{ display: 'flex', gap: 8 }}>
+              <button onClick={() => setShowLaborModal(false)} style={{
+                flex: 1, padding: '10px 0', background: 'var(--silver-light)', border: 'none',
+                borderRadius: 10, color: 'var(--text-soft)',
+                fontFamily: 'Black Han Sans', fontSize: '0.82rem', cursor: 'pointer'
+              }}>취소</button>
+              <button onClick={() => {
+                if (laborResult !== null && !isNaN(laborResult)) {
+                  onChange({ ...menu, labor: laborResult })
+                  setShowLaborModal(false)
+                }
+              }} style={{
+                flex: 1, padding: '10px 0', background: 'var(--green)', border: 'none',
+                borderRadius: 10, color: 'white',
+                fontFamily: 'Black Han Sans', fontSize: '0.82rem', cursor: 'pointer'
+              }}>적용하기 ✓</button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* ── 간접비 계산 모달 ── */}
+      {showOverheadModal && (
+        <div style={{
+          position: 'fixed', inset: 0, zIndex: 100,
+          background: 'rgba(0,0,0,0.5)',
+          display: 'flex', alignItems: 'center', justifyContent: 'center',
+          padding: '0 20px'
+        }}>
+          <div style={{
+            background: 'white', borderRadius: 20, padding: 24,
+            width: '100%', maxWidth: 340,
+            display: 'flex', flexDirection: 'column', gap: 16
+          }}>
+            <div>
+              <div style={{ fontFamily: 'Black Han Sans', fontSize: '1rem', color: 'var(--navy)', marginBottom: 4 }}>
+                🏠 간접비 계산기
+              </div>
+              <div style={{ fontSize: '0.72rem', color: 'var(--text-soft)' }}>
+                전기/가스/임대료 등 월 고정비를 입력하면 메뉴 1개당 간접비를 계산해줘요
+              </div>
+            </div>
+            <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
+              <div style={{ display: 'flex', flexDirection: 'column', gap: 5 }}>
+                <label style={{ fontSize: '0.72rem', color: 'var(--text-mid)', fontFamily: 'Black Han Sans' }}>💰 월 고정비 합계 (원)</label>
+                <input style={{ ...inputStyle, textAlign: 'left', padding: '9px 12px', background: 'var(--silver-light)' }}
+                  value={toComma(overheadForm.fixed)} inputMode="numeric" placeholder="예) 1,500,000"
+                  onChange={e => setOverheadForm({ ...overheadForm, fixed: e.target.value })}
+                />
+                <span style={{ fontSize: '0.65rem', color: 'var(--text-soft)' }}>전기세 + 가스비 + 임대료 + 기타</span>
+              </div>
+              <div style={{ display: 'flex', flexDirection: 'column', gap: 5 }}>
+                <label style={{ fontSize: '0.72rem', color: 'var(--text-mid)', fontFamily: 'Black Han Sans' }}>📅 월 영업일수 (일)</label>
+                <input style={{ ...inputStyle, textAlign: 'left', padding: '9px 12px', background: 'var(--silver-light)' }}
+                  value={overheadForm.days} inputMode="numeric" placeholder="예) 25"
+                  onChange={e => setOverheadForm({ ...overheadForm, days: e.target.value })}
+                />
+              </div>
+              <div style={{ display: 'flex', flexDirection: 'column', gap: 5 }}>
+                <label style={{ fontSize: '0.72rem', color: 'var(--text-mid)', fontFamily: 'Black Han Sans' }}>🍽️ 하루 전체 판매량 (개)</label>
+                <input style={{ ...inputStyle, textAlign: 'left', padding: '9px 12px', background: 'var(--silver-light)' }}
+                  value={overheadForm.count} inputMode="numeric" placeholder="예) 100"
+                  onChange={e => setOverheadForm({ ...overheadForm, count: e.target.value })}
+                />
+                <span style={{ fontSize: '0.65rem', color: 'var(--text-soft)' }}>모든 메뉴 합산 판매량이에요</span>
+              </div>
+            </div>
+            {overheadResult !== null && !isNaN(overheadResult) && (
+              <div style={{
+                background: 'var(--navy)', borderRadius: 14, padding: '14px 16px',
+                display: 'flex', justifyContent: 'space-between', alignItems: 'center'
+              }}>
+                <span style={{ fontSize: '0.78rem', color: 'rgba(200,216,228,0.7)' }}>메뉴 1개당 간접비</span>
+                <span style={{ fontFamily: 'Black Han Sans', fontSize: '1.2rem', color: 'white' }}>
+                  {overheadResult.toLocaleString()}원
+                </span>
+              </div>
+            )}
+            <div style={{ display: 'flex', gap: 8 }}>
+              <button onClick={() => setShowOverheadModal(false)} style={{
+                flex: 1, padding: '10px 0', background: 'var(--silver-light)', border: 'none',
+                borderRadius: 10, color: 'var(--text-soft)',
+                fontFamily: 'Black Han Sans', fontSize: '0.82rem', cursor: 'pointer'
+              }}>취소</button>
+              <button onClick={() => {
+                if (overheadResult !== null && !isNaN(overheadResult)) {
+                  onChange({ ...menu, overhead: overheadResult })
+                  setShowOverheadModal(false)
+                }
+              }} style={{
+                flex: 1, padding: '10px 0', background: 'var(--green)', border: 'none',
+                borderRadius: 10, color: 'white',
+                fontFamily: 'Black Han Sans', fontSize: '0.82rem', cursor: 'pointer'
+              }}>적용하기 ✓</button>
+            </div>
+          </div>
+        </div>
+      )}
+
     </div>
   )
 }
