@@ -2,6 +2,7 @@
 
 import { useState, useEffect } from 'react'
 import { createClient } from '@/lib/supabase'
+import { INGREDIENT_DB } from '@/lib/ingredientDB'
 
 interface FridgeItem {
   id: string
@@ -11,9 +12,10 @@ interface FridgeItem {
   unit: string
   yield_: number
   category: string
+  isDB?: boolean
 }
 
-const CATEGORIES = ['전체', '육류', '채소', '양념/소스', '유제품', '수산물', '기타']
+const CATEGORIES = ['전체', '육류', '채소', '양념/소스', '유제품', '곡류/면', '과일', '수산물', '기타']
 const UNITS = ['g', 'ml', '개', '팩', 'kg', 'L']
 
 interface Props {
@@ -40,6 +42,20 @@ export default function Fridge({ user }: Props) {
       .eq('user_id', user.id)
       .order('category')
     if (!error && data) setItems(data)
+  }
+
+  // 냉장고 + DB 합치기 (냉장고 우선)
+  const mergedItems = (): FridgeItem[] => {
+    const fridgeNames = items.map(i => i.name)
+    const dbItems = INGREDIENT_DB
+      .filter(d => !fridgeNames.includes(d.name))
+      .map(d => ({ ...d, id: 'db_' + d.name, per: d.per, isDB: true }))
+    return [...items, ...dbItems]
+  }
+
+  const filtered = () => {
+    const all = mergedItems()
+    return selectedCategory === '전체' ? all : all.filter(i => i.category === selectedCategory)
   }
 
   const openAdd = () => {
@@ -73,21 +89,21 @@ export default function Fridge({ user }: Props) {
       category: form.category,
     }
 
-    if (editItem) {
+    if (editItem && !editItem.isDB) {
       await supabase.from('fridge').update(payload).eq('id', editItem.id)
     } else {
+      // DB 재료 편집 or 새 재료 → insert
       await supabase.from('fridge').insert(payload)
     }
     setShowModal(false)
     loadItems()
   }
 
-  const handleDelete = async (id: string) => {
-    await supabase.from('fridge').delete().eq('id', id)
+  const handleDelete = async (item: FridgeItem) => {
+    if (item.isDB) return // DB 재료는 삭제 불가
+    await supabase.from('fridge').delete().eq('id', item.id)
     loadItems()
   }
-
-  const filtered = selectedCategory === '전체' ? items : items.filter(i => i.category === selectedCategory)
 
   const inputStyle: React.CSSProperties = {
     width: '100%', padding: '8px 10px',
@@ -119,19 +135,19 @@ export default function Fridge({ user }: Props) {
 
       {/* 재료 목록 */}
       <div style={{ padding: '4px 8px' }}>
-        {filtered.length === 0 ? (
-          <div style={{ textAlign: 'center', padding: '30px 0', color: 'rgba(200,216,228,0.3)', fontSize: '0.78rem' }}>
-            재료가 없어요<br />추가해보세요 🧊
-          </div>
-        ) : filtered.map(item => (
+        {filtered().map(item => (
           <div key={item.id} style={{
             display: 'flex', alignItems: 'center', gap: 8,
             padding: '8px 10px', borderRadius: 10, marginBottom: 4,
-            background: 'rgba(255,255,255,0.05)'
+            background: item.isDB ? 'rgba(255,255,255,0.02)' : 'rgba(255,255,255,0.07)',
+            border: item.isDB ? '1px solid rgba(255,255,255,0.04)' : 'none'
           }}>
             <div style={{ flex: 1, minWidth: 0 }}>
-              <div style={{ fontSize: '0.82rem', color: 'white', fontFamily: 'Black Han Sans', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
-                {item.name}
+              <div style={{ display: 'flex', alignItems: 'center', gap: 5 }}>
+                <span style={{ fontSize: '0.82rem', color: item.isDB ? 'rgba(200,216,228,0.5)' : 'white', fontFamily: 'Black Han Sans', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+                  {item.name}
+                </span>
+                {item.isDB && <span style={{ fontSize: '0.55rem', color: 'rgba(200,216,228,0.25)', background: 'rgba(255,255,255,0.05)', padding: '1px 5px', borderRadius: 4 }}>기본</span>}
               </div>
               <div style={{ fontSize: '0.68rem', color: 'rgba(200,216,228,0.4)' }}>
                 {item.price.toLocaleString()}원 / {item.per}{item.unit}
@@ -142,10 +158,12 @@ export default function Fridge({ user }: Props) {
               background: 'none', border: 'none', color: 'rgba(200,216,228,0.3)',
               cursor: 'pointer', fontSize: '0.75rem'
             }}>✏️</button>
-            <button onClick={() => handleDelete(item.id)} style={{
-              background: 'none', border: 'none', color: 'rgba(200,216,228,0.2)',
-              cursor: 'pointer', fontSize: '0.75rem'
-            }}>✕</button>
+            {!item.isDB && (
+              <button onClick={() => handleDelete(item)} style={{
+                background: 'none', border: 'none', color: 'rgba(200,216,228,0.2)',
+                cursor: 'pointer', fontSize: '0.75rem'
+              }}>✕</button>
+            )}
           </div>
         ))}
       </div>
@@ -173,13 +191,19 @@ export default function Fridge({ user }: Props) {
             width: 300, display: 'flex', flexDirection: 'column', gap: 14
           }}>
             <div style={{ fontFamily: 'Black Han Sans', color: 'white', fontSize: '1rem' }}>
-              {editItem ? '재료 수정' : '재료 추가'} 🧊
+              {editItem ? (editItem.isDB ? '기본 재료 내 가격으로 수정 🧊' : '재료 수정') : '재료 추가 🧊'}
             </div>
+            {editItem?.isDB && (
+              <div style={{ fontSize: '0.72rem', color: 'rgba(200,216,228,0.4)', background: 'rgba(255,255,255,0.05)', padding: '8px 10px', borderRadius: 8 }}>
+                수정하면 내 냉장고에 저장돼요
+              </div>
+            )}
 
             <div>
               <label style={labelStyle}>재료명</label>
               <input style={inputStyle} value={form.name}
-                onChange={e => setForm({ ...form, name: e.target.value })} placeholder="재료명" />
+                onChange={e => setForm({ ...form, name: e.target.value })}
+                placeholder="재료명" disabled={!!editItem} />
             </div>
 
             <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 10 }}>
