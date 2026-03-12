@@ -2,6 +2,7 @@
 
 import { useState, useEffect } from 'react'
 import { createClient } from '@/lib/supabase'
+import { INGREDIENT_DB } from '@/lib/ingredientDB'
 
 interface Ingredient {
   id: string
@@ -87,14 +88,19 @@ export default function Calculator({ menu, onChange, onSave }: Props) {
   }, [])
 
   const handleNameInput = (id: string, val: string) => {
-    updateIng(id, 'name', val)
-    if (val.length < 1) {
-      setSuggestions(prev => ({ ...prev, [id]: [] }))
-      return
-    }
-    const matched = fridgeItems.filter(f => f.name.includes(val))
-    setSuggestions(prev => ({ ...prev, [id]: matched }))
-    setShowSugg(prev => ({ ...prev, [id]: true }))
+  updateIng(id, 'name', val)
+  if (val.length < 1) {
+    setSuggestions(prev => ({ ...prev, [id]: [] }))
+    return
+  }
+  // 냉장고 재료 먼저, 그 다음 기본 DB
+  const fromFridge = fridgeItems.filter(f => f.name.includes(val))
+  const fromDB = INGREDIENT_DB
+    .filter(d => d.name.includes(val) && !fromFridge.find(f => f.name === d.name))
+    .map(d => ({ ...d, per: d.per, id: 'db_' + d.name }))
+  const merged = [...fromFridge, ...fromDB].slice(0, 8)
+  setSuggestions(prev => ({ ...prev, [id]: merged }))
+  setShowSugg(prev => ({ ...prev, [id]: true }))
   }
 
   const selectSuggestion = (ingId: string, item: any) => {
