@@ -357,10 +357,11 @@ export default function Calculator({ menu, onChange, onSave }: Props) {
                                 <div style={{ display: 'flex', flexDirection: 'column', gap: 4 }}>
                                   <span style={{ fontFamily: 'Black Han Sans', fontSize: '0.62rem', color: 'var(--text-soft)' }}>구매가(원)</span>
                                   <input
+                                    name="price"
                                     style={{ ...inputStyle, background: 'white', border: '1.5px solid var(--border)' }}
                                     value={toComma(ing.price)} inputMode="numeric"
                                     onChange={e => updateIng(ing.id, 'price', fromComma(e.target.value))}
-                                    onBlur={() => syncToFridge(ing)}
+                                    onBlur={e => syncToFridge({ ...ing, [e.target.name]: fromComma(e.target.value) })}
                                   />
                                 </div>
 
@@ -369,10 +370,12 @@ export default function Calculator({ menu, onChange, onSave }: Props) {
                                   <span style={{ fontFamily: 'Black Han Sans', fontSize: '0.62rem', color: 'var(--text-soft)' }}>구매량</span>
                                   <div style={{ display: 'flex', gap: 4 }}>
                                     <input
+                                      name="qty"
                                       style={{ ...inputStyle, background: 'white', border: '1.5px solid var(--border)', flex: 1 }}
                                       value={toComma(ing.qty)} inputMode="numeric"
                                       onChange={e => updateIng(ing.id, 'qty', fromComma(e.target.value))}
-                                      onBlur={() => syncToFridge(ing)}
+                                      onBlur={e => syncToFridge({ ...ing, [e.target.name]: fromComma(e.target.value) })}
+
                                     />
                                     <select
                                       style={{ ...inputStyle, background: 'white', border: '1.5px solid var(--border)', width: 48, padding: '8px 2px' }}
@@ -391,10 +394,11 @@ export default function Calculator({ menu, onChange, onSave }: Props) {
                                 <div style={{ display: 'flex', flexDirection: 'column', gap: 4 }}>
                                   <span style={{ fontFamily: 'Black Han Sans', fontSize: '0.62rem', color: 'var(--text-soft)' }}>수율(%)</span>
                                   <input
+                                    name="yield_"
                                     style={{ ...inputStyle, background: 'white', border: '1.5px solid var(--border)' }}
                                     value={toComma(ing.yield_)} inputMode="numeric"
                                     onChange={e => updateIng(ing.id, 'yield_', fromComma(e.target.value))}
-                                    onBlur={() => syncToFridge(ing)}
+                                    onBlur={e => syncToFridge({ ...ing, [e.target.name]: fromComma(e.target.value) })}
                                   />
                                 </div>
                               <button onClick={() => deleteIng(ing.id)} style={{
