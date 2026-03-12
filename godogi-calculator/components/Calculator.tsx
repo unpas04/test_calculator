@@ -3,6 +3,7 @@
 import { useState, useEffect } from 'react'
 import { createClient } from '@/lib/supabase'
 import { INGREDIENT_DB } from '@/lib/ingredientDB'
+import { useRef } from 'react'
 
 interface Ingredient {
   id: string
@@ -139,7 +140,13 @@ export default function Calculator({ menu, onChange, onSave }: Props) {
       )
     })
   }
-
+      const syncTimer = useRef<any>(null)
+      const debouncedSync = (ing: any) => {
+        if (syncTimer.current) clearTimeout(syncTimer.current)
+        syncTimer.current = setTimeout(() => {
+          syncToFridge(ing)
+        }, 800)
+      }
       const syncToFridge = async (ing: any) => {
         if (!ing.name || !ing.price || !ing.qty) return
         const { data: { session } } = await supabase.auth.getSession()
@@ -360,7 +367,11 @@ export default function Calculator({ menu, onChange, onSave }: Props) {
                                     name="price"
                                     style={{ ...inputStyle, background: 'white', border: '1.5px solid var(--border)' }}
                                     value={toComma(ing.price)} inputMode="numeric"
-                                    onChange={e => updateIng(ing.id, 'price', fromComma(e.target.value))}
+                                    onChange={e => {
+                                      const val = fromComma(e.target.value)
+                                      updateIng(ing.id, 'price', val)
+                                      debouncedSync({ ...ing, price: val })
+                                    }}
                                     onBlur={e => syncToFridge({ ...ing, [e.target.name]: fromComma(e.target.value) })}
                                   />
                                 </div>
@@ -373,7 +384,11 @@ export default function Calculator({ menu, onChange, onSave }: Props) {
                                       name="qty"
                                       style={{ ...inputStyle, background: 'white', border: '1.5px solid var(--border)', flex: 1 }}
                                       value={toComma(ing.qty)} inputMode="numeric"
-                                      onChange={e => updateIng(ing.id, 'qty', fromComma(e.target.value))}
+                                      onChange={e => {
+                                        const val = fromComma(e.target.value)
+                                        updateIng(ing.id, 'qty', val)
+                                        debouncedSync({ ...ing, qty: val })
+                                      }}
                                       onBlur={e => syncToFridge({ ...ing, [e.target.name]: fromComma(e.target.value) })}
 
                                     />
@@ -397,7 +412,11 @@ export default function Calculator({ menu, onChange, onSave }: Props) {
                                     name="yield_"
                                     style={{ ...inputStyle, background: 'white', border: '1.5px solid var(--border)' }}
                                     value={toComma(ing.yield_)} inputMode="numeric"
-                                    onChange={e => updateIng(ing.id, 'yield_', fromComma(e.target.value))}
+                                    onChange={e => {
+                                        const val = fromComma(e.target.value)
+                                        updateIng(ing.id, 'yield_', val)
+                                        debouncedSync({ ...ing, yield_: val })
+                                      }}
                                     onBlur={e => syncToFridge({ ...ing, [e.target.name]: fromComma(e.target.value) })}
                                   />
                                 </div>
