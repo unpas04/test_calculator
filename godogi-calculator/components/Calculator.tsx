@@ -140,36 +140,40 @@ export default function Calculator({ menu, onChange, onSave }: Props) {
     })
   }
 
-    const syncToFridge = async (ing: any) => {
-      if (!ing.name || !ing.price || !ing.qty) return
-      const { data: { session } } = await supabase.auth.getSession()
-      if (!session) return
+      const syncToFridge = async (ing: any) => {
+        if (!ing.name || !ing.price || !ing.qty) return
+        const { data: { session } } = await supabase.auth.getSession()
+        if (!session) return
 
-      const { data } = await supabase
-        .from('fridge')
-        .select('id')
-        .eq('user_id', session.user.id)
-        .eq('name', ing.name)
-        .maybeSingle()
+        console.log('syncToFridge 실행:', ing.name, ing.price, ing.qty)
 
-      if (data) {
-        // 냉장고에 있으면 업데이트
-        await supabase.from('fridge').update({
-          price: ing.price, per: ing.qty, unit: ing.unit, yield_: ing.yield_
-        }).eq('id', data.id)
-      } else {
-        // 냉장고에 없으면 새로 추가
-        await supabase.from('fridge').insert({
-          user_id: session.user.id,
-          name: ing.name,
-          price: ing.price,
-          per: ing.qty,
-          unit: ing.unit,
-          yield_: ing.yield_,
-          category: '기타'
-        })
+        const { data, error } = await supabase
+          .from('fridge')
+          .select('id')
+          .eq('user_id', session.user.id)
+          .eq('name', ing.name)
+          .maybeSingle()
+
+        console.log('fridge 조회 결과:', data, error)
+
+        if (data) {
+          const { error: updateError } = await supabase.from('fridge').update({
+            price: ing.price, per: ing.qty, unit: ing.unit, yield_: ing.yield_
+          }).eq('id', data.id)
+          console.log('업데이트 결과:', updateError)
+        } else {
+          const { error: insertError } = await supabase.from('fridge').insert({
+            user_id: session.user.id,
+            name: ing.name,
+            price: ing.price,
+            per: ing.qty,
+            unit: ing.unit,
+            yield_: ing.yield_,
+            category: '기타'
+          })
+          console.log('insert 결과:', insertError)
+        }
       }
-    }
 
   const addIng = () => {
     onChange({ ...menu, ingredients: [...menu.ingredients, defaultIngredient()] })
