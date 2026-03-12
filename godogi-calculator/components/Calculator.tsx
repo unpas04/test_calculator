@@ -144,6 +144,7 @@ export default function Calculator({ menu, onChange, onSave }: Props) {
       const debouncedSync = (ing: any) => {
         if (syncTimer.current) clearTimeout(syncTimer.current)
         syncTimer.current = setTimeout(() => {
+          console.log('debouncedSync 실행:', ing.name, ing.price, ing.qty)
           syncToFridge(ing)
         }, 800)
       }
