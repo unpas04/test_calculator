@@ -79,7 +79,7 @@ export default function Sidebar({ menus, currentId, onSelect, onNew, onDelete, u
                 {/* 볼터치 */}
                 <ellipse cx="30" cy="52" rx="4" ry="2.5" fill="#F4A0A0" opacity="0.6"/>
               </svg>
-              <span style={{ fontFamily: 'Gowun Dodum', fontSize: '1rem', color: 'white', letterSpacing: '0.05em' }}>
+              <span style={{ fontFamily: 'Black Han Sans', fontSize: '1rem', color: 'white', letterSpacing: '0.05em' }}>
                 고독이의 원가계산기
               </span>
             </div>
@@ -126,7 +126,7 @@ export default function Sidebar({ menus, currentId, onSelect, onNew, onDelete, u
               }}>
                 <span>🍽️</span>
                 <div style={{ flex: 1, minWidth: 0 }}>
-                  <div style={{ fontSize: '0.85rem', color: 'white', fontFamily: 'Black Han Sans', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+                  <div style={{ fontSize: '0.85rem', color: 'white', fontFamily: 'Gowun Dodum', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
                     {menu.name || '이름 없는 메뉴'}
                   </div>
                   <div style={{ fontSize: '0.7rem', color: 'rgba(200,216,228,0.4)' }}>
