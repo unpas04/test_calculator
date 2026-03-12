@@ -56,7 +56,7 @@ function fromComma(val: string) {
 
 const UNITS = ['g', 'ml', '개', '팩', 'kg', 'L']
 
-function genId() { return Math.random().toString(36).slice(2, 9) }
+function genId() { return crypto.randomUUID() }
 
 function defaultIngredient(): Ingredient {
   return { id: genId(), name: '', price: 0, qty: 0, unit: 'g', yield_: 100, use_amount: 0 }
@@ -71,48 +71,48 @@ interface Props {
 export default function Calculator({ menu, onChange, onSave }: Props) {
   const calc = calcMenu(menu)
   const supabase = createClient()
-const [fridgeItems, setFridgeItems] = useState<any[]>([])
-const [suggestions, setSuggestions] = useState<{[key: string]: any[]}>({})
-const [showSugg, setShowSugg] = useState<{[key: string]: boolean}>({})
-
-useEffect(() => {
-  const loadFridge = async () => {
-    const { data: { session } } = await supabase.auth.getSession()
-    if (!session) return
-    const { data } = await supabase.from('fridge').select('*').eq('user_id', session.user.id)
-    if (data) setFridgeItems(data)
-  }
-  loadFridge()
-}, [])
-
-const handleNameInput = (id: string, val: string) => {
-  updateIng(id, 'name', val)
-  if (val.length < 1) {
-    setSuggestions(prev => ({ ...prev, [id]: [] }))
-    return
-  }
-  const matched = fridgeItems.filter(f => f.name.includes(val))
-  setSuggestions(prev => ({ ...prev, [id]: matched }))
-  setShowSugg(prev => ({ ...prev, [id]: true }))
-}
-
-const selectSuggestion = (ingId: string, item: any) => {
-  onChange({
-    ...menu,
-    ingredients: menu.ingredients.map(ing =>
-      ing.id === ingId ? {
-        ...ing,
-        name: item.name,
-        price: item.price,
-        qty: item.per,
-        unit: item.unit,
-        yield_: item.yield_,
-      } : ing
-    )
-  })
-  setShowSugg(prev => ({ ...prev, [ingId]: false }))
-}
+  const [fridgeItems, setFridgeItems] = useState<any[]>([])
+  const [suggestions, setSuggestions] = useState<{[key: string]: any[]}>({})
+  const [showSugg, setShowSugg] = useState<{[key: string]: boolean}>({})
   const [openRows, setOpenRows] = useState<Set<string>>(new Set())
+
+  useEffect(() => {
+    const loadFridge = async () => {
+      const { data: { session } } = await supabase.auth.getSession()
+      if (!session) return
+      const { data } = await supabase.from('fridge').select('*').eq('user_id', session.user.id)
+      if (data) setFridgeItems(data)
+    }
+    loadFridge()
+  }, [])
+
+  const handleNameInput = (id: string, val: string) => {
+    updateIng(id, 'name', val)
+    if (val.length < 1) {
+      setSuggestions(prev => ({ ...prev, [id]: [] }))
+      return
+    }
+    const matched = fridgeItems.filter(f => f.name.includes(val))
+    setSuggestions(prev => ({ ...prev, [id]: matched }))
+    setShowSugg(prev => ({ ...prev, [id]: true }))
+  }
+
+  const selectSuggestion = (ingId: string, item: any) => {
+    onChange({
+      ...menu,
+      ingredients: menu.ingredients.map(ing =>
+        ing.id === ingId ? {
+          ...ing,
+          name: item.name,
+          price: item.price,
+          qty: item.per,
+          unit: item.unit,
+          yield_: item.yield_,
+        } : ing
+      )
+    })
+    setShowSugg(prev => ({ ...prev, [ingId]: false }))
+  }
 
   const toggleRow = (id: string) => {
     setOpenRows(prev => {
@@ -180,19 +180,19 @@ const selectSuggestion = (ingId: string, item: any) => {
   return (
     <div>
       {/* 상단 바 */}
-      <div style={{ display: 'flex', alignItems: 'center', gap: 12, marginBottom: 24}}>
-    <input
-      value={menu.name}
-      onChange={e => onChange({ ...menu, name: e.target.value })}
-      placeholder="메뉴 이름 입력"
-      style={{
-        flex: 1, fontFamily: 'Black Han Sans', fontSize: '1.5rem',
-        color: 'var(--navy)', background: 'none',
-        border: 'none', borderBottom: '2px solid var(--border)',
-        outline: 'none', padding: '4px 0',
-        cursor: 'text', maxWidth: '100%', width: '100%'
-      }}
-    />
+      <div style={{ display: 'flex', alignItems: 'center', gap: 12, marginBottom: 24 }}>
+        <input
+          value={menu.name}
+          onChange={e => onChange({ ...menu, name: e.target.value })}
+          placeholder="메뉴 이름 입력"
+          style={{
+            flex: 1, fontFamily: 'Black Han Sans', fontSize: '1.5rem',
+            color: 'var(--navy)', background: 'none',
+            border: 'none', borderBottom: '2px solid var(--border)',
+            outline: 'none', padding: '4px 0',
+            cursor: 'text', maxWidth: '100%', width: '100%'
+          }}
+        />
         <button onClick={onSave} className="save-btn" style={{
           background: 'var(--green)', color: 'white', border: 'none',
           borderRadius: 12, padding: '10px 18px',
@@ -217,110 +217,110 @@ const selectSuggestion = (ingId: string, item: any) => {
             </tr>
           </thead>
           <tbody>
-                {menu.ingredients.map((ing, idx) => (
-                <tr key={ing.id}>
-                    <td colSpan={5} style={{ padding: 0 }}>
-                    <table style={{ width: '100%', borderCollapse: 'collapse' }}>
-                        <tbody>
-                        <tr style={{ borderBottom: openRows.has(ing.id) ? 'none' : '1px solid var(--silver-light)' }}>
-                            <td style={{ padding: '5px 3px', width: '38%' }}>
-                            <td style={{ padding: '5px 3px', width: '38%', position: 'relative' }}>
-                              <input
-                                style={{ ...inputStyle, textAlign: 'left', paddingLeft: 8 }}
-                                value={ing.name} placeholder="재료명"
-                                onChange={e => handleNameInput(ing.id, e.target.value)}
-                                onFocus={() => {
-                                  if (ing.name.length > 0) setShowSugg(prev => ({ ...prev, [ing.id]: true }))
-                                }}
-                                onBlur={() => setTimeout(() => setShowSugg(prev => ({ ...prev, [ing.id]: false })), 150)}
-                              />
-  {showSugg[ing.id] && suggestions[ing.id]?.length > 0 && (
-    <div style={{
-      position: 'absolute', top: '100%', left: 0, right: 0,
-      background: 'white', border: '1.5px solid var(--border)',
-      borderRadius: 10, zIndex: 50, boxShadow: '0 4px 16px rgba(0,0,0,0.1)',
-      maxHeight: 180, overflowY: 'auto'
-    }}>
-      {suggestions[ing.id].map(item => (
-        <div key={item.id} onMouseDown={() => selectSuggestion(ing.id, item)} style={{
-          padding: '8px 12px', cursor: 'pointer',
-          borderBottom: '1px solid var(--silver-light)',
-          display: 'flex', justifyContent: 'space-between', alignItems: 'center'
-        }}>
-          <span style={{ fontFamily: 'Black Han Sans', fontSize: '0.82rem', color: 'var(--text)' }}>
-            {item.name}
-          </span>
-          <span style={{ fontSize: '0.7rem', color: 'var(--text-soft)' }}>
-            {item.price.toLocaleString()}원/{item.per}{item.unit}
-          </span>
-        </div>
-      ))}
-    </div>
-  )}
-</td>
-                            </td>
-                            <td style={{ padding: '5px 3px', width: '18%' }}>
-                            <input style={inputStyle} value={toComma(ing.use_amount)} placeholder="0"
-                                inputMode="numeric"
-                                onChange={e => updateIng(ing.id, 'use_amount', fromComma(e.target.value))}
-                            />
-                            </td>
-                            <td style={{ padding: '5px 3px', width: '16%' }}>
-                            <select style={inputStyle} value={ing.unit}
-                                onChange={e => updateIng(ing.id, 'unit', e.target.value)}>
-                                {UNITS.map(u => <option key={u}>{u}</option>)}
-                            </select>
-                            </td>
-                            <td style={{ padding: '5px 3px', width: '20%', textAlign: 'right', fontFamily: 'Black Han Sans', fontSize: '0.82rem', color: 'var(--blue)' }}>
-                            {calc.ingCosts[idx] > 0 ? fmt(calc.ingCosts[idx]) + '원' : '—'}
-                            </td>
-                            <td style={{ padding: '5px 3px', width: '8%', textAlign: 'center' }}>
-                            <button onClick={() => toggleRow(ing.id)} style={{
-                                background: 'none', border: 'none', cursor: 'pointer',
-                                color: 'var(--text-soft)', fontSize: '0.65rem',
-                                display: 'inline-block',
-                                transform: openRows.has(ing.id) ? 'rotate(180deg)' : 'none',
-                                transition: 'transform 0.2s'
-                            }}>▼</button>
-                            </td>
-                        </tr>
-                        {openRows.has(ing.id) && (
-                            <tr>
-                            <td colSpan={5} style={{ padding: '0 2px 10px' }}>
-                                <div style={{
-                                background: 'var(--silver-light)', borderRadius: 12,
-                                padding: '11px 12px', display: 'grid',
-                                gridTemplateColumns: '1fr 1fr 1fr auto', gap: 8, alignItems: 'end'
+            {menu.ingredients.map((ing, idx) => (
+              <tr key={ing.id}>
+                <td colSpan={5} style={{ padding: 0 }}>
+                  <table style={{ width: '100%', borderCollapse: 'collapse' }}>
+                    <tbody>
+                      <tr style={{ borderBottom: openRows.has(ing.id) ? 'none' : '1px solid var(--silver-light)' }}>
+                        {/* 재료명 + 자동완성 */}
+                        <td style={{ padding: '5px 3px', width: '38%', position: 'relative' }}>
+                          <input
+                            style={{ ...inputStyle, textAlign: 'left', paddingLeft: 8 }}
+                            value={ing.name} placeholder="재료명"
+                            onChange={e => handleNameInput(ing.id, e.target.value)}
+                            onFocus={() => {
+                              if (ing.name.length > 0) setShowSugg(prev => ({ ...prev, [ing.id]: true }))
+                            }}
+                            onBlur={() => setTimeout(() => setShowSugg(prev => ({ ...prev, [ing.id]: false })), 150)}
+                          />
+                          {showSugg[ing.id] && suggestions[ing.id]?.length > 0 && (
+                            <div style={{
+                              position: 'absolute', top: '100%', left: 0, right: 0,
+                              background: 'white', border: '1.5px solid var(--border)',
+                              borderRadius: 10, zIndex: 50,
+                              boxShadow: '0 4px 16px rgba(0,0,0,0.1)',
+                              maxHeight: 180, overflowY: 'auto'
+                            }}>
+                              {suggestions[ing.id].map(item => (
+                                <div key={item.id} onMouseDown={() => selectSuggestion(ing.id, item)} style={{
+                                  padding: '8px 12px', cursor: 'pointer',
+                                  borderBottom: '1px solid var(--silver-light)',
+                                  display: 'flex', justifyContent: 'space-between', alignItems: 'center'
                                 }}>
-                                {[
-                                    { label: '구매가(원)', field: 'price' as keyof Ingredient },
-                                    { label: '구매량', field: 'qty' as keyof Ingredient },
-                                    { label: '수율(%)', field: 'yield_' as keyof Ingredient },
-                                ].map(({ label, field }) => (
-                                    <div key={field} style={{ display: 'flex', flexDirection: 'column', gap: 4 }}>
-                                    <span style={{ fontFamily: 'Black Han Sans', fontSize: '0.62rem', color: 'var(--text-soft)' }}>{label}</span>
-                                    <input
-                                        style={{ ...inputStyle, background: 'white', border: '1.5px solid var(--border)' }}
-                                        value={toComma(ing[field])} inputMode="numeric"
-                                        onChange={e => updateIng(ing.id, field, fromComma(e.target.value))}
-                                    />
-                                    </div>
-                                ))}
-                                <button onClick={() => deleteIng(ing.id)} style={{
-                                    background: 'none', border: 'none', cursor: 'pointer',
-                                    color: 'var(--red)', fontFamily: 'Black Han Sans',
-                                    fontSize: '0.72rem', padding: '7px 8px',
-                                    borderRadius: 8, alignSelf: 'end'
-                                }}>✕ 삭제</button>
+                                  <span style={{ fontFamily: 'Black Han Sans', fontSize: '0.82rem', color: 'var(--text)' }}>
+                                    {item.name}
+                                  </span>
+                                  <span style={{ fontSize: '0.7rem', color: 'var(--text-soft)' }}>
+                                    {item.price.toLocaleString()}원/{item.per}{item.unit}
+                                  </span>
                                 </div>
-                            </td>
-                            </tr>
-                        )}
-                        </tbody>
-                    </table>
-                    </td>
-                </tr>
-                ))}
+                              ))}
+                            </div>
+                          )}
+                        </td>
+                        <td style={{ padding: '5px 3px', width: '18%' }}>
+                          <input style={inputStyle} value={toComma(ing.use_amount)} placeholder="0"
+                            inputMode="numeric"
+                            onChange={e => updateIng(ing.id, 'use_amount', fromComma(e.target.value))}
+                          />
+                        </td>
+                        <td style={{ padding: '5px 3px', width: '16%' }}>
+                          <select style={inputStyle} value={ing.unit}
+                            onChange={e => updateIng(ing.id, 'unit', e.target.value)}>
+                            {UNITS.map(u => <option key={u}>{u}</option>)}
+                          </select>
+                        </td>
+                        <td style={{ padding: '5px 3px', width: '20%', textAlign: 'right', fontFamily: 'Black Han Sans', fontSize: '0.82rem', color: 'var(--blue)' }}>
+                          {calc.ingCosts[idx] > 0 ? fmt(calc.ingCosts[idx]) + '원' : '—'}
+                        </td>
+                        <td style={{ padding: '5px 3px', width: '8%', textAlign: 'center' }}>
+                          <button onClick={() => toggleRow(ing.id)} style={{
+                            background: 'none', border: 'none', cursor: 'pointer',
+                            color: 'var(--text-soft)', fontSize: '0.65rem',
+                            display: 'inline-block',
+                            transform: openRows.has(ing.id) ? 'rotate(180deg)' : 'none',
+                            transition: 'transform 0.2s'
+                          }}>▼</button>
+                        </td>
+                      </tr>
+                      {openRows.has(ing.id) && (
+                        <tr>
+                          <td colSpan={5} style={{ padding: '0 2px 10px' }}>
+                            <div style={{
+                              background: 'var(--silver-light)', borderRadius: 12,
+                              padding: '11px 12px', display: 'grid',
+                              gridTemplateColumns: '1fr 1fr 1fr auto', gap: 8, alignItems: 'end'
+                            }}>
+                              {[
+                                { label: '구매가(원)', field: 'price' as keyof Ingredient },
+                                { label: '구매량', field: 'qty' as keyof Ingredient },
+                                { label: '수율(%)', field: 'yield_' as keyof Ingredient },
+                              ].map(({ label, field }) => (
+                                <div key={field} style={{ display: 'flex', flexDirection: 'column', gap: 4 }}>
+                                  <span style={{ fontFamily: 'Black Han Sans', fontSize: '0.62rem', color: 'var(--text-soft)' }}>{label}</span>
+                                  <input
+                                    style={{ ...inputStyle, background: 'white', border: '1.5px solid var(--border)' }}
+                                    value={toComma(ing[field])} inputMode="numeric"
+                                    onChange={e => updateIng(ing.id, field, fromComma(e.target.value))}
+                                  />
+                                </div>
+                              ))}
+                              <button onClick={() => deleteIng(ing.id)} style={{
+                                background: 'none', border: 'none', cursor: 'pointer',
+                                color: 'var(--red)', fontFamily: 'Black Han Sans',
+                                fontSize: '0.72rem', padding: '7px 8px',
+                                borderRadius: 8, alignSelf: 'end'
+                              }}>✕ 삭제</button>
+                            </div>
+                          </td>
+                        </tr>
+                      )}
+                    </tbody>
+                  </table>
+                </td>
+              </tr>
+            ))}
           </tbody>
         </table>
         <button onClick={addIng} style={{
