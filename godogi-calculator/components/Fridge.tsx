@@ -143,13 +143,18 @@ export default function Fridge({ user }: Props) {
         />
       </div>
       {/* 카테고리 필터 */}
-      <div style={{ display: 'flex', gap: 6, padding: '8px 8px 4px', flexWrap: 'wrap' }}>
+      <div style={{
+        display: 'flex', gap: 6, padding: '8px 8px 4px',
+        overflowX: 'auto', flexWrap: 'nowrap',
+        scrollbarWidth: 'none'
+      }}>
         {CATEGORIES.map(cat => (
           <button key={cat} onClick={() => setSelectedCategory(cat)} style={{
-            padding: '4px 10px', borderRadius: 20,
+            padding: '4px 12px', borderRadius: 20, flexShrink: 0,
             background: selectedCategory === cat ? 'var(--blue)' : 'rgba(255,255,255,0.07)',
-            border: 'none', color: selectedCategory === cat ? 'white' : 'rgba(200,216,228,0.4)',
-            fontFamily: 'Black Han Sans', fontSize: '0.68rem', cursor: 'pointer'
+            border: 'none', color: selectedCategory === cat ? 'white' : 'rgba(200,216,228,0.5)',
+            fontFamily: 'Gowun Dodum', fontSize: '0.75rem', cursor: 'pointer',
+            whiteSpace: 'nowrap'
           }}>{cat}</button>
         ))}
       </div>
@@ -165,7 +170,7 @@ export default function Fridge({ user }: Props) {
           }}>
             <div style={{ flex: 1, minWidth: 0 }}>
               <div style={{ display: 'flex', alignItems: 'center', gap: 5 }}>
-                <span style={{ fontSize: '0.82rem', color: item.isDB ? 'rgba(200,216,228,0.5)' : 'white', fontFamily: 'Black Han Sans', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+                <span style={{ fontSize: '0.82rem', color: item.isDB ? 'rgba(200,216,228,0.5)' : 'white', fontFamily: 'Gowun Dodum', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
                   {item.name}
                 </span>
                 {item.isDB && <span style={{ fontSize: '0.55rem', color: 'rgba(200,216,228,0.25)', background: 'rgba(255,255,255,0.05)', padding: '1px 5px', borderRadius: 4 }}>기본</span>}
