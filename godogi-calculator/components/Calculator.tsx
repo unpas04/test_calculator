@@ -383,7 +383,7 @@ export default function Calculator({ menu, onChange, onSave }: Props) {
           <div style={{ display: 'flex', flexDirection: 'column', gap: 5 }}>
             <label style={{ fontSize: '0.72rem', color: 'var(--text-mid)', fontFamily: 'Black Han Sans', display: 'flex', alignItems: 'center', gap: 4 }}>
               🏠 간접비
-              <button onClick={() => setShowOverheadModal(true)} style={{
+              <button onClick={() => setShowLaborModal(true)} style={{
                 background: 'var(--blue)', color: 'white', border: 'none',
                 borderRadius: '50%', width: 15, height: 15, fontSize: '0.55rem',
                 cursor: 'pointer', lineHeight: 1,
