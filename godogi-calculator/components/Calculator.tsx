@@ -136,6 +136,16 @@ export default function Calculator({ menu, onChange, onSave }: Props) {
       )
     })
   }
+  const syncToFridge = async (ing: any) => {
+  const { data: { session } } = await supabase.auth.getSession()
+  if (!session) return
+  const { data } = await supabase.from('fridge').select('id').eq('user_id', session.user.id).eq('name', ing.name).single()
+  if (data) {
+    await supabase.from('fridge').update({
+      price: ing.price, per: ing.qty, unit: ing.unit, yield_: ing.yield_
+    }).eq('id', data.id)
+    }
+  }
 
   const addIng = () => {
     onChange({ ...menu, ingredients: [...menu.ingredients, defaultIngredient()] })
@@ -308,7 +318,11 @@ export default function Calculator({ menu, onChange, onSave }: Props) {
                                   <input
                                     style={{ ...inputStyle, background: 'white', border: '1.5px solid var(--border)' }}
                                     value={toComma(ing[field])} inputMode="numeric"
-                                    onChange={e => updateIng(ing.id, field, fromComma(e.target.value))}
+                                    onChange={e => {
+                                        const val = fromComma(e.target.value)
+                                        updateIng(ing.id, field, val)
+                                        syncToFridge({ ...ing, [field]: val })
+                                      }}
                                   />
                                 </div>
                               ))}
