@@ -1,6 +1,7 @@
 'use client'
 
 import { useState, useEffect } from 'react'
+import { createClient } from '@/lib/supabase'
 
 interface Ingredient {
   id: string
@@ -69,6 +70,48 @@ interface Props {
 
 export default function Calculator({ menu, onChange, onSave }: Props) {
   const calc = calcMenu(menu)
+  const supabase = createClient()
+const [fridgeItems, setFridgeItems] = useState<any[]>([])
+const [suggestions, setSuggestions] = useState<{[key: string]: any[]}>({})
+const [showSugg, setShowSugg] = useState<{[key: string]: boolean}>({})
+
+useEffect(() => {
+  const loadFridge = async () => {
+    const { data: { session } } = await supabase.auth.getSession()
+    if (!session) return
+    const { data } = await supabase.from('fridge').select('*').eq('user_id', session.user.id)
+    if (data) setFridgeItems(data)
+  }
+  loadFridge()
+}, [])
+
+const handleNameInput = (id: string, val: string) => {
+  updateIng(id, 'name', val)
+  if (val.length < 1) {
+    setSuggestions(prev => ({ ...prev, [id]: [] }))
+    return
+  }
+  const matched = fridgeItems.filter(f => f.name.includes(val))
+  setSuggestions(prev => ({ ...prev, [id]: matched }))
+  setShowSugg(prev => ({ ...prev, [id]: true }))
+}
+
+const selectSuggestion = (ingId: string, item: any) => {
+  onChange({
+    ...menu,
+    ingredients: menu.ingredients.map(ing =>
+      ing.id === ingId ? {
+        ...ing,
+        name: item.name,
+        price: item.price,
+        qty: item.per,
+        unit: item.unit,
+        yield_: item.yield_,
+      } : ing
+    )
+  })
+  setShowSugg(prev => ({ ...prev, [ingId]: false }))
+}
   const [openRows, setOpenRows] = useState<Set<string>>(new Set())
 
   const toggleRow = (id: string) => {
@@ -181,11 +224,40 @@ export default function Calculator({ menu, onChange, onSave }: Props) {
                         <tbody>
                         <tr style={{ borderBottom: openRows.has(ing.id) ? 'none' : '1px solid var(--silver-light)' }}>
                             <td style={{ padding: '5px 3px', width: '38%' }}>
-                            <input
+                            <td style={{ padding: '5px 3px', width: '38%', position: 'relative' }}>
+                              <input
                                 style={{ ...inputStyle, textAlign: 'left', paddingLeft: 8 }}
                                 value={ing.name} placeholder="재료명"
-                                onChange={e => updateIng(ing.id, 'name', e.target.value)}
-                            />
+                                onChange={e => handleNameInput(ing.id, e.target.value)}
+                                onFocus={() => {
+                                  if (ing.name.length > 0) setShowSugg(prev => ({ ...prev, [ing.id]: true }))
+                                }}
+                                onBlur={() => setTimeout(() => setShowSugg(prev => ({ ...prev, [ing.id]: false })), 150)}
+                              />
+  {showSugg[ing.id] && suggestions[ing.id]?.length > 0 && (
+    <div style={{
+      position: 'absolute', top: '100%', left: 0, right: 0,
+      background: 'white', border: '1.5px solid var(--border)',
+      borderRadius: 10, zIndex: 50, boxShadow: '0 4px 16px rgba(0,0,0,0.1)',
+      maxHeight: 180, overflowY: 'auto'
+    }}>
+      {suggestions[ing.id].map(item => (
+        <div key={item.id} onMouseDown={() => selectSuggestion(ing.id, item)} style={{
+          padding: '8px 12px', cursor: 'pointer',
+          borderBottom: '1px solid var(--silver-light)',
+          display: 'flex', justifyContent: 'space-between', alignItems: 'center'
+        }}>
+          <span style={{ fontFamily: 'Black Han Sans', fontSize: '0.82rem', color: 'var(--text)' }}>
+            {item.name}
+          </span>
+          <span style={{ fontSize: '0.7rem', color: 'var(--text-soft)' }}>
+            {item.price.toLocaleString()}원/{item.per}{item.unit}
+          </span>
+        </div>
+      ))}
+    </div>
+  )}
+</td>
                             </td>
                             <td style={{ padding: '5px 3px', width: '18%' }}>
                             <input style={inputStyle} value={toComma(ing.use_amount)} placeholder="0"
