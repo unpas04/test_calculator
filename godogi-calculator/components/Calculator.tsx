@@ -329,24 +329,59 @@ export default function Calculator({ menu, onChange, onSave }: Props) {
                               padding: '11px 12px', display: 'grid',
                               gridTemplateColumns: '1fr 1fr 1fr auto', gap: 8, alignItems: 'end'
                             }}>
-                              {[
-                                { label: '구매가(원)', field: 'price' as keyof Ingredient },
-                                { label: '구매량', field: 'qty' as keyof Ingredient },
-                                { label: '수율(%)', field: 'yield_' as keyof Ingredient },
-                              ].map(({ label, field }) => (
-                                <div key={field} style={{ display: 'flex', flexDirection: 'column', gap: 4 }}>
-                                  <span style={{ fontFamily: 'Black Han Sans', fontSize: '0.62rem', color: 'var(--text-soft)' }}>{label}</span>
+                             {/* 구매가 */}
+                                <div style={{ display: 'flex', flexDirection: 'column', gap: 4 }}>
+                                  <span style={{ fontFamily: 'Black Han Sans', fontSize: '0.62rem', color: 'var(--text-soft)' }}>구매가(원)</span>
                                   <input
                                     style={{ ...inputStyle, background: 'white', border: '1.5px solid var(--border)' }}
-                                    value={toComma(ing[field])} inputMode="numeric"
+                                    value={toComma(ing.price)} inputMode="numeric"
                                     onChange={e => {
                                       const val = fromComma(e.target.value)
-                                      updateIng(ing.id, field, val)
-                                      syncToFridge({ ...ing, [field]: val })
+                                      updateIng(ing.id, 'price', val)
+                                      syncToFridge({ ...ing, price: val })
                                     }}
                                   />
                                 </div>
-                              ))}
+
+                                {/* 구매량 + 단위 */}
+                                <div style={{ display: 'flex', flexDirection: 'column', gap: 4 }}>
+                                  <span style={{ fontFamily: 'Black Han Sans', fontSize: '0.62rem', color: 'var(--text-soft)' }}>구매량</span>
+                                  <div style={{ display: 'flex', gap: 4 }}>
+                                    <input
+                                      style={{ ...inputStyle, background: 'white', border: '1.5px solid var(--border)', flex: 1 }}
+                                      value={toComma(ing.qty)} inputMode="numeric"
+                                      onChange={e => {
+                                        const val = fromComma(e.target.value)
+                                        updateIng(ing.id, 'qty', val)
+                                        syncToFridge({ ...ing, qty: val })
+                                      }}
+                                    />
+                                    <select
+                                      style={{ ...inputStyle, background: 'white', border: '1.5px solid var(--border)', width: 48, padding: '8px 2px' }}
+                                      value={ing.unit}
+                                      onChange={e => {
+                                        updateIng(ing.id, 'unit', e.target.value)
+                                        syncToFridge({ ...ing, unit: e.target.value })
+                                      }}
+                                    >
+                                      {UNITS.map(u => <option key={u}>{u}</option>)}
+                                    </select>
+                                  </div>
+                                </div>
+
+                                {/* 수율 */}
+                                <div style={{ display: 'flex', flexDirection: 'column', gap: 4 }}>
+                                  <span style={{ fontFamily: 'Black Han Sans', fontSize: '0.62rem', color: 'var(--text-soft)' }}>수율(%)</span>
+                                  <input
+                                    style={{ ...inputStyle, background: 'white', border: '1.5px solid var(--border)' }}
+                                    value={toComma(ing.yield_)} inputMode="numeric"
+                                    onChange={e => {
+                                      const val = fromComma(e.target.value)
+                                      updateIng(ing.id, 'yield_', val)
+                                      syncToFridge({ ...ing, yield_: val })
+                                    }}
+                                  />
+                                </div>
                               <button onClick={() => deleteIng(ing.id)} style={{
                                 background: 'none', border: 'none', cursor: 'pointer',
                                 color: 'var(--red)', fontFamily: 'Black Han Sans',
