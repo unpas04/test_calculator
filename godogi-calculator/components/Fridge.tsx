@@ -44,6 +44,22 @@ export default function Fridge({ user }: Props) {
       .order('category')
     if (!error && data) setItems(data)
   }
+    useEffect(() => {
+    if (!user) return
+    const channel = supabase
+      .channel('fridge_changes')
+      .on('postgres_changes', {
+        event: '*',
+        schema: 'public',
+        table: 'fridge',
+        filter: `user_id=eq.${user.id}`
+      }, () => {
+        loadItems()
+      })
+      .subscribe()
+
+    return () => { supabase.removeChannel(channel) }
+   }, [user])
 
   // 냉장고 + DB 합치기 (냉장고 우선)
   const mergedItems = (): FridgeItem[] => {
