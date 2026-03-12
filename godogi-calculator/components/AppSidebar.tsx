@@ -61,7 +61,7 @@ export default function Sidebar({ menus, currentId, onSelect, onNew, onDelete, u
           <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
             <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
               <span style={{ fontSize: '1.4rem' }}>🐟</span>
-              <span style={{ fontFamily: 'Black Han Sans', fontSize: '1rem', color: 'white', letterSpacing: '0.05em' }}>
+              <span style={{ fontFamily: 'Gowun Dodum', fontSize: '1rem', color: 'white', letterSpacing: '0.05em' }}>
                 고독이의 원가계산기
               </span>
             </div>
