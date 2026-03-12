@@ -359,11 +359,8 @@ export default function Calculator({ menu, onChange, onSave }: Props) {
                                   <input
                                     style={{ ...inputStyle, background: 'white', border: '1.5px solid var(--border)' }}
                                     value={toComma(ing.price)} inputMode="numeric"
-                                    onChange={e => {
-                                      const val = fromComma(e.target.value)
-                                      updateIng(ing.id, 'price', val)
-                                      syncToFridge({ ...ing, price: val })
-                                    }}
+                                    onChange={e => updateIng(ing.id, 'price', fromComma(e.target.value))}
+                                    onBlur={() => syncToFridge(ing)}
                                   />
                                 </div>
 
@@ -374,11 +371,8 @@ export default function Calculator({ menu, onChange, onSave }: Props) {
                                     <input
                                       style={{ ...inputStyle, background: 'white', border: '1.5px solid var(--border)', flex: 1 }}
                                       value={toComma(ing.qty)} inputMode="numeric"
-                                      onChange={e => {
-                                        const val = fromComma(e.target.value)
-                                        updateIng(ing.id, 'qty', val)
-                                        syncToFridge({ ...ing, qty: val })
-                                      }}
+                                      onChange={e => updateIng(ing.id, 'qty', fromComma(e.target.value))}
+                                      onBlur={() => syncToFridge(ing)}
                                     />
                                     <select
                                       style={{ ...inputStyle, background: 'white', border: '1.5px solid var(--border)', width: 48, padding: '8px 2px' }}
@@ -399,11 +393,8 @@ export default function Calculator({ menu, onChange, onSave }: Props) {
                                   <input
                                     style={{ ...inputStyle, background: 'white', border: '1.5px solid var(--border)' }}
                                     value={toComma(ing.yield_)} inputMode="numeric"
-                                    onChange={e => {
-                                      const val = fromComma(e.target.value)
-                                      updateIng(ing.id, 'yield_', val)
-                                      syncToFridge({ ...ing, yield_: val })
-                                    }}
+                                    onChange={e => updateIng(ing.id, 'yield_', fromComma(e.target.value))}
+                                    onBlur={() => syncToFridge(ing)}
                                   />
                                 </div>
                               <button onClick={() => deleteIng(ing.id)} style={{
