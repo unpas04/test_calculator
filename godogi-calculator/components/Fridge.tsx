@@ -28,6 +28,7 @@ export default function Fridge({ user }: Props) {
   const [showModal, setShowModal] = useState(false)
   const [editItem, setEditItem] = useState<FridgeItem | null>(null)
   const [form, setForm] = useState({ name: '', price: '', per: '', unit: 'g', yield_: '100', category: '기타' })
+  const [search, setSearch] = useState('')
   const supabase = createClient()
 
   useEffect(() => {
@@ -54,8 +55,12 @@ export default function Fridge({ user }: Props) {
   }
 
   const filtered = () => {
-    const all = mergedItems()
-    return selectedCategory === '전체' ? all : all.filter(i => i.category === selectedCategory)
+  const all = mergedItems()
+  return all.filter(i => {
+    const matchCat = selectedCategory === '전체' || i.category === selectedCategory
+    const matchSearch = i.name.includes(search)
+    return matchCat && matchSearch
+    })
   }
 
   const openAdd = () => {
@@ -116,11 +121,27 @@ export default function Fridge({ user }: Props) {
 
   const labelStyle: React.CSSProperties = {
     fontSize: '0.7rem', color: 'rgba(200,216,228,0.5)',
-    fontFamily: 'Black Han Sans', marginBottom: 4, display: 'block'
+    fontFamily: 'Gowun Dodum', marginBottom: 4, display: 'block'
   }
 
   return (
     <div style={{ flex: 1, overflowY: 'auto', padding: '8px 0' }}>
+      {/* 검색창 */}
+      <div style={{ padding: '8px 8px 0' }}>
+        <input
+          value={search}
+          onChange={e => setSearch(e.target.value)}
+          placeholder="🔍 재료 검색..."
+          style={{
+            width: '100%', padding: '8px 12px',
+            background: 'rgba(255,255,255,0.07)',
+            border: '1px solid rgba(200,216,228,0.15)',
+            borderRadius: 10, color: 'white',
+            fontFamily: 'Gowun Dodum', fontSize: '0.82rem',
+            outline: 'none', boxSizing: 'border-box' as const
+          }}
+        />
+      </div>
       {/* 카테고리 필터 */}
       <div style={{ display: 'flex', gap: 6, padding: '8px 8px 4px', flexWrap: 'wrap' }}>
         {CATEGORIES.map(cat => (
