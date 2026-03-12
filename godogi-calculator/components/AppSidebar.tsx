@@ -60,7 +60,25 @@ export default function Sidebar({ menus, currentId, onSelect, onNew, onDelete, u
         <div style={{ flexShrink: 0, padding: '48px 16px 12px', borderBottom: '1px solid rgba(255,255,255,0.07)' }}>
           <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
             <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
-              <span style={{ fontSize: '1.4rem' }}>🐟</span>
+              <svg width="36" height="36" viewBox="0 0 100 100" fill="none" xmlns="http://www.w3.org/2000/svg">
+                {/* 몸통 */}
+                <ellipse cx="50" cy="55" rx="32" ry="22" fill="#4A7FA5"/>
+                <ellipse cx="50" cy="53" rx="30" ry="20" fill="#5B9EC9"/>
+                {/* 꼬리 */}
+                <polygon points="82,55 100,40 100,70" fill="#4A7FA5"/>
+                {/* 배 */}
+                <ellipse cx="46" cy="58" rx="18" ry="12" fill="#C8E6F5"/>
+                {/* 눈 */}
+                <circle cx="35" cy="48" r="5" fill="white"/>
+                <circle cx="35" cy="48" r="3" fill="#1E2D40"/>
+                <circle cx="36" cy="47" r="1" fill="white"/>
+                {/* 입 */}
+                <path d="M 28 56 Q 32 60 36 56" stroke="#1E2D40" strokeWidth="1.5" fill="none" strokeLinecap="round"/>
+                {/* 지느러미 */}
+                <ellipse cx="50" cy="33" rx="10" ry="6" fill="#4A7FA5" transform="rotate(-10 50 33)"/>
+                {/* 볼터치 */}
+                <ellipse cx="30" cy="52" rx="4" ry="2.5" fill="#F4A0A0" opacity="0.6"/>
+              </svg>
               <span style={{ fontFamily: 'Gowun Dodum', fontSize: '1rem', color: 'white', letterSpacing: '0.05em' }}>
                 고독이의 원가계산기
               </span>
