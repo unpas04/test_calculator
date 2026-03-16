@@ -102,7 +102,7 @@ export default function Sidebar({ menus, currentId, onSelect, onNew, onDelete, u
               background: tab === t ? 'rgba(74,127,165,0.25)' : 'transparent',
               border: 'none', borderRadius: 8,
               color: tab === t ? 'var(--blue-light)' : 'rgba(200,216,228,0.35)',
-              fontFamily: 'Black Han Sans', fontSize: '0.78rem',
+              fontFamily: "'Noto Sans KR', sans-serif", fontWeight: 700, fontSize: '0.78rem',
               cursor: 'pointer', letterSpacing: '0.04em'
             }}>
               {t === 'menu' ? '🍽️ 메뉴' : '🧊 냉장고'}
@@ -151,7 +151,7 @@ export default function Sidebar({ menus, currentId, onSelect, onNew, onDelete, u
             width: '100%', padding: '10px 0',
             background: 'var(--blue)', color: 'white',
             border: 'none', borderRadius: 10,
-            fontFamily: 'Black Han Sans', fontSize: '0.85rem',
+            fontFamily: "'Noto Sans KR', sans-serif", fontWeight: 700, fontSize: '0.85rem',
             cursor: 'pointer', letterSpacing: '0.03em'
           }}>＋ 새 메뉴 추가</button>
           <button onClick={onLogout} style={{

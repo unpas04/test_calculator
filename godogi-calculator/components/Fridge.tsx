@@ -226,7 +226,7 @@ export default function Fridge({ user }: Props) {
           background: 'rgba(74,127,165,0.15)',
           border: '1.5px dashed rgba(74,127,165,0.4)',
           borderRadius: 10, color: 'var(--blue-light)',
-          fontFamily: 'Black Han Sans', fontSize: '0.78rem', cursor: 'pointer'
+          fontFamily: "'Noto Sans KR', sans-serif", fontWeight: 700, fontSize: '0.78rem', cursor: 'pointer'
         }}>＋ 재료 추가</button>
       </div>
 
@@ -241,7 +241,7 @@ export default function Fridge({ user }: Props) {
             background: '#1E2D40', borderRadius: 20, padding: 24,
             width: 300, display: 'flex', flexDirection: 'column', gap: 14
           }}>
-            <div style={{ fontFamily: 'Black Han Sans', color: 'white', fontSize: '1rem' }}>
+            <div style={{ fontFamily: "'Noto Sans KR', sans-serif", fontWeight: 700, color: 'white', fontSize: '1rem' }}>
               {editItem ? (editItem.isDB ? '기본 재료 내 가격으로 수정 🧊' : '재료 수정') : '재료 추가 🧊'}
             </div>
             {editItem?.isDB && (
@@ -299,12 +299,12 @@ export default function Fridge({ user }: Props) {
               <button onClick={() => setShowModal(false)} style={{
                 flex: 1, padding: '10px 0', background: 'rgba(255,255,255,0.07)',
                 border: 'none', borderRadius: 10, color: 'rgba(200,216,228,0.5)',
-                fontFamily: 'Black Han Sans', fontSize: '0.82rem', cursor: 'pointer'
+                fontFamily: "'Noto Sans KR', sans-serif", fontWeight: 700, fontSize: '0.82rem', cursor: 'pointer'
               }}>취소</button>
               <button onClick={handleSave} style={{
                 flex: 1, padding: '10px 0', background: 'var(--blue)',
                 border: 'none', borderRadius: 10, color: 'white',
-                fontFamily: 'Black Han Sans', fontSize: '0.82rem', cursor: 'pointer'
+                fontFamily: "'Noto Sans KR', sans-serif", fontWeight: 700, fontSize: '0.82rem', cursor: 'pointer'
               }}>저장</button>
             </div>
           </div>

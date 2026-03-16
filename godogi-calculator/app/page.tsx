@@ -142,19 +142,19 @@ export default function Home() {
     setCurrentId(next.length > 0 ? next[0].id : null)
   }
 
-  const handleSave = async () => {
+
+  // 메뉴 변경 시 자동 저장 (1초 debounce, 새 메뉴는 이름 있을 때 최초 저장)
+  useEffect(() => {
     if (!user || !currentMenu) return
+    if (!currentMenu.created_at && (!currentMenu.name || currentMenu.name === '새 메뉴')) return
+    if (autoSaveTimer.current) clearTimeout(autoSaveTimer.current)
+    autoSaveTimer.current = setTimeout(async () => {
+      try {
+        let menuId = currentMenu.id
 
-    try {
-      const isNew = !currentMenu.created_at  // DB에서 불러온 메뉴는 created_at 있음
-
-      let menuId = currentMenu.id
-
-      if (isNew) {
-        // 새 메뉴 — insert
-        const { data, error } = await supabase
-          .from('menus')
-          .insert({
+        if (!currentMenu.created_at) {
+          // 새 메뉴 최초 저장
+          const { data, error } = await supabase.from('menus').insert({
             user_id: user.id,
             name: currentMenu.name,
             packaging: currentMenu.packaging,
@@ -163,23 +163,15 @@ export default function Home() {
             delivery_fee: currentMenu.delivery_fee,
             card_fee: currentMenu.card_fee,
             sale_price: currentMenu.sale_price,
-          })
-          .select()
-          .single()
-
-        if (error) throw error
-        menuId = data.id
-
-        // 로컬 상태에 DB id 반영
-        setMenus(prev => prev.map(m =>
-          m.id === currentMenu.id ? { ...m, id: data.id, created_at: data.created_at } : m
-        ))
-        setCurrentId(data.id)
-      } else {
-        // 기존 메뉴 — update
-        const { error } = await supabase
-          .from('menus')
-          .update({
+          }).select().single()
+          if (error || !data) return
+          menuId = data.id
+          setMenus(prev => prev.map(m =>
+            m.id === currentMenu.id ? { ...m, id: data.id, created_at: data.created_at } : m
+          ))
+          setCurrentId(data.id)
+        } else {
+          await supabase.from('menus').update({
             name: currentMenu.name,
             packaging: currentMenu.packaging,
             labor: currentMenu.labor,
@@ -188,59 +180,12 @@ export default function Home() {
             card_fee: currentMenu.card_fee,
             sale_price: currentMenu.sale_price,
             updated_at: new Date().toISOString()
-          })
-          .eq('id', menuId)
+          }).eq('id', menuId)
+        }
 
-        if (error) throw error
-      }
-
-      // 재료 삭제 후 재삽입
-      await supabase.from('ingredients').delete().eq('menu_id', menuId)
-
-      const ingredientsToInsert = currentMenu.ingredients.map((ing: any, idx: number) => ({
-        menu_id: menuId,
-        name: ing.name,
-        price: ing.price,
-        qty: ing.qty,
-        unit: ing.unit,
-        yield_: ing.yield_,
-        use_amount: ing.use_amount,
-        sort_order: idx
-      }))
-
-      if (ingredientsToInsert.length > 0) {
-        const { error } = await supabase.from('ingredients').insert(ingredientsToInsert)
-        if (error) throw error
-      }
-
-      alert('저장됐어요! 🐟')
-    } catch (err) {
-      console.error(err)
-      alert('저장 중 오류가 났어요 😢')
-    }
-  }
-
-  // 기존 메뉴 변경 시 자동 저장 (1초 debounce)
-  useEffect(() => {
-    if (!user || !currentMenu?.created_at) return
-    if (autoSaveTimer.current) clearTimeout(autoSaveTimer.current)
-    autoSaveTimer.current = setTimeout(async () => {
-      try {
-        await supabase.from('menus').update({
-          name: currentMenu.name,
-          packaging: currentMenu.packaging,
-          labor: currentMenu.labor,
-          overhead: currentMenu.overhead,
-          delivery_fee: currentMenu.delivery_fee,
-          card_fee: currentMenu.card_fee,
-          sale_price: currentMenu.sale_price,
-          updated_at: new Date().toISOString()
-        }).eq('id', currentMenu.id)
-
-        await supabase.from('ingredients').delete().eq('menu_id', currentMenu.id)
-
+        await supabase.from('ingredients').delete().eq('menu_id', menuId)
         const ings = currentMenu.ingredients.map((ing: any, idx: number) => ({
-          menu_id: currentMenu.id,
+          menu_id: menuId,
           name: ing.name,
           price: ing.price,
           qty: ing.qty,
@@ -297,7 +242,7 @@ export default function Home() {
           <Calculator
             menu={currentMenu}
             onChange={handleChange}
-            onSave={handleSave}
+
           />
         ) : (
           <div style={{ textAlign: 'center', paddingTop: 80, color: 'var(--text-soft)' }}>

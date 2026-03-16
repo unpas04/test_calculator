@@ -67,20 +67,19 @@ function defaultIngredient(): Ingredient {
 interface Props {
   menu: Menu
   onChange: (menu: Menu) => void
-  onSave: () => void
 }
 
-export default function Calculator({ menu, onChange, onSave }: Props) {
+export default function Calculator({ menu, onChange }: Props) {
   const calc = calcMenu(menu)
   const supabase = createClient()
-  const contentRef = useRef<HTMLDivElement>(null)
+  const exportRef = useRef<HTMLDivElement>(null)
 
   const handleExport = async () => {
-    if (!contentRef.current) return
+    if (!exportRef.current) return
     try {
-      const dataUrl = await toPng(contentRef.current, {
+      const dataUrl = await toPng(exportRef.current, {
         cacheBust: true,
-        backgroundColor: '#F0F4F8',
+        backgroundColor: '#ffffff',
         pixelRatio: 2,
       })
       const link = document.createElement('a')
@@ -227,7 +226,7 @@ export default function Calculator({ menu, onChange, onSave }: Props) {
 
   const cardTitle = (title: string) => (
     <div style={{
-      fontFamily: 'Black Han Sans', fontSize: '0.85rem',
+      fontFamily: "'Noto Sans KR', sans-serif", fontWeight: 700, fontSize: '0.85rem',
       color: 'var(--text-mid)', letterSpacing: '0.05em',
       marginBottom: 16, display: 'flex', alignItems: 'center', gap: 8
     }}>
@@ -263,7 +262,7 @@ export default function Calculator({ menu, onChange, onSave }: Props) {
     : null
 
   return (
-    <div ref={contentRef}>
+    <div>
       {/* 상단 바 */}
       <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 24 }}>
         <input
@@ -278,16 +277,11 @@ export default function Calculator({ menu, onChange, onSave }: Props) {
             cursor: 'text', maxWidth: '100%', width: '100%'
           }}
         />
-        <button onClick={onSave} className="save-btn" style={{
-          background: 'var(--green)', color: 'white', border: 'none',
-          borderRadius: 12, padding: '10px 18px',
-          fontFamily: 'Black Han Sans', fontSize: '0.85rem', cursor: 'pointer'
-        }}>💾 저장</button>
-        <button onClick={handleExport} style={{
+        <button onClick={handleExport} className="save-btn" style={{
           background: 'var(--blue)', color: 'white', border: 'none',
-          borderRadius: 12, padding: '10px 14px',
-          fontFamily: 'Black Han Sans', fontSize: '0.85rem', cursor: 'pointer'
-        }}>📷</button>
+          borderRadius: 12, padding: '10px 18px',
+          fontFamily: "'Noto Sans KR', sans-serif", fontWeight: 700, fontSize: '0.85rem', cursor: 'pointer'
+        }}>📷 이미지 저장</button>
       </div>
 
       {/* 재료 카드 */}
@@ -298,7 +292,7 @@ export default function Calculator({ menu, onChange, onSave }: Props) {
             <tr>
               {['재료명', '사용량', '단위', '원가', ''].map((h, i) => (
                 <th key={i} style={{
-                  fontFamily: 'Black Han Sans', fontSize: '0.68rem',
+                  fontFamily: "'Noto Sans KR', sans-serif", fontWeight: 700, fontSize: '0.68rem',
                   color: 'var(--text-soft)', padding: '0 3px 10px',
                   textAlign: i === 3 ? 'right' : i === 0 ? 'left' : 'center',
                   width: ['38%', '18%', '16%', '20%', '8%'][i]
@@ -337,7 +331,7 @@ export default function Calculator({ menu, onChange, onSave }: Props) {
                                   borderBottom: '1px solid var(--silver-light)',
                                   display: 'flex', justifyContent: 'space-between', alignItems: 'center'
                                 }}>
-                                  <span style={{ fontFamily: 'Black Han Sans', fontSize: '0.82rem', color: 'var(--text)' }}>
+                                  <span style={{ fontFamily: "'Noto Sans KR', sans-serif", fontWeight: 700, fontSize: '0.82rem', color: 'var(--text)' }}>
                                     {item.name}
                                   </span>
                                   <span style={{ fontSize: '0.7rem', color: 'var(--text-soft)' }}>
@@ -360,7 +354,7 @@ export default function Calculator({ menu, onChange, onSave }: Props) {
                             {UNITS.map(u => <option key={u}>{u}</option>)}
                           </select>
                         </td>
-                        <td style={{ padding: '5px 3px', width: '20%', textAlign: 'right', fontFamily: 'Black Han Sans', fontSize: '0.82rem', color: 'var(--blue)' }}>
+                        <td style={{ padding: '5px 3px', width: '20%', textAlign: 'right', fontFamily: "'Noto Sans KR', sans-serif", fontWeight: 700, fontSize: '0.82rem', color: 'var(--blue)' }}>
                           {calc.ingCosts[idx] > 0 ? fmt(calc.ingCosts[idx]) + '원' : '—'}
                         </td>
                         <td style={{ padding: '5px 3px', width: '8%', textAlign: 'center' }}>
@@ -383,7 +377,7 @@ export default function Calculator({ menu, onChange, onSave }: Props) {
                             }}>
                              {/* 구매가 */}
                                 <div style={{ display: 'flex', flexDirection: 'column', gap: 4 }}>
-                                  <span style={{ fontFamily: 'Black Han Sans', fontSize: '0.62rem', color: 'var(--text-soft)' }}>구매가(원)</span>
+                                  <span style={{ fontFamily: "'Noto Sans KR', sans-serif", fontWeight: 700, fontSize: '0.62rem', color: 'var(--text-soft)' }}>구매가(원)</span>
                                   <input
                                     name="price"
                                     style={{ ...inputStyle, background: 'white', border: '1.5px solid var(--border)' }}
@@ -398,7 +392,7 @@ export default function Calculator({ menu, onChange, onSave }: Props) {
 
                                 {/* 구매량 + 단위 */}
                                 <div style={{ display: 'flex', flexDirection: 'column', gap: 4 }}>
-                                  <span style={{ fontFamily: 'Black Han Sans', fontSize: '0.62rem', color: 'var(--text-soft)' }}>구매량</span>
+                                  <span style={{ fontFamily: "'Noto Sans KR', sans-serif", fontWeight: 700, fontSize: '0.62rem', color: 'var(--text-soft)' }}>구매량</span>
                                   <div style={{ display: 'flex', gap: 4 }}>
                                     <input
                                       name="qty"
@@ -426,7 +420,7 @@ export default function Calculator({ menu, onChange, onSave }: Props) {
 
                                 {/* 수율 */}
                                 <div style={{ display: 'flex', flexDirection: 'column', gap: 4 }}>
-                                  <span style={{ fontFamily: 'Black Han Sans', fontSize: '0.62rem', color: 'var(--text-soft)' }}>수율(%)</span>
+                                  <span style={{ fontFamily: "'Noto Sans KR', sans-serif", fontWeight: 700, fontSize: '0.62rem', color: 'var(--text-soft)' }}>수율(%)</span>
                                   <input
                                     name="yield_"
                                     style={{ ...inputStyle, background: 'white', border: '1.5px solid var(--border)' }}
@@ -440,7 +434,7 @@ export default function Calculator({ menu, onChange, onSave }: Props) {
                                 </div>
                               <button onClick={() => deleteIng(ing.id)} style={{
                                 background: 'none', border: 'none', cursor: 'pointer',
-                                color: 'var(--red)', fontFamily: 'Black Han Sans',
+                                color: 'var(--red)', fontFamily: "'Noto Sans KR', sans-serif", fontWeight: 700,
                                 fontSize: '0.72rem', padding: '7px 8px',
                                 borderRadius: 8, alignSelf: 'end'
                               }}>✕ 삭제</button>
@@ -459,7 +453,7 @@ export default function Calculator({ menu, onChange, onSave }: Props) {
           marginTop: 12, background: 'none',
           border: '1.5px dashed var(--blue-light)', color: 'var(--blue)',
           borderRadius: 10, padding: '8px 18px',
-          fontFamily: 'Black Han Sans', fontSize: '0.82rem', cursor: 'pointer'
+          fontFamily: "'Noto Sans KR', sans-serif", fontWeight: 700, fontSize: '0.82rem', cursor: 'pointer'
         }}>＋ 재료 추가</button>
       </>)}
 
@@ -469,7 +463,7 @@ export default function Calculator({ menu, onChange, onSave }: Props) {
         <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: 12 }}>
           {/* 포장비 */}
           <div style={{ display: 'flex', flexDirection: 'column', gap: 5 }}>
-            <label style={{ fontSize: '0.72rem', color: 'var(--text-mid)', fontFamily: 'Black Han Sans' }}>
+            <label style={{ fontSize: '0.72rem', color: 'var(--text-mid)', fontFamily: "'Noto Sans KR', sans-serif", fontWeight: 700 }}>
               📦 포장비 (원)
             </label>
             <input style={{ ...inputStyle, textAlign: 'left', padding: '9px 12px' }}
@@ -479,7 +473,7 @@ export default function Calculator({ menu, onChange, onSave }: Props) {
           </div>
           {/* 인건비 */}
           <div style={{ display: 'flex', flexDirection: 'column', gap: 5 }}>
-            <label style={{ fontSize: '0.72rem', color: 'var(--text-mid)', fontFamily: 'Black Han Sans', display: 'flex', alignItems: 'center', gap: 4 }}>
+            <label style={{ fontSize: '0.72rem', color: 'var(--text-mid)', fontFamily: "'Noto Sans KR', sans-serif", fontWeight: 700, display: 'flex', alignItems: 'center', gap: 4 }}>
               👩‍🍳 인건비
               {helpBtn(() => setShowLaborModal(true))}
             </label>
@@ -490,7 +484,7 @@ export default function Calculator({ menu, onChange, onSave }: Props) {
           </div>
           {/* 간접비 */}
           <div style={{ display: 'flex', flexDirection: 'column', gap: 5 }}>
-            <label style={{ fontSize: '0.72rem', color: 'var(--text-mid)', fontFamily: 'Black Han Sans', display: 'flex', alignItems: 'center', gap: 4 }}>
+            <label style={{ fontSize: '0.72rem', color: 'var(--text-mid)', fontFamily: "'Noto Sans KR', sans-serif", fontWeight: 700, display: 'flex', alignItems: 'center', gap: 4 }}>
               🏠 간접비
               {helpBtn(() => setShowOverheadModal(true))}
             </label>
@@ -511,7 +505,7 @@ export default function Calculator({ menu, onChange, onSave }: Props) {
             { label: '💳 카드 수수료 (%)', field: 'card_fee' },
           ].map(({ label, field }) => (
             <div key={field} style={{ display: 'flex', flexDirection: 'column', gap: 5 }}>
-              <label style={{ fontSize: '0.72rem', color: 'var(--text-mid)', fontFamily: 'Black Han Sans' }}>{label}</label>
+              <label style={{ fontSize: '0.72rem', color: 'var(--text-mid)', fontFamily: "'Noto Sans KR', sans-serif", fontWeight: 700 }}>{label}</label>
               <input style={{ ...inputStyle, textAlign: 'left', padding: '9px 12px' }}
                 value={(menu as any)[field] || ''} inputMode="decimal"
                 onChange={e => onChange({ ...menu, [field]: parseFloat(e.target.value) || 0 })}
@@ -524,17 +518,20 @@ export default function Calculator({ menu, onChange, onSave }: Props) {
       {/* 판매가 */}
       {card(<>
         {cardTitle('판매가')}
-        <input
-          style={{
-            ...inputStyle, textAlign: 'left', padding: '11px 16px',
-            fontFamily: 'Black Han Sans', fontSize: '1.1rem',
-            background: 'white', border: '2px solid var(--blue-light)',
-            borderRadius: 12, maxWidth: 240
-          }}
-          value={toComma(menu.sale_price)} placeholder="판매 가격 입력 (원)"
-          inputMode="numeric"
-          onChange={e => onChange({ ...menu, sale_price: fromComma(e.target.value) })}
-        />
+        <div style={{ display: 'flex', alignItems: 'center', gap: 8, maxWidth: 280 }}>
+          <input
+            style={{
+              ...inputStyle, textAlign: 'left', padding: '11px 16px',
+              fontFamily: "'Noto Sans KR', sans-serif", fontWeight: 700, fontSize: '1.1rem',
+              background: 'white', border: '2px solid var(--blue-light)',
+              borderRadius: 12, flex: 1
+            }}
+            value={toComma(menu.sale_price)} placeholder="판매 가격 입력"
+            inputMode="numeric"
+            onChange={e => onChange({ ...menu, sale_price: fromComma(e.target.value) })}
+          />
+          <span style={{ fontFamily: "'Noto Sans KR', sans-serif", fontWeight: 700, fontSize: '1rem', color: 'var(--text-mid)', whiteSpace: 'nowrap' }}>원</span>
+        </div>
       </>)}
 
       {/* 결과 */}
@@ -542,7 +539,7 @@ export default function Calculator({ menu, onChange, onSave }: Props) {
         background: 'var(--navy)', borderRadius: 20,
         padding: '24px 22px', marginTop: 16
       }}>
-        <div style={{ fontFamily: 'Black Han Sans', fontSize: '0.8rem', color: 'rgba(200,216,228,0.5)', marginBottom: 16 }}>
+        <div style={{ fontFamily: "'Noto Sans KR', sans-serif", fontWeight: 700, fontSize: '0.8rem', color: 'rgba(200,216,228,0.5)', marginBottom: 16 }}>
           📊 계산 결과
         </div>
         <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 12, marginBottom: 16 }}>
@@ -556,7 +553,7 @@ export default function Calculator({ menu, onChange, onSave }: Props) {
               background: 'rgba(255,255,255,0.05)', borderRadius: 14, padding: '14px 16px'
             }}>
               <div style={{ fontSize: '0.72rem', color: 'rgba(200,216,228,0.5)', marginBottom: 6 }}>{label}</div>
-              <div style={{ fontFamily: 'Black Han Sans', fontSize: '1.3rem', color }}>{value}</div>
+              <div style={{ fontFamily: "'Noto Sans KR', sans-serif", fontWeight: 700, fontSize: '1.3rem', color }}>{value}</div>
             </div>
           ))}
         </div>
@@ -580,7 +577,7 @@ export default function Calculator({ menu, onChange, onSave }: Props) {
             display: 'flex', flexDirection: 'column', gap: 16
           }}>
             <div>
-              <div style={{ fontFamily: 'Black Han Sans', fontSize: '1rem', color: 'var(--navy)', marginBottom: 4 }}>
+              <div style={{ fontFamily: "'Noto Sans KR', sans-serif", fontWeight: 700, fontSize: '1rem', color: 'var(--navy)', marginBottom: 4 }}>
                 👩‍🍳 인건비 계산기
               </div>
               <div style={{ fontSize: '0.72rem', color: 'var(--text-soft)' }}>
@@ -589,7 +586,7 @@ export default function Calculator({ menu, onChange, onSave }: Props) {
             </div>
             <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
               <div style={{ display: 'flex', flexDirection: 'column', gap: 5 }}>
-                <label style={{ fontSize: '0.72rem', color: 'var(--text-mid)', fontFamily: 'Black Han Sans' }}>💰 월 인건비 합계 (원)</label>
+                <label style={{ fontSize: '0.72rem', color: 'var(--text-mid)', fontFamily: "'Noto Sans KR', sans-serif", fontWeight: 700 }}>💰 월 인건비 합계 (원)</label>
                 <input style={{ ...inputStyle, textAlign: 'left', padding: '9px 12px', background: 'var(--silver-light)' }}
                   value={toComma(laborForm.labor)} inputMode="numeric" placeholder="예) 2,000,000"
                   onChange={e => setLaborForm({ ...laborForm, labor: e.target.value })}
@@ -597,14 +594,14 @@ export default function Calculator({ menu, onChange, onSave }: Props) {
                 <span style={{ fontSize: '0.65rem', color: 'var(--text-soft)' }}>알바비 + 내 인건비 등 합산</span>
               </div>
               <div style={{ display: 'flex', flexDirection: 'column', gap: 5 }}>
-                <label style={{ fontSize: '0.72rem', color: 'var(--text-mid)', fontFamily: 'Black Han Sans' }}>📅 월 영업일수 (일)</label>
+                <label style={{ fontSize: '0.72rem', color: 'var(--text-mid)', fontFamily: "'Noto Sans KR', sans-serif", fontWeight: 700 }}>📅 월 영업일수 (일)</label>
                 <input style={{ ...inputStyle, textAlign: 'left', padding: '9px 12px', background: 'var(--silver-light)' }}
                   value={laborForm.days} inputMode="numeric" placeholder="예) 25"
                   onChange={e => setLaborForm({ ...laborForm, days: e.target.value })}
                 />
               </div>
               <div style={{ display: 'flex', flexDirection: 'column', gap: 5 }}>
-                <label style={{ fontSize: '0.72rem', color: 'var(--text-mid)', fontFamily: 'Black Han Sans' }}>🍽️ 하루 전체 판매량 (개)</label>
+                <label style={{ fontSize: '0.72rem', color: 'var(--text-mid)', fontFamily: "'Noto Sans KR', sans-serif", fontWeight: 700 }}>🍽️ 하루 전체 판매량 (개)</label>
                 <input style={{ ...inputStyle, textAlign: 'left', padding: '9px 12px', background: 'var(--silver-light)' }}
                   value={laborForm.count} inputMode="numeric" placeholder="예) 100"
                   onChange={e => setLaborForm({ ...laborForm, count: e.target.value })}
@@ -618,7 +615,7 @@ export default function Calculator({ menu, onChange, onSave }: Props) {
                 display: 'flex', justifyContent: 'space-between', alignItems: 'center'
               }}>
                 <span style={{ fontSize: '0.78rem', color: 'rgba(200,216,228,0.7)' }}>메뉴 1개당 인건비</span>
-                <span style={{ fontFamily: 'Black Han Sans', fontSize: '1.2rem', color: 'white' }}>
+                <span style={{ fontFamily: "'Noto Sans KR', sans-serif", fontWeight: 700, fontSize: '1.2rem', color: 'white' }}>
                   {laborResult.toLocaleString()}원
                 </span>
               </div>
@@ -627,7 +624,7 @@ export default function Calculator({ menu, onChange, onSave }: Props) {
               <button onClick={() => setShowLaborModal(false)} style={{
                 flex: 1, padding: '10px 0', background: 'var(--silver-light)', border: 'none',
                 borderRadius: 10, color: 'var(--text-soft)',
-                fontFamily: 'Black Han Sans', fontSize: '0.82rem', cursor: 'pointer'
+                fontFamily: "'Noto Sans KR', sans-serif", fontWeight: 700, fontSize: '0.82rem', cursor: 'pointer'
               }}>취소</button>
               <button onClick={() => {
                 if (laborResult !== null && !isNaN(laborResult)) {
@@ -637,7 +634,7 @@ export default function Calculator({ menu, onChange, onSave }: Props) {
               }} style={{
                 flex: 1, padding: '10px 0', background: 'var(--green)', border: 'none',
                 borderRadius: 10, color: 'white',
-                fontFamily: 'Black Han Sans', fontSize: '0.82rem', cursor: 'pointer'
+                fontFamily: "'Noto Sans KR', sans-serif", fontWeight: 700, fontSize: '0.82rem', cursor: 'pointer'
               }}>적용하기 ✓</button>
             </div>
           </div>
@@ -658,7 +655,7 @@ export default function Calculator({ menu, onChange, onSave }: Props) {
             display: 'flex', flexDirection: 'column', gap: 16
           }}>
             <div>
-              <div style={{ fontFamily: 'Black Han Sans', fontSize: '1rem', color: 'var(--navy)', marginBottom: 4 }}>
+              <div style={{ fontFamily: "'Noto Sans KR', sans-serif", fontWeight: 700, fontSize: '1rem', color: 'var(--navy)', marginBottom: 4 }}>
                 🏠 간접비 계산기
               </div>
               <div style={{ fontSize: '0.72rem', color: 'var(--text-soft)' }}>
@@ -667,7 +664,7 @@ export default function Calculator({ menu, onChange, onSave }: Props) {
             </div>
             <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
               <div style={{ display: 'flex', flexDirection: 'column', gap: 5 }}>
-                <label style={{ fontSize: '0.72rem', color: 'var(--text-mid)', fontFamily: 'Black Han Sans' }}>💰 월 고정비 합계 (원)</label>
+                <label style={{ fontSize: '0.72rem', color: 'var(--text-mid)', fontFamily: "'Noto Sans KR', sans-serif", fontWeight: 700 }}>💰 월 고정비 합계 (원)</label>
                 <input style={{ ...inputStyle, textAlign: 'left', padding: '9px 12px', background: 'var(--silver-light)' }}
                   value={toComma(overheadForm.fixed)} inputMode="numeric" placeholder="예) 1,500,000"
                   onChange={e => setOverheadForm({ ...overheadForm, fixed: e.target.value })}
@@ -675,14 +672,14 @@ export default function Calculator({ menu, onChange, onSave }: Props) {
                 <span style={{ fontSize: '0.65rem', color: 'var(--text-soft)' }}>전기세 + 가스비 + 임대료 + 기타</span>
               </div>
               <div style={{ display: 'flex', flexDirection: 'column', gap: 5 }}>
-                <label style={{ fontSize: '0.72rem', color: 'var(--text-mid)', fontFamily: 'Black Han Sans' }}>📅 월 영업일수 (일)</label>
+                <label style={{ fontSize: '0.72rem', color: 'var(--text-mid)', fontFamily: "'Noto Sans KR', sans-serif", fontWeight: 700 }}>📅 월 영업일수 (일)</label>
                 <input style={{ ...inputStyle, textAlign: 'left', padding: '9px 12px', background: 'var(--silver-light)' }}
                   value={overheadForm.days} inputMode="numeric" placeholder="예) 25"
                   onChange={e => setOverheadForm({ ...overheadForm, days: e.target.value })}
                 />
               </div>
               <div style={{ display: 'flex', flexDirection: 'column', gap: 5 }}>
-                <label style={{ fontSize: '0.72rem', color: 'var(--text-mid)', fontFamily: 'Black Han Sans' }}>🍽️ 하루 전체 판매량 (개)</label>
+                <label style={{ fontSize: '0.72rem', color: 'var(--text-mid)', fontFamily: "'Noto Sans KR', sans-serif", fontWeight: 700 }}>🍽️ 하루 전체 판매량 (개)</label>
                 <input style={{ ...inputStyle, textAlign: 'left', padding: '9px 12px', background: 'var(--silver-light)' }}
                   value={overheadForm.count} inputMode="numeric" placeholder="예) 100"
                   onChange={e => setOverheadForm({ ...overheadForm, count: e.target.value })}
@@ -696,7 +693,7 @@ export default function Calculator({ menu, onChange, onSave }: Props) {
                 display: 'flex', justifyContent: 'space-between', alignItems: 'center'
               }}>
                 <span style={{ fontSize: '0.78rem', color: 'rgba(200,216,228,0.7)' }}>메뉴 1개당 간접비</span>
-                <span style={{ fontFamily: 'Black Han Sans', fontSize: '1.2rem', color: 'white' }}>
+                <span style={{ fontFamily: "'Noto Sans KR', sans-serif", fontWeight: 700, fontSize: '1.2rem', color: 'white' }}>
                   {overheadResult.toLocaleString()}원
                 </span>
               </div>
@@ -705,7 +702,7 @@ export default function Calculator({ menu, onChange, onSave }: Props) {
               <button onClick={() => setShowOverheadModal(false)} style={{
                 flex: 1, padding: '10px 0', background: 'var(--silver-light)', border: 'none',
                 borderRadius: 10, color: 'var(--text-soft)',
-                fontFamily: 'Black Han Sans', fontSize: '0.82rem', cursor: 'pointer'
+                fontFamily: "'Noto Sans KR', sans-serif", fontWeight: 700, fontSize: '0.82rem', cursor: 'pointer'
               }}>취소</button>
               <button onClick={() => {
                 if (overheadResult !== null && !isNaN(overheadResult)) {
@@ -715,7 +712,7 @@ export default function Calculator({ menu, onChange, onSave }: Props) {
               }} style={{
                 flex: 1, padding: '10px 0', background: 'var(--green)', border: 'none',
                 borderRadius: 10, color: 'white',
-                fontFamily: 'Black Han Sans', fontSize: '0.82rem', cursor: 'pointer'
+                fontFamily: "'Noto Sans KR', sans-serif", fontWeight: 700, fontSize: '0.82rem', cursor: 'pointer'
               }}>적용하기 ✓</button>
             </div>
           </div>
@@ -724,11 +721,89 @@ export default function Calculator({ menu, onChange, onSave }: Props) {
 
       <style>{`
         @media (max-width: 768px) {
-          .ing-detail-grid {
-            grid-template-columns: 1fr 1fr !important;
-          }
+          .ing-detail-grid { grid-template-columns: 1fr 1fr !important; }
         }
       `}</style>
+
+      {/* ── 숨겨진 원가계산서 (PNG 내보내기용) ── */}
+      <div ref={exportRef} style={{
+        position: 'fixed', left: '-9999px', top: 0, zIndex: -1,
+        width: 440, background: 'white', padding: '36px 32px',
+        fontFamily: "'Noto Sans KR', sans-serif",
+      }}>
+        {/* 헤더 */}
+        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 20 }}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+            <span style={{ fontSize: '1.3rem' }}>🐟</span>
+            <span style={{ fontFamily: 'Black Han Sans', fontSize: '0.9rem', color: '#4A7FA5' }}>고독이의 원가계산기</span>
+          </div>
+          <span style={{ fontSize: '0.72rem', color: '#8FA3B5' }}>
+            {new Date().toLocaleDateString('ko-KR', { year: 'numeric', month: 'long', day: 'numeric' })}
+          </span>
+        </div>
+
+        {/* 메뉴명 */}
+        <div style={{ fontSize: '1.6rem', fontWeight: 800, color: '#1E2D40', marginBottom: 6, fontFamily: 'Black Han Sans' }}>
+          {menu.name || '(메뉴명 없음)'}
+        </div>
+        <div style={{ height: 2, background: '#EEF4F8', marginBottom: 20 }} />
+
+        {/* 재료 원가 */}
+        <div style={{ fontSize: '0.7rem', fontWeight: 700, color: '#8FA3B5', letterSpacing: '0.08em', marginBottom: 10 }}>재료 원가</div>
+        {menu.ingredients.map((ing: any, idx: number) => ({ ing, idx }))
+          .filter(({ ing }) => ing.name && ing.use_amount > 0)
+          .map(({ ing, idx }) => (
+          <div key={ing.id} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '6px 0', borderBottom: '1px solid #F4F8FB' }}>
+            <span style={{ fontSize: '0.88rem', color: '#2C3E50', fontWeight: 500 }}>{ing.name}</span>
+            <div style={{ display: 'flex', gap: 20, alignItems: 'center' }}>
+              <span style={{ fontSize: '0.78rem', color: '#8FA3B5' }}>{ing.use_amount.toLocaleString()}{ing.unit}</span>
+              <span style={{ fontSize: '0.88rem', color: '#4A7FA5', fontWeight: 700, minWidth: 60, textAlign: 'right' }}>
+                {calc.ingCosts[idx] > 0 ? fmt(calc.ingCosts[idx]) + '원' : '—'}
+              </span>
+            </div>
+          </div>
+        ))}
+        <div style={{ display: 'flex', justifyContent: 'space-between', padding: '10px 0 18px', borderBottom: '1px solid #EEF4F8' }}>
+          <span style={{ fontSize: '0.78rem', color: '#8FA3B5' }}>재료 소계</span>
+          <span style={{ fontSize: '0.92rem', fontWeight: 700, color: '#1E2D40' }}>{fmt(calc.ingTotal)}원</span>
+        </div>
+
+        {/* 추가 비용 */}
+        {(menu.packaging > 0 || menu.labor > 0 || menu.overhead > 0) && (<>
+          <div style={{ fontSize: '0.7rem', fontWeight: 700, color: '#8FA3B5', letterSpacing: '0.08em', margin: '16px 0 8px' }}>추가 비용</div>
+          {menu.packaging > 0 && <div style={{ display: 'flex', justifyContent: 'space-between', padding: '4px 0', fontSize: '0.85rem', color: '#5A6E82' }}><span>📦 포장비</span><span>{fmt(menu.packaging)}원</span></div>}
+          {menu.labor > 0 && <div style={{ display: 'flex', justifyContent: 'space-between', padding: '4px 0', fontSize: '0.85rem', color: '#5A6E82' }}><span>👩‍🍳 인건비</span><span>{fmt(menu.labor)}원</span></div>}
+          {menu.overhead > 0 && <div style={{ display: 'flex', justifyContent: 'space-between', padding: '4px 0', fontSize: '0.85rem', color: '#5A6E82' }}><span>🏠 간접비</span><span>{fmt(menu.overhead)}원</span></div>}
+        </>)}
+
+        {/* 수수료 */}
+        {(menu.delivery_fee > 0 || menu.card_fee > 0) && (<>
+          <div style={{ fontSize: '0.7rem', fontWeight: 700, color: '#8FA3B5', letterSpacing: '0.08em', margin: '16px 0 8px' }}>수수료</div>
+          {menu.delivery_fee > 0 && <div style={{ display: 'flex', justifyContent: 'space-between', padding: '4px 0', fontSize: '0.85rem', color: '#5A6E82' }}><span>🛵 배달 수수료</span><span>{menu.delivery_fee}%</span></div>}
+          {menu.card_fee > 0 && <div style={{ display: 'flex', justifyContent: 'space-between', padding: '4px 0', fontSize: '0.85rem', color: '#5A6E82' }}><span>💳 카드 수수료</span><span>{menu.card_fee}%</span></div>}
+        </>)}
+
+        {/* 결과 박스 */}
+        <div style={{ background: '#1E2D40', borderRadius: 16, padding: '20px 22px', marginTop: 20 }}>
+          {[
+            { label: '💰 총 원가', value: fmt(calc.totalCost) + '원', color: 'rgba(200,216,228,0.8)' },
+            { label: '🏷️ 판매가', value: menu.sale_price > 0 ? fmt(menu.sale_price) + '원' : '—', color: 'white' },
+            { label: '✨ 순이익', value: menu.sale_price > 0 ? (calc.profit >= 0 ? '+' : '') + fmt(calc.profit) + '원' : '—', color: calc.profit < 0 ? '#F08080' : '#7EC8A0' },
+            { label: '📈 원가율', value: menu.sale_price > 0 ? calc.costRate.toFixed(1) + '%' : '—', color: '#F4A460' },
+          ].map(({ label, value, color }) => (
+            <div key={label} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '7px 0', borderBottom: '1px solid rgba(255,255,255,0.06)' }}>
+              <span style={{ fontSize: '0.8rem', color: 'rgba(200,216,228,0.5)' }}>{label}</span>
+              <span style={{ fontSize: '1.05rem', fontWeight: 700, color }}>{value}</span>
+            </div>
+          ))}
+        </div>
+
+        {/* 고독이 코멘트 */}
+        <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginTop: 14, padding: '10px 14px', background: '#F4F8FB', borderRadius: 10 }}>
+          <span style={{ fontSize: '1rem' }}>🐟</span>
+          <span style={{ fontSize: '0.78rem', color: '#5A6E82' }}>{godogiComment()}</span>
+        </div>
+      </div>
     </div>
   )
 }
