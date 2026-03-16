@@ -77,11 +77,21 @@ export default function Calculator({ menu, onChange }: Props) {
   const handleExport = async () => {
     if (!exportRef.current) return
     try {
-      const dataUrl = await toPng(exportRef.current, {
+      const el = exportRef.current
+      // 캡처 전 뷰포트 안으로 이동 (opacity 0으로 보이지 않게)
+      el.style.left = '0'
+      el.style.top = '0'
+      el.style.opacity = '0'
+      await new Promise(r => requestAnimationFrame(() => requestAnimationFrame(r)))
+      const dataUrl = await toPng(el, {
         cacheBust: true,
         backgroundColor: '#ffffff',
         pixelRatio: 2,
       })
+      // 캡처 후 다시 숨김
+      el.style.left = '-9999px'
+      el.style.top = '0'
+      el.style.opacity = ''
       const link = document.createElement('a')
       link.download = `${menu.name || '메뉴'}_원가계산서.png`
       link.href = dataUrl

@@ -47,7 +47,7 @@ export default function Fridge({ user }: Props) {
       .order('category')
     if (!error && data) setItems(data)
   }
-    useEffect(() => {
+  useEffect(() => {
     if (!user) return
     const channel = supabase
       .channel('fridge_changes')
@@ -62,7 +62,7 @@ export default function Fridge({ user }: Props) {
       .subscribe()
 
     return () => { supabase.removeChannel(channel) }
-   }, [user])
+  }, [user])
 
   // 냉장고 + DB 합치기 (냉장고 우선)
   const mergedItems = (): FridgeItem[] => {
@@ -74,11 +74,11 @@ export default function Fridge({ user }: Props) {
   }
 
   const filtered = () => {
-  const all = mergedItems()
-  return all.filter(i => {
-    const matchCat = selectedCategory === '전체' || i.category === selectedCategory
-    const matchSearch = i.name.includes(search)
-    return matchCat && matchSearch
+    const all = mergedItems()
+    return all.filter(i => {
+      const matchCat = selectedCategory === '전체' || i.category === selectedCategory
+      const matchSearch = i.name.includes(search)
+      return matchCat && matchSearch
     })
   }
 
@@ -242,7 +242,7 @@ export default function Fridge({ user }: Props) {
             width: 300, display: 'flex', flexDirection: 'column', gap: 14
           }}>
             <div style={{ fontFamily: "'Noto Sans KR', sans-serif", fontWeight: 700, color: 'white', fontSize: '1rem' }}>
-              {editItem ? (editItem.isDB ? '기본 재료 내 가격으로 수정 🧊' : '재료 수정') : '재료 추가 🧊'}
+              {editItem ? (editItem.isDB ? '매입가 수정 🧊' : '재료 수정') : '재료 추가 🧊'}
             </div>
             {editItem?.isDB && (
               <div style={{ fontSize: '0.72rem', color: 'rgba(200,216,228,0.4)', background: 'rgba(255,255,255,0.05)', padding: '8px 10px', borderRadius: 8 }}>
