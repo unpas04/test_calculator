@@ -144,7 +144,13 @@ export default function Fridge({ user }: Props) {
   }
 
   return (
-    <div style={{ flex: 1, overflowY: 'auto', padding: '8px 0' }}>
+    <div className="fridge-scroll" style={{ flex: 1, overflowY: 'auto', padding: '8px 0' }}>
+      <style>{`
+        .fridge-scroll::-webkit-scrollbar { width: 4px; }
+        .fridge-scroll::-webkit-scrollbar-track { background: transparent; }
+        .fridge-scroll::-webkit-scrollbar-thumb { background: rgba(74,127,165,0.35); border-radius: 2px; }
+        .fridge-scroll { scrollbar-width: thin; scrollbar-color: rgba(74,127,165,0.35) transparent; }
+      `}</style>
       {/* 검색창 */}
       <div style={{ padding: '8px 8px 0' }}>
         <input

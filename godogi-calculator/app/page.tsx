@@ -292,7 +292,7 @@ export default function Home() {
         user={user}
         onLogout={logout}
       />
-      <main style={{ marginLeft: 260, flex: 1, padding: '32px 28px 60px', maxWidth: 760 }}>
+      <main className="main-content" style={{ marginLeft: 260, flex: 1, padding: '32px 28px 60px', maxWidth: 760 }}>
         {currentMenu ? (
           <Calculator
             menu={currentMenu}
@@ -306,6 +306,14 @@ export default function Home() {
           </div>
         )}
       </main>
+      <style>{`
+        @media (max-width: 768px) {
+          .main-content {
+            margin-left: 0 !important;
+            padding-top: 64px !important;
+          }
+        }
+      `}</style>
     </div>
   )
 }

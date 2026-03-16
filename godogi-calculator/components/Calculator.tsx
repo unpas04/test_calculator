@@ -1,9 +1,9 @@
 'use client'
 
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useRef } from 'react'
 import { createClient } from '@/lib/supabase'
 import { INGREDIENT_DB } from '@/lib/ingredientDB'
-import { useRef } from 'react'
+import { toPng } from 'html-to-image'
 
 interface Ingredient {
   id: string
@@ -73,6 +73,24 @@ interface Props {
 export default function Calculator({ menu, onChange, onSave }: Props) {
   const calc = calcMenu(menu)
   const supabase = createClient()
+  const contentRef = useRef<HTMLDivElement>(null)
+
+  const handleExport = async () => {
+    if (!contentRef.current) return
+    try {
+      const dataUrl = await toPng(contentRef.current, {
+        cacheBust: true,
+        backgroundColor: '#F0F4F8',
+        pixelRatio: 2,
+      })
+      const link = document.createElement('a')
+      link.download = `${menu.name || '메뉴'}_원가계산서.png`
+      link.href = dataUrl
+      link.click()
+    } catch (err) {
+      console.error('PNG export error:', err)
+    }
+  }
   const [fridgeItems, setFridgeItems] = useState<any[]>([])
   const [suggestions, setSuggestions] = useState<{[key: string]: any[]}>({})
   const [showSugg, setShowSugg] = useState<{[key: string]: boolean}>({})
@@ -245,9 +263,9 @@ export default function Calculator({ menu, onChange, onSave }: Props) {
     : null
 
   return (
-    <div>
+    <div ref={contentRef}>
       {/* 상단 바 */}
-      <div style={{ display: 'flex', alignItems: 'center', gap: 12, marginBottom: 24 }}>
+      <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 24 }}>
         <input
           value={menu.name}
           onChange={e => onChange({ ...menu, name: e.target.value })}
@@ -265,6 +283,11 @@ export default function Calculator({ menu, onChange, onSave }: Props) {
           borderRadius: 12, padding: '10px 18px',
           fontFamily: 'Black Han Sans', fontSize: '0.85rem', cursor: 'pointer'
         }}>💾 저장</button>
+        <button onClick={handleExport} style={{
+          background: 'var(--blue)', color: 'white', border: 'none',
+          borderRadius: 12, padding: '10px 14px',
+          fontFamily: 'Black Han Sans', fontSize: '0.85rem', cursor: 'pointer'
+        }}>📷</button>
       </div>
 
       {/* 재료 카드 */}
