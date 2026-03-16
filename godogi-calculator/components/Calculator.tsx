@@ -78,10 +78,12 @@ export default function Calculator({ menu, onChange }: Props) {
     if (!exportRef.current) return
     try {
       const el = exportRef.current
-      // 캡처 전 뷰포트 안으로 이동 (opacity 0으로 보이지 않게)
+      // 캡처 전 뷰포트 안으로, 화면 최상단에 표시 (zIndex 최상위)
+      el.style.position = 'fixed'
       el.style.left = '0'
       el.style.top = '0'
-      el.style.opacity = '0'
+      el.style.zIndex = '99999'
+      el.style.opacity = '1'
       await new Promise(r => requestAnimationFrame(() => requestAnimationFrame(r)))
       const dataUrl = await toPng(el, {
         cacheBust: true,
@@ -90,8 +92,8 @@ export default function Calculator({ menu, onChange }: Props) {
       })
       // 캡처 후 다시 숨김
       el.style.left = '-9999px'
-      el.style.top = '0'
-      el.style.opacity = ''
+      el.style.zIndex = '-1'
+      el.style.opacity = '0'
       const link = document.createElement('a')
       link.download = `${menu.name || '메뉴'}_원가계산서.png`
       link.href = dataUrl
@@ -737,7 +739,7 @@ export default function Calculator({ menu, onChange }: Props) {
 
       {/* ── 숨겨진 원가계산서 (PNG 내보내기용) ── */}
       <div ref={exportRef} style={{
-        position: 'fixed', left: '-9999px', top: 0, zIndex: -1,
+        position: 'fixed', left: '-9999px', top: 0, zIndex: -1, opacity: 0,
         width: 440, background: 'white', padding: '36px 32px',
         fontFamily: "'Noto Sans KR', sans-serif",
       }}>
