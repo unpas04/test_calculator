@@ -34,6 +34,9 @@ export default function Fridge({ user }: Props) {
   useEffect(() => {
     if (!user) return
     loadItems()
+    // syncToFridge debounce(800ms) 이후 반영 위해 1.2초 후 한 번 더 로드
+    const timer = setTimeout(loadItems, 1200)
+    return () => clearTimeout(timer)
   }, [user])
 
   const loadItems = async () => {

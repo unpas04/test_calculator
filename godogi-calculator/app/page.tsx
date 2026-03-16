@@ -1,7 +1,7 @@
 'use client'
 
 import { createClient } from '../lib/supabase'
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useRef } from 'react'
 import AppSidebar from '../components/AppSidebar'
 import Calculator from '../components/Calculator'
 
@@ -41,6 +41,7 @@ export default function Home() {
   const [menus, setMenus] = useState<any[]>([])
   const [currentId, setCurrentId] = useState<string | null>(null)
   const supabase = createClient()
+  const autoSaveTimer = useRef<any>(null)
 
   useEffect(() => {
     supabase.auth.getSession().then(({ data: { session } }) => {
@@ -218,6 +219,43 @@ export default function Home() {
       alert('저장 중 오류가 났어요 😢')
     }
   }
+
+  // 기존 메뉴 변경 시 자동 저장 (1초 debounce)
+  useEffect(() => {
+    if (!user || !currentMenu?.created_at) return
+    if (autoSaveTimer.current) clearTimeout(autoSaveTimer.current)
+    autoSaveTimer.current = setTimeout(async () => {
+      try {
+        await supabase.from('menus').update({
+          name: currentMenu.name,
+          packaging: currentMenu.packaging,
+          labor: currentMenu.labor,
+          overhead: currentMenu.overhead,
+          delivery_fee: currentMenu.delivery_fee,
+          card_fee: currentMenu.card_fee,
+          sale_price: currentMenu.sale_price,
+          updated_at: new Date().toISOString()
+        }).eq('id', currentMenu.id)
+
+        await supabase.from('ingredients').delete().eq('menu_id', currentMenu.id)
+
+        const ings = currentMenu.ingredients.map((ing: any, idx: number) => ({
+          menu_id: currentMenu.id,
+          name: ing.name,
+          price: ing.price,
+          qty: ing.qty,
+          unit: ing.unit,
+          yield_: ing.yield_,
+          use_amount: ing.use_amount,
+          sort_order: idx
+        }))
+        if (ings.length > 0) await supabase.from('ingredients').insert(ings)
+      } catch (err) {
+        console.error('Auto-save error:', err)
+      }
+    }, 1000)
+    return () => clearTimeout(autoSaveTimer.current)
+  }, [currentMenu])
 
   if (loading) return (
     <main style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', height: '100vh', background: '#F0F4F8' }}>
