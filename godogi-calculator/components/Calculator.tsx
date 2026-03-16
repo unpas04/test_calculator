@@ -91,8 +91,8 @@ export default function Calculator({ menu, onChange }: Props) {
     }
   }
   const [fridgeItems, setFridgeItems] = useState<any[]>([])
-  const [suggestions, setSuggestions] = useState<{[key: string]: any[]}>({})
-  const [showSugg, setShowSugg] = useState<{[key: string]: boolean}>({})
+  const [suggestions, setSuggestions] = useState<{ [key: string]: any[] }>({})
+  const [showSugg, setShowSugg] = useState<{ [key: string]: boolean }>({})
   const [openRows, setOpenRows] = useState<Set<string>>(new Set())
   const [showOverheadModal, setShowOverheadModal] = useState(false)
   const [overheadForm, setOverheadForm] = useState({ fixed: '', days: '', count: '' })
@@ -157,45 +157,45 @@ export default function Calculator({ menu, onChange }: Props) {
       )
     })
   }
-      const syncTimers = useRef<{[id: string]: any}>({})
-      const latestIngredients = useRef(menu.ingredients)
-      latestIngredients.current = menu.ingredients
+  const syncTimers = useRef<{ [id: string]: any }>({})
+  const latestIngredients = useRef(menu.ingredients)
+  latestIngredients.current = menu.ingredients
 
-      const debouncedSync = (id: string) => {
-        if (syncTimers.current[id]) clearTimeout(syncTimers.current[id])
-        syncTimers.current[id] = setTimeout(() => {
-          const ing = latestIngredients.current.find(i => i.id === id)
-          if (ing) syncToFridge(ing)
-        }, 800)
-      }
-      const syncToFridge = async (ing: any) => {
-        if (!ing.name || !ing.price || !ing.qty) return
-        const { data: { session } } = await supabase.auth.getSession()
-        if (!session) return
+  const debouncedSync = (id: string) => {
+    if (syncTimers.current[id]) clearTimeout(syncTimers.current[id])
+    syncTimers.current[id] = setTimeout(() => {
+      const ing = latestIngredients.current.find(i => i.id === id)
+      if (ing) syncToFridge(ing)
+    }, 800)
+  }
+  const syncToFridge = async (ing: any) => {
+    if (!ing.name || !ing.price || !ing.qty) return
+    const { data: { session } } = await supabase.auth.getSession()
+    if (!session) return
 
-        const { data } = await supabase
-          .from('fridge')
-          .select('id')
-          .eq('user_id', session.user.id)
-          .eq('name', ing.name)
-          .maybeSingle()
+    const { data } = await supabase
+      .from('fridge')
+      .select('id')
+      .eq('user_id', session.user.id)
+      .eq('name', ing.name)
+      .maybeSingle()
 
-        if (data) {
-          await supabase.from('fridge').update({
-            price: ing.price, per: ing.qty, unit: ing.unit, yield_: ing.yield_
-          }).eq('id', data.id)
-        } else {
-          await supabase.from('fridge').insert({
-            user_id: session.user.id,
-            name: ing.name,
-            price: ing.price,
-            per: ing.qty,
-            unit: ing.unit,
-            yield_: ing.yield_,
-            category: '기타'
-          })
-        }
-      }
+    if (data) {
+      await supabase.from('fridge').update({
+        price: ing.price, per: ing.qty, unit: ing.unit, yield_: ing.yield_
+      }).eq('id', data.id)
+    } else {
+      await supabase.from('fridge').insert({
+        user_id: session.user.id,
+        name: ing.name,
+        price: ing.price,
+        per: ing.qty,
+        unit: ing.unit,
+        yield_: ing.yield_,
+        category: '기타'
+      })
+    }
+  }
 
   const addIng = () => {
     onChange({ ...menu, ingredients: [...menu.ingredients, defaultIngredient()] })
@@ -281,7 +281,7 @@ export default function Calculator({ menu, onChange }: Props) {
           background: 'var(--blue)', color: 'white', border: 'none',
           borderRadius: 12, padding: '10px 18px',
           fontFamily: "'Noto Sans KR', sans-serif", fontWeight: 700, fontSize: '0.85rem', cursor: 'pointer'
-        }}>📷 이미지 저장</button>
+        }}>📷 저장</button>
       </div>
 
       {/* 재료 카드 */}
@@ -375,63 +375,63 @@ export default function Calculator({ menu, onChange }: Props) {
                               padding: '11px 12px', display: 'grid',
                               gridTemplateColumns: '1fr 1fr 1fr auto', gap: 8, alignItems: 'end'
                             }}>
-                             {/* 구매가 */}
-                                <div style={{ display: 'flex', flexDirection: 'column', gap: 4 }}>
-                                  <span style={{ fontFamily: "'Noto Sans KR', sans-serif", fontWeight: 700, fontSize: '0.62rem', color: 'var(--text-soft)' }}>구매가(원)</span>
+                              {/* 구매가 */}
+                              <div style={{ display: 'flex', flexDirection: 'column', gap: 4 }}>
+                                <span style={{ fontFamily: "'Noto Sans KR', sans-serif", fontWeight: 700, fontSize: '0.62rem', color: 'var(--text-soft)' }}>구매가(원)</span>
+                                <input
+                                  name="price"
+                                  style={{ ...inputStyle, background: 'white', border: '1.5px solid var(--border)' }}
+                                  value={toComma(ing.price)} inputMode="numeric"
+                                  onChange={e => {
+                                    const val = fromComma(e.target.value)
+                                    updateIng(ing.id, 'price', val)
+                                    debouncedSync(ing.id)
+                                  }}
+                                />
+                              </div>
+
+                              {/* 구매량 + 단위 */}
+                              <div style={{ display: 'flex', flexDirection: 'column', gap: 4 }}>
+                                <span style={{ fontFamily: "'Noto Sans KR', sans-serif", fontWeight: 700, fontSize: '0.62rem', color: 'var(--text-soft)' }}>구매량</span>
+                                <div style={{ display: 'flex', gap: 4 }}>
                                   <input
-                                    name="price"
-                                    style={{ ...inputStyle, background: 'white', border: '1.5px solid var(--border)' }}
-                                    value={toComma(ing.price)} inputMode="numeric"
+                                    name="qty"
+                                    style={{ ...inputStyle, background: 'white', border: '1.5px solid var(--border)', flex: 1 }}
+                                    value={toComma(ing.qty)} inputMode="numeric"
                                     onChange={e => {
                                       const val = fromComma(e.target.value)
-                                      updateIng(ing.id, 'price', val)
+                                      updateIng(ing.id, 'qty', val)
                                       debouncedSync(ing.id)
                                     }}
+
                                   />
-                                </div>
-
-                                {/* 구매량 + 단위 */}
-                                <div style={{ display: 'flex', flexDirection: 'column', gap: 4 }}>
-                                  <span style={{ fontFamily: "'Noto Sans KR', sans-serif", fontWeight: 700, fontSize: '0.62rem', color: 'var(--text-soft)' }}>구매량</span>
-                                  <div style={{ display: 'flex', gap: 4 }}>
-                                    <input
-                                      name="qty"
-                                      style={{ ...inputStyle, background: 'white', border: '1.5px solid var(--border)', flex: 1 }}
-                                      value={toComma(ing.qty)} inputMode="numeric"
-                                      onChange={e => {
-                                        const val = fromComma(e.target.value)
-                                        updateIng(ing.id, 'qty', val)
-                                        debouncedSync(ing.id)
-                                      }}
-
-                                    />
-                                    <select
-                                      style={{ ...inputStyle, background: 'white', border: '1.5px solid var(--border)', width: 48, padding: '8px 2px' }}
-                                      value={ing.unit}
-                                      onChange={e => {
-                                        updateIng(ing.id, 'unit', e.target.value)
-                                        syncToFridge({ ...ing, unit: e.target.value })
-                                      }}
-                                    >
-                                      {UNITS.map(u => <option key={u}>{u}</option>)}
-                                    </select>
-                                  </div>
-                                </div>
-
-                                {/* 수율 */}
-                                <div style={{ display: 'flex', flexDirection: 'column', gap: 4 }}>
-                                  <span style={{ fontFamily: "'Noto Sans KR', sans-serif", fontWeight: 700, fontSize: '0.62rem', color: 'var(--text-soft)' }}>수율(%)</span>
-                                  <input
-                                    name="yield_"
-                                    style={{ ...inputStyle, background: 'white', border: '1.5px solid var(--border)' }}
-                                    value={toComma(ing.yield_)} inputMode="numeric"
+                                  <select
+                                    style={{ ...inputStyle, background: 'white', border: '1.5px solid var(--border)', width: 48, padding: '8px 2px' }}
+                                    value={ing.unit}
                                     onChange={e => {
-                                        const val = fromComma(e.target.value)
-                                        updateIng(ing.id, 'yield_', val)
-                                        debouncedSync(ing.id)
-                                      }}
-                                  />
+                                      updateIng(ing.id, 'unit', e.target.value)
+                                      syncToFridge({ ...ing, unit: e.target.value })
+                                    }}
+                                  >
+                                    {UNITS.map(u => <option key={u}>{u}</option>)}
+                                  </select>
                                 </div>
+                              </div>
+
+                              {/* 수율 */}
+                              <div style={{ display: 'flex', flexDirection: 'column', gap: 4 }}>
+                                <span style={{ fontFamily: "'Noto Sans KR', sans-serif", fontWeight: 700, fontSize: '0.62rem', color: 'var(--text-soft)' }}>수율(%)</span>
+                                <input
+                                  name="yield_"
+                                  style={{ ...inputStyle, background: 'white', border: '1.5px solid var(--border)' }}
+                                  value={toComma(ing.yield_)} inputMode="numeric"
+                                  onChange={e => {
+                                    const val = fromComma(e.target.value)
+                                    updateIng(ing.id, 'yield_', val)
+                                    debouncedSync(ing.id)
+                                  }}
+                                />
+                              </div>
                               <button onClick={() => deleteIng(ing.id)} style={{
                                 background: 'none', border: 'none', cursor: 'pointer',
                                 color: 'var(--red)', fontFamily: "'Noto Sans KR', sans-serif", fontWeight: 700,
@@ -753,16 +753,16 @@ export default function Calculator({ menu, onChange }: Props) {
         {menu.ingredients.map((ing: any, idx: number) => ({ ing, idx }))
           .filter(({ ing }) => ing.name && ing.use_amount > 0)
           .map(({ ing, idx }) => (
-          <div key={ing.id} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '6px 0', borderBottom: '1px solid #F4F8FB' }}>
-            <span style={{ fontSize: '0.88rem', color: '#2C3E50', fontWeight: 500 }}>{ing.name}</span>
-            <div style={{ display: 'flex', gap: 20, alignItems: 'center' }}>
-              <span style={{ fontSize: '0.78rem', color: '#8FA3B5' }}>{ing.use_amount.toLocaleString()}{ing.unit}</span>
-              <span style={{ fontSize: '0.88rem', color: '#4A7FA5', fontWeight: 700, minWidth: 60, textAlign: 'right' }}>
-                {calc.ingCosts[idx] > 0 ? fmt(calc.ingCosts[idx]) + '원' : '—'}
-              </span>
+            <div key={ing.id} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '6px 0', borderBottom: '1px solid #F4F8FB' }}>
+              <span style={{ fontSize: '0.88rem', color: '#2C3E50', fontWeight: 500 }}>{ing.name}</span>
+              <div style={{ display: 'flex', gap: 20, alignItems: 'center' }}>
+                <span style={{ fontSize: '0.78rem', color: '#8FA3B5' }}>{ing.use_amount.toLocaleString()}{ing.unit}</span>
+                <span style={{ fontSize: '0.88rem', color: '#4A7FA5', fontWeight: 700, minWidth: 60, textAlign: 'right' }}>
+                  {calc.ingCosts[idx] > 0 ? fmt(calc.ingCosts[idx]) + '원' : '—'}
+                </span>
+              </div>
             </div>
-          </div>
-        ))}
+          ))}
         <div style={{ display: 'flex', justifyContent: 'space-between', padding: '10px 0 18px', borderBottom: '1px solid #EEF4F8' }}>
           <span style={{ fontSize: '0.78rem', color: '#8FA3B5' }}>재료 소계</span>
           <span style={{ fontSize: '0.92rem', fontWeight: 700, color: '#1E2D40' }}>{fmt(calc.ingTotal)}원</span>
