@@ -140,12 +140,15 @@ export default function Calculator({ menu, onChange, onSave }: Props) {
       )
     })
   }
-      const syncTimer = useRef<any>(null)
-      const debouncedSync = (ing: any) => {
-        if (syncTimer.current) clearTimeout(syncTimer.current)
-        syncTimer.current = setTimeout(() => {
-          console.log('debouncedSync 실행:', ing.name, ing.price, ing.qty)
-          syncToFridge(ing)
+      const syncTimers = useRef<{[id: string]: any}>({})
+      const latestIngredients = useRef(menu.ingredients)
+      latestIngredients.current = menu.ingredients
+
+      const debouncedSync = (id: string) => {
+        if (syncTimers.current[id]) clearTimeout(syncTimers.current[id])
+        syncTimers.current[id] = setTimeout(() => {
+          const ing = latestIngredients.current.find(i => i.id === id)
+          if (ing) syncToFridge(ing)
         }, 800)
       }
       const syncToFridge = async (ing: any) => {
@@ -153,24 +156,19 @@ export default function Calculator({ menu, onChange, onSave }: Props) {
         const { data: { session } } = await supabase.auth.getSession()
         if (!session) return
 
-        console.log('syncToFridge 실행:', ing.name, ing.price, ing.qty)
-
-        const { data, error } = await supabase
+        const { data } = await supabase
           .from('fridge')
           .select('id')
           .eq('user_id', session.user.id)
           .eq('name', ing.name)
           .maybeSingle()
 
-        console.log('fridge 조회 결과:', data, error)
-
         if (data) {
-          const { error: updateError } = await supabase.from('fridge').update({
+          await supabase.from('fridge').update({
             price: ing.price, per: ing.qty, unit: ing.unit, yield_: ing.yield_
           }).eq('id', data.id)
-          console.log('업데이트 결과:', updateError)
         } else {
-          const { error: insertError } = await supabase.from('fridge').insert({
+          await supabase.from('fridge').insert({
             user_id: session.user.id,
             name: ing.name,
             price: ing.price,
@@ -179,7 +177,6 @@ export default function Calculator({ menu, onChange, onSave }: Props) {
             yield_: ing.yield_,
             category: '기타'
           })
-          console.log('insert 결과:', insertError)
         }
       }
 
@@ -371,9 +368,8 @@ export default function Calculator({ menu, onChange, onSave }: Props) {
                                     onChange={e => {
                                       const val = fromComma(e.target.value)
                                       updateIng(ing.id, 'price', val)
-                                      debouncedSync({ ...ing, price: val })
+                                      debouncedSync(ing.id)
                                     }}
-                                    onBlur={e => syncToFridge({ ...ing, [e.target.name]: fromComma(e.target.value) })}
                                   />
                                 </div>
 
@@ -388,9 +384,8 @@ export default function Calculator({ menu, onChange, onSave }: Props) {
                                       onChange={e => {
                                         const val = fromComma(e.target.value)
                                         updateIng(ing.id, 'qty', val)
-                                        debouncedSync({ ...ing, qty: val })
+                                        debouncedSync(ing.id)
                                       }}
-                                      onBlur={e => syncToFridge({ ...ing, [e.target.name]: fromComma(e.target.value) })}
 
                                     />
                                     <select
@@ -416,9 +411,8 @@ export default function Calculator({ menu, onChange, onSave }: Props) {
                                     onChange={e => {
                                         const val = fromComma(e.target.value)
                                         updateIng(ing.id, 'yield_', val)
-                                        debouncedSync({ ...ing, yield_: val })
+                                        debouncedSync(ing.id)
                                       }}
-                                    onBlur={e => syncToFridge({ ...ing, [e.target.name]: fromComma(e.target.value) })}
                                   />
                                 </div>
                               <button onClick={() => deleteIng(ing.id)} style={{
