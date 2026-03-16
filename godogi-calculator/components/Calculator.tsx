@@ -376,7 +376,7 @@ export default function Calculator({ menu, onChange, onSave }: Props) {
                       {openRows.has(ing.id) && (
                         <tr>
                           <td colSpan={5} style={{ padding: '0 2px 10px' }}>
-                            <div style={{
+                            <div className="ing-detail-grid" style={{
                               background: 'var(--silver-light)', borderRadius: 12,
                               padding: '11px 12px', display: 'grid',
                               gridTemplateColumns: '1fr 1fr 1fr auto', gap: 8, alignItems: 'end'
@@ -722,6 +722,13 @@ export default function Calculator({ menu, onChange, onSave }: Props) {
         </div>
       )}
 
+      <style>{`
+        @media (max-width: 768px) {
+          .ing-detail-grid {
+            grid-template-columns: 1fr 1fr !important;
+          }
+        }
+      `}</style>
     </div>
   )
 }
