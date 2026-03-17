@@ -18,6 +18,10 @@ interface Ingredient {
 interface Menu {
   id: string
   name: string
+  category?: string
+  emoji?: string
+  batch_yield?: number
+  serving_size?: number
   ingredients: Ingredient[]
   packaging: number
   labor: number
@@ -25,6 +29,8 @@ interface Menu {
   delivery_fee: number
   card_fee: number
   sale_price: number
+  memo?: string
+  created_at?: string
 }
 
 function calcMenu(menu: Menu) {
@@ -35,13 +41,15 @@ function calcMenu(menu: Menu) {
     return unitCost * (ing.use_amount || 0)
   })
   const ingTotal = ingCosts.reduce((a, b) => a + b, 0)
-  const baseCost = ingTotal + (menu.packaging || 0) + (menu.labor || 0) + (menu.overhead || 0)
-  const feeRate = ((menu.delivery_fee || 0) + (menu.card_fee || 0)) / 100
-  const feeAmount = baseCost * feeRate
-  const totalCost = baseCost + feeAmount
+  const baseCost = ingTotal + (menu.labor || 0) + (menu.overhead || 0)
+  const isBatch = menu.category === 'banchan' && (menu.batch_yield || 0) > 0 && (menu.serving_size || 0) > 0
+  const batchRatio = isBatch
+    ? (menu.serving_size || 0) / (menu.batch_yield || 1)
+    : 1
+  const totalCost = baseCost * batchRatio
   const profit = (menu.sale_price || 0) - totalCost
   const costRate = menu.sale_price > 0 ? (totalCost / menu.sale_price) * 100 : 0
-  return { ingCosts, ingTotal, totalCost, profit, costRate }
+  return { ingCosts, ingTotal, totalCost, batchCost: baseCost, batchRatio, profit, costRate }
 }
 
 function fmt(n: number) { return Math.round(n).toLocaleString('ko-KR') }
@@ -58,6 +66,14 @@ function fromComma(val: string) {
 
 const UNITS = ['g', 'ml', '개', '팩', 'kg', 'L']
 
+const EMOJI_OPTIONS: Record<string, string[]> = {
+  main:    ['🍖', '🍗', '🥩', '🍲', '🫕', '🍜', '🍝', '🍛', '🍱', '🍣', '🥘', '🌮', '🫔', '🥗', '🍤', '🫙'],
+  side:    ['🍚', '🍳', '🥚', '🥞', '🫔', '🌯', '🥙', '🫓', '🍱', '🧆', '🥗', '🍘'],
+  banchan: ['🥬', '🥦', '🥕', '🌱', '🫑', '🥒', '🧅', '🫘', '🍄', '🫒', '🧄', '🌿', '🥜', '🍠', '🧂', '🥗'],
+  drink:   ['🥤', '🧃', '🍵', '☕', '🧋', '🍺', '🍶', '🥛', '🍹', '🧊', '🫖', '🍊'],
+  extra:   ['📦', '🛍️', '🥢', '🛵', '🧾', '🏷️', '💳', '🔖', '🪣', '📫', '🎁', '🗂️'],
+}
+
 function genId() { return crypto.randomUUID() }
 
 function defaultIngredient(): Ingredient {
@@ -70,7 +86,6 @@ interface Props {
 }
 
 export default function Calculator({ menu, onChange }: Props) {
-  const calc = calcMenu(menu)
   const supabase = createClient()
   const exportRef = useRef<HTMLDivElement>(null)
 
@@ -106,10 +121,32 @@ export default function Calculator({ menu, onChange }: Props) {
   const [suggestions, setSuggestions] = useState<{ [key: string]: any[] }>({})
   const [showSugg, setShowSugg] = useState<{ [key: string]: boolean }>({})
   const [openRows, setOpenRows] = useState<Set<string>>(new Set())
+  const [showSaved, setShowSaved] = useState(false)
   const [showOverheadModal, setShowOverheadModal] = useState(false)
   const [overheadForm, setOverheadForm] = useState({ fixed: '', days: '', count: '' })
   const [showLaborModal, setShowLaborModal] = useState(false)
   const [laborForm, setLaborForm] = useState({ labor: '', days: '', count: '' })
+  const [showEmojiPicker, setShowEmojiPicker] = useState(false)
+  const [showBatchModal, setShowBatchModal] = useState(false)
+  const [drinkSimple, setDrinkSimple] = useState(
+    () => menu.category !== 'drink' || !menu.ingredients.some(i => i.name)
+  )
+
+  const autoYield = Math.round(menu.ingredients.reduce((sum, ing) => {
+    const useAmt = ing.use_amount || 0
+    const yld = (ing.yield_ || 100) / 100
+    if (ing.unit === 'g')  return sum + useAmt * yld
+    if (ing.unit === 'kg') return sum + useAmt * yld * 1000
+    if (ing.unit === 'ml') return sum + useAmt * yld
+    if (ing.unit === 'L')  return sum + useAmt * yld * 1000
+    return sum
+  }, 0))
+
+  const isBatchMode = menu.category === 'banchan'
+  const menuForCalc = (isBatchMode && (menu.batch_yield || 0) === 0 && autoYield > 0)
+    ? { ...menu, batch_yield: autoYield }
+    : menu
+  const calc = calcMenu(menuForCalc)
 
   useEffect(() => {
     const loadFridge = async () => {
@@ -219,13 +256,15 @@ export default function Calculator({ menu, onChange }: Props) {
   }
 
   const godogiComment = () => {
-    const { profit, costRate } = calc
-    if (menu.sale_price <= 0) return '판매가를 입력해줘야 고독이도 계산할 수 있어요... 🐟'
-    if (profit < 0) return '적자예요... 🐟 가격을 올리거나 원가를 줄여봐요.'
-    if (costRate > 80) return `원가율이 ${costRate.toFixed(1)}%네요. 고독이가 걱정돼요 🐟`
-    if (costRate > 60) return `원가율 ${costRate.toFixed(1)}%. 조금 더 줄일 수 있을 것 같아요 🐟`
-    if (costRate > 40) return `원가율 ${costRate.toFixed(1)}%. 괜찮아요! 고독이도 흡족해요 🐟`
-    return `원가율 ${costRate.toFixed(1)}%! 훌륭해요 🐟 고독이가 자랑스러워해요!`
+    if (menu.category === 'banchan') {
+      if ((menu.batch_yield || 0) === 0 || (menu.serving_size || 0) === 0) return '완성 총중량과 1인분 양을 입력하면 인분 계산이 돼요 🐟'
+      const servings = Math.round((menuForCalc.batch_yield || 1) / (menu.serving_size || 1))
+      return `한 번 만들면 약 ${servings}인분! 1인분 원가 ${fmt(calc.totalCost)}원이에요 🐟`
+    }
+    if (menu.category === 'extra') {
+      return menu.overhead > 0 ? `단가 ${fmt(menu.overhead)}원짜리 부가 항목이에요 🐟` : '단가를 입력해줘요 🐟'
+    }
+    return `총 원가 ${fmt(calc.totalCost)}원이에요. 메뉴구성에서 세트로 묶으면 원가율을 확인할 수 있어요 🐟`
   }
 
   const card = (children: React.ReactNode) => (
@@ -250,7 +289,7 @@ export default function Calculator({ menu, onChange }: Props) {
   const inputStyle: React.CSSProperties = {
     width: '100%', background: 'var(--silver-light)',
     border: '1.5px solid transparent', borderRadius: 9,
-    padding: '8px 6px', fontFamily: 'Gowun Dodum',
+    padding: '8px 6px', fontFamily: "'Noto Sans KR', sans-serif",
     fontSize: '0.83rem', color: 'var(--text)',
     textAlign: 'center', outline: 'none'
   }
@@ -280,21 +319,132 @@ export default function Calculator({ menu, onChange }: Props) {
         <input
           value={menu.name}
           onChange={e => onChange({ ...menu, name: e.target.value })}
-          placeholder="메뉴 이름 입력"
+          placeholder={{
+            main:    '예: 제육볶음',
+            side:    '예: 공깃밥',
+            banchan: '예: 깍두기',
+            drink:   '예: 아메리카노',
+            extra:   '예: 원형 포장용기(소)',
+          }[menu.category || 'main'] ?? '메뉴 이름 입력'}
           style={{
-            flex: 1, fontFamily: 'Black Han Sans', fontSize: '1.5rem',
+            flex: 1, fontFamily: "'Noto Sans KR', sans-serif", fontWeight: 700, fontSize: '1.1rem',
             color: 'var(--navy)', background: 'none',
             border: 'none', borderBottom: '2px solid var(--border)',
             outline: 'none', padding: '4px 0',
             cursor: 'text', maxWidth: '100%', width: '100%'
           }}
         />
-        <button onClick={handleExport} className="save-btn" style={{
-          background: 'var(--blue)', color: 'white', border: 'none',
-          borderRadius: 12, padding: '10px 18px',
-          fontFamily: "'Noto Sans KR', sans-serif", fontWeight: 700, fontSize: '0.85rem', cursor: 'pointer'
-        }}>📷 저장</button>
+        <button onClick={() => { setShowSaved(true); setTimeout(() => setShowSaved(false), 1800) }} style={{
+          background: showSaved ? 'var(--green)' : 'var(--silver-light)',
+          color: showSaved ? 'white' : 'var(--text-mid)',
+          border: 'none', borderRadius: 12, padding: '10px 16px',
+          fontFamily: "'Noto Sans KR', sans-serif", fontWeight: 700, fontSize: '0.82rem',
+          cursor: 'pointer', transition: 'all 0.2s', whiteSpace: 'nowrap'
+        }}>{showSaved ? '✓ 저장됨' : '💾 저장'}</button>
       </div>
+
+      {/* 카테고리 + 이모지 */}
+      <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 20, flexWrap: 'wrap' }}>
+        <div style={{ position: 'relative' }}>
+          <button
+            onClick={() => setShowEmojiPicker(p => !p)}
+            style={{
+              width: 44, height: 38, background: 'var(--silver-light)',
+              border: '1.5px solid var(--border)', borderRadius: 8,
+              fontSize: '1.3rem', cursor: 'pointer', padding: 0,
+              display: 'flex', alignItems: 'center', justifyContent: 'center',
+            }}
+          >{menu.emoji || '🍽️'}</button>
+          {showEmojiPicker && (
+            <>
+              <div style={{ position: 'fixed', inset: 0, zIndex: 99 }} onClick={() => setShowEmojiPicker(false)} />
+              <div style={{
+                position: 'absolute', top: '100%', left: 0, zIndex: 100,
+                background: 'white', border: '1.5px solid var(--border)', borderRadius: 12,
+                padding: 10, boxShadow: '0 4px 20px rgba(0,0,0,0.12)',
+                display: 'grid', gridTemplateColumns: 'repeat(8, 1fr)', gap: 4, marginTop: 4,
+                minWidth: 260,
+              }}>
+                {(EMOJI_OPTIONS[menu.category || 'main'] || EMOJI_OPTIONS.main).map(e => (
+                  <button key={e}
+                    onClick={() => { onChange({ ...menu, emoji: e }); setShowEmojiPicker(false) }}
+                    style={{ background: 'none', border: 'none', fontSize: '1.3rem', cursor: 'pointer', padding: '4px', borderRadius: 6 }}
+                  >{e}</button>
+                ))}
+              </div>
+            </>
+          )}
+        </div>
+        {([
+          { value: 'main',    label: '메인',   color: '#4A7FA5' },
+          { value: 'side',    label: '사이드',  color: '#4A8C6F' },
+          { value: 'banchan', label: '반찬',   color: '#C44A4A' },
+          { value: 'drink',   label: '음료',   color: '#9B6B9B' },
+          { value: 'extra',   label: '기타',   color: '#C8843A' },
+        ] as const).map(({ value, label, color }) => {
+          const selected = (menu.category || 'main') === value
+          return (
+            <button key={value} onClick={() => { onChange({ ...menu, category: value }); setShowEmojiPicker(false) }} style={{
+              background: selected ? color : 'transparent',
+              color: selected ? 'white' : color,
+              border: `1.5px solid ${color}`,
+              borderRadius: 20, padding: '4px 12px',
+              fontFamily: "'Noto Sans KR', sans-serif", fontWeight: 700,
+              fontSize: '0.72rem', cursor: 'pointer',
+            }}>{label}</button>
+          )
+        })}
+      </div>
+
+      {/* 음료 모드 토글 */}
+      {menu.category === 'drink' && (
+        <div style={{ display: 'flex', gap: 4, marginBottom: 16, background: 'var(--silver-light)', borderRadius: 12, padding: 4 }}>
+          {[{ v: true, l: '🥤 기성품' }, { v: false, l: '☕ 직접제조' }].map(({ v, l }) => (
+            <button key={String(v)} onClick={() => setDrinkSimple(v)} style={{
+              flex: 1, padding: '7px 0', borderRadius: 9, border: 'none',
+              background: drinkSimple === v ? 'white' : 'transparent',
+              color: 'var(--navy)', fontFamily: "'Noto Sans KR', sans-serif", fontWeight: 700,
+              fontSize: '0.8rem', cursor: 'pointer',
+              boxShadow: drinkSimple === v ? '0 1px 4px rgba(0,0,0,0.1)' : 'none',
+            }}>{l}</button>
+          ))}
+        </div>
+      )}
+
+      {(menu.category === 'extra' || (menu.category === 'drink' && drinkSimple)) ? card(<>
+        {cardTitle(menu.category === 'drink' ? '구매 단가' : '원가 직접 입력')}
+        {menu.category === 'extra' && (
+          <div style={{ fontSize: '0.75rem', color: 'var(--text-soft)', marginBottom: 12, background: 'rgba(200,132,58,0.07)', borderRadius: 8, padding: '8px 12px', border: '1px solid rgba(200,132,58,0.15)' }}>
+            📦 세트 구성 시 원가에 더해지는 부가 항목이에요. 포장용기, 소모품, 배달비 분담 등에 활용해보세요.
+          </div>
+        )}
+        <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+          <input
+            style={{ ...inputStyle, textAlign: 'right', padding: '11px 16px', fontSize: '1.1rem', fontFamily: "'Noto Sans KR',sans-serif", fontWeight: 700 }}
+            value={toComma(menu.overhead)}
+            inputMode="numeric"
+            placeholder="0"
+            onChange={e => onChange({ ...menu, overhead: fromComma(e.target.value) })}
+          />
+          <span style={{ color: 'var(--text-soft)', fontSize: '0.9rem', whiteSpace: 'nowrap' }}>원</span>
+        </div>
+        <div style={{ fontSize: '0.72rem', color: 'var(--text-soft)', marginTop: 6 }}>
+          {menu.category === 'drink' ? '기성품 음료의 개당 구매 단가를 입력해주세요' : '이 항목의 단가를 입력해주세요'}
+        </div>
+        {menu.category === 'extra' && (
+          <div style={{ marginTop: 12 }}>
+            <label style={{ fontSize: '0.72rem', color: 'var(--text-mid)', fontFamily: "'Noto Sans KR', sans-serif", fontWeight: 700, display: 'block', marginBottom: 5 }}>
+              📝 메모 (선택)
+            </label>
+            <input
+              style={{ ...inputStyle, textAlign: 'left', padding: '9px 12px' }}
+              value={menu.memo || ''}
+              placeholder="예: 배달 주문 시 필수 추가"
+              onChange={e => onChange({ ...menu, memo: e.target.value })}
+            />
+          </div>
+        )}
+      </>) : (<>
 
       {/* 재료 카드 */}
       {card(<>
@@ -469,24 +619,62 @@ export default function Calculator({ menu, onChange }: Props) {
         }}>＋ 재료 추가</button>
       </>)}
 
+      {/* 배치 수율 (반찬 / 음료 직접제조) */}
+      {isBatchMode && card(<>
+        <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 16 }}>
+          <span style={{ width: 3, height: 14, background: 'var(--blue)', borderRadius: 3, display: 'inline-block', flexShrink: 0 }} />
+          <span style={{ fontFamily: "'Noto Sans KR', sans-serif", fontWeight: 700, fontSize: '0.85rem', color: 'var(--text-mid)', letterSpacing: '0.05em' }}>배치 수율</span>
+          {helpBtn(() => setShowBatchModal(true))}
+        </div>
+        <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 12 }}>
+          <div style={{ display: 'flex', flexDirection: 'column', gap: 5 }}>
+            <label style={{ fontSize: '0.72rem', color: 'var(--text-mid)', fontFamily: "'Noto Sans KR', sans-serif", fontWeight: 700 }}>
+              🍳 완성 총중량 ({menu.category === 'drink' ? 'ml' : 'g'})
+            </label>
+            <div style={{ display: 'flex', gap: 6 }}>
+              <input style={{ ...inputStyle, textAlign: 'left', padding: '9px 12px', flex: 1 }}
+                value={toComma(menu.batch_yield || 0)} inputMode="numeric"
+                placeholder={autoYield > 0 ? `${autoYield}` : (menu.category === 'drink' ? '예: 500' : '예: 1800')}
+                onChange={e => onChange({ ...menu, batch_yield: fromComma(e.target.value) })}
+              />
+              {autoYield > 0 && (menu.batch_yield || 0) === 0 && (
+                <button onClick={() => onChange({ ...menu, batch_yield: autoYield })}
+                  style={{ padding: '0 10px', borderRadius: 8, border: '1px solid var(--blue)', background: 'transparent', color: 'var(--blue)', fontSize: '0.72rem', cursor: 'pointer', whiteSpace: 'nowrap', fontFamily: "'Noto Sans KR', sans-serif", fontWeight: 700 }}>
+                  ← 자동
+                </button>
+              )}
+            </div>
+          </div>
+          <div style={{ display: 'flex', flexDirection: 'column', gap: 5 }}>
+            <label style={{ fontSize: '0.72rem', color: 'var(--text-mid)', fontFamily: "'Noto Sans KR', sans-serif", fontWeight: 700 }}>
+              {menu.category === 'drink' ? '🥤 1잔 제공량 (ml)' : '🥬 1인분 제공량 (g)'}
+            </label>
+            <input style={{ ...inputStyle, textAlign: 'left', padding: '9px 12px' }}
+              value={toComma(menu.serving_size || 0)} inputMode="numeric"
+              placeholder={menu.category === 'drink' ? '예: 350' : '예: 60'}
+              onChange={e => onChange({ ...menu, serving_size: fromComma(e.target.value) })}
+            />
+          </div>
+        </div>
+        {(menuForCalc.batch_yield || 0) > 0 && (menu.serving_size || 0) > 0 && (
+          <div style={{ marginTop: 10, fontSize: '0.78rem', color: 'var(--text-soft)', background: 'var(--silver-light)', borderRadius: 8, padding: '8px 12px' }}>
+            약 <strong>{Math.round((menuForCalc.batch_yield || 1) / (menu.serving_size || 1))}{menu.category === 'drink' ? '잔' : '인분'}</strong> 기준 →
+            1{menu.category === 'drink' ? '잔' : '인분'} 원가 = 배치 원가 × ({menu.serving_size}{menu.category === 'drink' ? 'ml' : 'g'} ÷ {menuForCalc.batch_yield}{menu.category === 'drink' ? 'ml' : 'g'})
+          </div>
+        )}
+      </>)}
+
       {/* 추가 비용 */}
       {card(<>
         {cardTitle('추가 비용')}
-        <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: 12 }}>
-          {/* 포장비 */}
-          <div style={{ display: 'flex', flexDirection: 'column', gap: 5 }}>
-            <label style={{ fontSize: '0.72rem', color: 'var(--text-mid)', fontFamily: "'Noto Sans KR', sans-serif", fontWeight: 700 }}>
-              📦 포장비 (원)
-            </label>
-            <input style={{ ...inputStyle, textAlign: 'left', padding: '9px 12px' }}
-              value={toComma(menu.packaging)} inputMode="numeric"
-              onChange={e => onChange({ ...menu, packaging: fromComma(e.target.value) })}
-            />
-          </div>
+        <div style={{ fontSize: '0.68rem', color: 'var(--text-soft)', marginBottom: 10, opacity: 0.7 }}>
+          배달·카드 수수료는 메뉴 구성에서 채널별로 설정해요
+        </div>
+        <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 12 }}>
           {/* 인건비 */}
           <div style={{ display: 'flex', flexDirection: 'column', gap: 5 }}>
             <label style={{ fontSize: '0.72rem', color: 'var(--text-mid)', fontFamily: "'Noto Sans KR', sans-serif", fontWeight: 700, display: 'flex', alignItems: 'center', gap: 4 }}>
-              👩‍🍳 인건비
+              👩‍🍳 인건비 (원)
               {helpBtn(() => setShowLaborModal(true))}
             </label>
             <input style={{ ...inputStyle, textAlign: 'left', padding: '9px 12px' }}
@@ -497,7 +685,7 @@ export default function Calculator({ menu, onChange }: Props) {
           {/* 간접비 */}
           <div style={{ display: 'flex', flexDirection: 'column', gap: 5 }}>
             <label style={{ fontSize: '0.72rem', color: 'var(--text-mid)', fontFamily: "'Noto Sans KR', sans-serif", fontWeight: 700, display: 'flex', alignItems: 'center', gap: 4 }}>
-              🏠 간접비
+              🏠 간접비 (원)
               {helpBtn(() => setShowOverheadModal(true))}
             </label>
             <input style={{ ...inputStyle, textAlign: 'left', padding: '9px 12px' }}
@@ -507,73 +695,93 @@ export default function Calculator({ menu, onChange }: Props) {
           </div>
         </div>
       </>)}
-
-      {/* 수수료 */}
-      {card(<>
-        {cardTitle('수수료')}
-        <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 12 }}>
-          {[
-            { label: '🛵 배달 수수료 (%)', field: 'delivery_fee' },
-            { label: '💳 카드 수수료 (%)', field: 'card_fee' },
-          ].map(({ label, field }) => (
-            <div key={field} style={{ display: 'flex', flexDirection: 'column', gap: 5 }}>
-              <label style={{ fontSize: '0.72rem', color: 'var(--text-mid)', fontFamily: "'Noto Sans KR', sans-serif", fontWeight: 700 }}>{label}</label>
-              <input style={{ ...inputStyle, textAlign: 'left', padding: '9px 12px' }}
-                value={(menu as any)[field] || ''} inputMode="decimal"
-                onChange={e => onChange({ ...menu, [field]: parseFloat(e.target.value) || 0 })}
-              />
-            </div>
-          ))}
-        </div>
       </>)}
 
-      {/* 판매가 */}
-      {card(<>
-        {cardTitle('판매가')}
-        <div style={{ display: 'flex', alignItems: 'center', gap: 8, maxWidth: 280 }}>
-          <input
-            style={{
-              ...inputStyle, textAlign: 'left', padding: '11px 16px',
-              fontFamily: "'Noto Sans KR', sans-serif", fontWeight: 700, fontSize: '1.1rem',
-              background: 'white', border: '2px solid var(--blue-light)',
-              borderRadius: 12, flex: 1
-            }}
-            value={toComma(menu.sale_price)} placeholder="판매 가격 입력"
-            inputMode="numeric"
-            onChange={e => onChange({ ...menu, sale_price: fromComma(e.target.value) })}
-          />
-          <span style={{ fontFamily: "'Noto Sans KR', sans-serif", fontWeight: 700, fontSize: '1rem', color: 'var(--text-mid)', whiteSpace: 'nowrap' }}>원</span>
-        </div>
-      </>)}
 
-      {/* 결과 */}
-      <div style={{
-        background: 'var(--navy)', borderRadius: 20,
-        padding: '24px 22px', marginTop: 16
-      }}>
-        <div style={{ fontFamily: "'Noto Sans KR', sans-serif", fontWeight: 700, fontSize: '0.8rem', color: 'rgba(200,216,228,0.5)', marginBottom: 16 }}>
-          📊 계산 결과
-        </div>
-        <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 12, marginBottom: 16 }}>
-          {[
-            { label: '🥬 총 재료 원가', value: fmt(calc.ingTotal) + '원', color: 'var(--blue-light)' },
-            { label: '💰 총 원가', value: fmt(calc.totalCost) + '원', color: 'white' },
-            { label: '✨ 순이익', value: menu.sale_price > 0 ? (calc.profit >= 0 ? '+' : '') + fmt(calc.profit) + '원' : '—', color: calc.profit < 0 ? '#F08080' : '#7EC8A0' },
-            { label: '📈 원가율', value: menu.sale_price > 0 ? calc.costRate.toFixed(1) + '%' : '—', color: '#F4A460' },
-          ].map(({ label, value, color }) => (
-            <div key={label} style={{
-              background: 'rgba(255,255,255,0.05)', borderRadius: 14, padding: '14px 16px'
-            }}>
-              <div style={{ fontSize: '0.72rem', color: 'rgba(200,216,228,0.5)', marginBottom: 6 }}>{label}</div>
-              <div style={{ fontFamily: "'Noto Sans KR', sans-serif", fontWeight: 700, fontSize: '1.3rem', color }}>{value}</div>
+      {/* 결과 — 반찬 */}
+      {menu.category === 'banchan' && (
+        <div style={{ background: 'var(--navy)', borderRadius: 20, padding: '24px 22px', marginTop: 16 }}>
+          <div style={{ fontFamily: "'Noto Sans KR', sans-serif", fontWeight: 700, fontSize: '0.8rem', color: 'rgba(200,216,228,0.5)', marginBottom: 16 }}>📊 계산 결과</div>
+          <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 12, marginBottom: 12 }}>
+            <div style={{ background: 'rgba(255,255,255,0.05)', borderRadius: 14, padding: '14px 16px' }}>
+              <div style={{ fontSize: '0.72rem', color: 'rgba(200,216,228,0.5)', marginBottom: 6 }}>🍳 배치 전체 원가</div>
+              <div style={{ fontFamily: "'Noto Sans KR', sans-serif", fontWeight: 700, fontSize: '1.3rem', color: 'var(--blue-light)' }}>{fmt(calc.batchCost)}원</div>
             </div>
-          ))}
+            <div style={{ background: 'rgba(255,255,255,0.05)', borderRadius: 14, padding: '14px 16px' }}>
+              <div style={{ fontSize: '0.72rem', color: 'rgba(200,216,228,0.5)', marginBottom: 6 }}>👥 총 인분</div>
+              <div style={{ fontFamily: "'Noto Sans KR', sans-serif", fontWeight: 700, fontSize: '1.3rem', color: 'white' }}>
+                {(menuForCalc.batch_yield || 0) > 0 && (menu.serving_size || 0) > 0
+                  ? `약 ${Math.round((menuForCalc.batch_yield || 1) / (menu.serving_size || 1))}인분`
+                  : '—'}
+              </div>
+            </div>
+          </div>
+          <div style={{ background: 'rgba(196,74,74,0.15)', borderRadius: 14, padding: '16px', marginBottom: 12, border: '1px solid rgba(196,74,74,0.25)' }}>
+            <div style={{ fontSize: '0.72rem', color: 'rgba(200,216,228,0.5)', marginBottom: 6 }}>🥬 1인분 원가</div>
+            <div style={{ fontFamily: "'Noto Sans KR', sans-serif", fontWeight: 700, fontSize: '1.8rem', color: '#F08080' }}>
+              {calc.batchRatio < 1 ? `${fmt(calc.totalCost)}원` : '인분 설정 필요'}
+            </div>
+          </div>
+          <div style={{ display: 'flex', alignItems: 'center', gap: 10, padding: '12px 14px', background: 'rgba(74,127,165,0.12)', borderRadius: 12 }}>
+            <span>🐟</span>
+            <span style={{ fontSize: '0.8rem', color: 'rgba(200,216,228,0.7)' }}>{godogiComment()}</span>
+          </div>
         </div>
-        <div style={{ display: 'flex', alignItems: 'center', gap: 10, padding: '12px 14px', background: 'rgba(74,127,165,0.12)', borderRadius: 12 }}>
-          <span>🐟</span>
-          <span style={{ fontSize: '0.8rem', color: 'rgba(200,216,228,0.7)' }}>{godogiComment()}</span>
+      )}
+
+      {/* 결과 — 기타 */}
+      {menu.category === 'extra' && (
+        <div style={{ background: 'var(--navy)', borderRadius: 20, padding: '24px 22px', marginTop: 16 }}>
+          <div style={{ fontFamily: "'Noto Sans KR', sans-serif", fontWeight: 700, fontSize: '0.8rem', color: 'rgba(200,216,228,0.5)', marginBottom: 16 }}>📊 계산 결과</div>
+          <div style={{ background: 'rgba(200,132,58,0.15)', borderRadius: 14, padding: '16px', marginBottom: 12, border: '1px solid rgba(200,132,58,0.25)' }}>
+            <div style={{ fontSize: '0.72rem', color: 'rgba(200,216,228,0.5)', marginBottom: 6 }}>📦 단가</div>
+            <div style={{ fontFamily: "'Noto Sans KR', sans-serif", fontWeight: 700, fontSize: '1.8rem', color: '#F4A460' }}>
+              {menu.overhead > 0 ? `${fmt(menu.overhead)}원` : '—'}
+            </div>
+          </div>
+          {menu.memo && (
+            <div style={{ fontSize: '0.78rem', color: 'rgba(200,216,228,0.45)', padding: '8px 12px', background: 'rgba(255,255,255,0.04)', borderRadius: 10, marginBottom: 12 }}>
+              📝 {menu.memo}
+            </div>
+          )}
+          <div style={{ display: 'flex', alignItems: 'center', gap: 10, padding: '12px 14px', background: 'rgba(74,127,165,0.12)', borderRadius: 12 }}>
+            <span>🐟</span>
+            <span style={{ fontSize: '0.8rem', color: 'rgba(200,216,228,0.7)' }}>{godogiComment()}</span>
+          </div>
         </div>
-      </div>
+      )}
+
+      {/* 결과 — 메인/사이드/음료 */}
+      {!['banchan', 'extra'].includes(menu.category || 'main') && (
+        <div style={{ background: 'var(--navy)', borderRadius: 20, padding: '24px 22px', marginTop: 16 }}>
+          <div style={{ fontFamily: "'Noto Sans KR', sans-serif", fontWeight: 700, fontSize: '0.8rem', color: 'rgba(200,216,228,0.5)', marginBottom: 16 }}>📊 계산 결과</div>
+          <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 12, marginBottom: 16 }}>
+            {[
+              { label: '🥬 총 재료 원가', value: fmt(calc.ingTotal) + '원', color: 'var(--blue-light)' },
+              { label: '💰 총 원가', value: fmt(calc.totalCost) + '원', color: 'white' },
+            ].map(({ label, value, color }) => (
+              <div key={label} style={{ background: 'rgba(255,255,255,0.05)', borderRadius: 14, padding: '14px 16px' }}>
+                <div style={{ fontSize: '0.72rem', color: 'rgba(200,216,228,0.5)', marginBottom: 6 }}>{label}</div>
+                <div style={{ fontFamily: "'Noto Sans KR', sans-serif", fontWeight: 700, fontSize: '1.3rem', color }}>{value}</div>
+              </div>
+            ))}
+          </div>
+          <div style={{ display: 'flex', alignItems: 'center', gap: 10, padding: '12px 14px', background: 'rgba(74,127,165,0.12)', borderRadius: 12 }}>
+            <span>🐟</span>
+            <span style={{ fontSize: '0.8rem', color: 'rgba(200,216,228,0.7)' }}>{godogiComment()}</span>
+          </div>
+        </div>
+      )}
+
+      {/* 우하단 플로팅 내보내기 버튼 */}
+      <button onClick={handleExport} style={{
+        position: 'fixed', bottom: 24, right: 24, zIndex: 50,
+        width: 48, height: 48, borderRadius: '50%',
+        background: 'var(--navy)', color: 'white',
+        border: 'none', fontSize: '1.2rem',
+        cursor: 'pointer', boxShadow: '0 4px 14px rgba(30,45,64,0.3)',
+        display: 'flex', alignItems: 'center', justifyContent: 'center',
+      }} title="이미지로 내보내기">📷</button>
 
       {/* ── 인건비 계산 모달 ── */}
       {showLaborModal && (
@@ -731,6 +939,47 @@ export default function Calculator({ menu, onChange }: Props) {
         </div>
       )}
 
+      {/* ── 배치 수율 설명 모달 ── */}
+      {showBatchModal && (
+        <div onClick={() => setShowBatchModal(false)} style={{
+          position: 'fixed', inset: 0, zIndex: 100,
+          background: 'rgba(0,0,0,0.5)',
+          display: 'flex', alignItems: 'center', justifyContent: 'center',
+          padding: '0 20px'
+        }}>
+          <div onClick={e => e.stopPropagation()} style={{
+            background: 'white', borderRadius: 20, padding: 24,
+            width: '100%', maxWidth: 340,
+            display: 'flex', flexDirection: 'column', gap: 14
+          }}>
+            <div style={{ fontFamily: "'Noto Sans KR', sans-serif", fontWeight: 700, fontSize: '1rem', color: 'var(--navy)' }}>
+              🍳 배치 수율이란?
+            </div>
+            <div style={{ display: 'flex', flexDirection: 'column', gap: 10, fontSize: '0.82rem', color: 'var(--text-mid)', lineHeight: 1.6 }}>
+              <p style={{ margin: 0 }}>
+                한 번에 <strong>대량으로 만든 뒤</strong> 나눠서 제공하는 방식의 원가 계산이에요.
+              </p>
+              <div style={{ background: 'var(--silver-light)', borderRadius: 10, padding: '10px 14px', fontSize: '0.78rem', color: 'var(--text-soft)' }}>
+                <div style={{ marginBottom: 4 }}>💡 예시</div>
+                <div>김치를 한 번에 2kg 담그는 데 재료비 8,000원이 들고,</div>
+                <div>1인분에 50g씩 준다면</div>
+                <div style={{ marginTop: 6, fontFamily: "'Noto Sans KR', sans-serif", fontWeight: 700, color: 'var(--navy)' }}>
+                  → 1인분 원가 = 8,000원 × (50g ÷ 2,000g) = <span style={{ color: 'var(--blue)' }}>200원</span>
+                </div>
+              </div>
+              <p style={{ margin: 0, fontSize: '0.75rem', color: 'var(--text-soft)' }}>
+                완성 총중량을 비워두면 재료의 사용량 합계로 자동 계산돼요.
+              </p>
+            </div>
+            <button onClick={() => setShowBatchModal(false)} style={{
+              padding: '10px 0', background: 'var(--navy)', border: 'none',
+              borderRadius: 10, color: 'white',
+              fontFamily: "'Noto Sans KR', sans-serif", fontWeight: 700, fontSize: '0.85rem', cursor: 'pointer'
+            }}>확인</button>
+          </div>
+        </div>
+      )}
+
       <style>{`
         @media (max-width: 768px) {
           .ing-detail-grid { grid-template-columns: 1fr 1fr !important; }
@@ -798,10 +1047,8 @@ export default function Calculator({ menu, onChange }: Props) {
         {/* 결과 박스 */}
         <div style={{ background: '#1E2D40', borderRadius: 16, padding: '20px 22px', marginTop: 20 }}>
           {[
+            { label: '🥬 총 재료 원가', value: fmt(calc.ingTotal) + '원', color: 'rgba(200,216,228,0.6)' },
             { label: '💰 총 원가', value: fmt(calc.totalCost) + '원', color: 'rgba(200,216,228,0.8)' },
-            { label: '🏷️ 판매가', value: menu.sale_price > 0 ? fmt(menu.sale_price) + '원' : '—', color: 'white' },
-            { label: '✨ 순이익', value: menu.sale_price > 0 ? (calc.profit >= 0 ? '+' : '') + fmt(calc.profit) + '원' : '—', color: calc.profit < 0 ? '#F08080' : '#7EC8A0' },
-            { label: '📈 원가율', value: menu.sale_price > 0 ? calc.costRate.toFixed(1) + '%' : '—', color: '#F4A460' },
           ].map(({ label, value, color }) => (
             <div key={label} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '7px 0', borderBottom: '1px solid rgba(255,255,255,0.06)' }}>
               <span style={{ fontSize: '0.8rem', color: 'rgba(200,216,228,0.5)' }}>{label}</span>
