@@ -28,7 +28,6 @@ function defaultMenu() {
   }
 }
 
-import { FIRST_LOGIN_MENU_SAMPLES as FIRST_LOGIN_SAMPLES } from '@/lib/sampleData'
 
 function calcCostRate(menu: any) {
   const ingTotal = menu.ingredients.reduce((sum: number, ing: any) => {
@@ -116,45 +115,6 @@ function CalculatorContent() {
         setMenus(formatted)
         const target = menuIdParam ? formatted.find((m: any) => m.id === menuIdParam) : null
         setCurrentId(target ? target.id : formatted[0].id)
-      } else {
-        // 첫 로그인 — 샘플 메뉴 13개 일괄 삽입 (홈에서 이미 처리됐을 경우 중복 방지)
-        const { data: insertedMenus } = await supabase.from('menus').insert(
-          FIRST_LOGIN_SAMPLES.map(({ ingredients: _ing, ...s }) => ({
-            user_id: user.id,
-            name: s.name,
-            emoji: s.emoji,
-            category: s.category,
-            packaging: s.packaging,
-            labor: s.labor,
-            overhead: s.overhead,
-            delivery_fee: s.delivery_fee,
-            card_fee: s.card_fee,
-            sale_price: s.sale_price,
-            batch_yield: s.batch_yield,
-            serving_size: s.serving_size,
-          }))
-        ).select()
-        if (insertedMenus && insertedMenus.length > 0) {
-          // 재료도 함께 삽입
-          const ingredientInserts: any[] = []
-          for (const m of insertedMenus) {
-            const sample = FIRST_LOGIN_SAMPLES.find((s: any) => s.name === m.name)
-            if (sample?.ingredients?.length) {
-              sample.ingredients.forEach((ing: any) => {
-                ingredientInserts.push({ menu_id: m.id, ...ing })
-              })
-            }
-          }
-          if (ingredientInserts.length > 0) {
-            await supabase.from('ingredients').insert(ingredientInserts)
-          }
-          const formatted = insertedMenus.map((m: any) => ({
-            ...m,
-            ingredients: FIRST_LOGIN_SAMPLES.find((s: any) => s.name === m.name)?.ingredients?.map((ing: any) => ({ ...ing, id: crypto.randomUUID(), menu_id: m.id })) || []
-          }))
-          setMenus(formatted)
-          setCurrentId(formatted[0].id)
-        }
       }
     }
 
