@@ -315,6 +315,8 @@ export default function SetBuilderProto() {
   const [showLeaveWarning, setShowLeaveWarning] = useState(false)
   const [pendingRoute, setPendingRoute] = useState<string | null>(null)
   const [isDirty, setIsDirty] = useState(false)
+  const [paletteSearch, setPaletteSearch] = useState('')
+  const [paletteCategory, setPaletteCategory] = useState<'all' | BlockCategory>('all')
 
   useEffect(() => {
     const stored = localStorage.getItem(FEES_KEY)
@@ -535,9 +537,24 @@ export default function SetBuilderProto() {
     }
   }
 
+  const filteredPalette = paletteBlocks.filter(b => {
+    const matchCat = paletteCategory === 'all' || b.category === paletteCategory
+    const matchSearch = b.name.toLowerCase().includes(paletteSearch.toLowerCase())
+    return matchCat && matchSearch
+  })
+
+  const CATEGORY_CHIPS: { key: 'all' | BlockCategory; label: string }[] = [
+    { key: 'all', label: '전체' },
+    { key: 'main', label: '메인' },
+    { key: 'side', label: '사이드' },
+    { key: 'banchan', label: '반찬' },
+    { key: 'drink', label: '음료' },
+    { key: 'extra', label: '기타' },
+  ]
+
   const PalettePanel = () => (
-    <div style={{ padding: '16px 14px', overflowY: 'auto', height: '100%' }}>
-      <div onClick={() => router.push('/')} style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 16, paddingBottom: 14, borderBottom: '1px solid rgba(255,255,255,0.06)', cursor: 'pointer' }}>
+    <div style={{ padding: '16px 14px', overflowY: 'auto', height: '100%', display: 'flex', flexDirection: 'column', gap: 0 }}>
+      <div onClick={() => router.push('/')} style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 14, paddingBottom: 14, borderBottom: '1px solid rgba(255,255,255,0.06)', cursor: 'pointer' }}>
         <svg width="28" height="28" viewBox="0 0 100 100" fill="none" xmlns="http://www.w3.org/2000/svg">
           <ellipse cx="50" cy="55" rx="32" ry="22" fill="#4A7FA5"/>
           <ellipse cx="50" cy="53" rx="30" ry="20" fill="#5B9EC9"/>
@@ -552,20 +569,60 @@ export default function SetBuilderProto() {
         </svg>
         <span style={{ fontWeight: 700, fontSize: '0.85rem', color: 'rgba(200,216,228,0.7)', letterSpacing: '-0.01em' }}>고독이의 원가계산기</span>
       </div>
-      {CATEGORY_ORDER.map(cat => {
-        const items = paletteBlocks.filter(b => b.category === cat)
-        if (items.length === 0) return null
-        return (
-          <div key={cat}>
-            <div style={{ fontSize: '0.62rem', color: 'rgba(200,216,228,0.28)', letterSpacing: '0.1em', margin: '14px 0 8px' }}>{CATEGORY_LABELS[cat]}</div>
-            {items.map(b => <PaletteBlock key={b.id} block={b} onAdd={() => addBlock(b)} />)}
-          </div>
-        )
-      })}
-      {paletteBlocks.length === 0 && (
+
+      {/* 검색 */}
+      <div style={{ position: 'relative', marginBottom: 10 }}>
+        <span style={{ position: 'absolute', left: 9, top: '50%', transform: 'translateY(-50%)', fontSize: '0.75rem', color: 'rgba(200,216,228,0.3)', pointerEvents: 'none' }}>🔍</span>
+        <input
+          value={paletteSearch}
+          onChange={e => setPaletteSearch(e.target.value)}
+          placeholder="메뉴 검색"
+          style={{
+            width: '100%', boxSizing: 'border-box',
+            background: 'rgba(255,255,255,0.05)', border: '1px solid rgba(255,255,255,0.1)',
+            borderRadius: 8, padding: '7px 10px 7px 28px',
+            color: 'white', fontSize: '0.78rem', fontFamily: "'Noto Sans KR',sans-serif",
+            outline: 'none',
+          }}
+        />
+      </div>
+
+      {/* 카테고리 필터 */}
+      <div style={{ display: 'flex', flexWrap: 'wrap', gap: 4, marginBottom: 12 }}>
+        {CATEGORY_CHIPS.filter(c => c.key === 'all' || paletteBlocks.some(b => b.category === c.key)).map(({ key, label }) => (
+          <button
+            key={key}
+            onClick={() => setPaletteCategory(key)}
+            style={{
+              background: paletteCategory === key ? '#4A7FA5' : 'rgba(255,255,255,0.05)',
+              border: `1px solid ${paletteCategory === key ? '#4A7FA5' : 'rgba(255,255,255,0.1)'}`,
+              borderRadius: 20, padding: '3px 10px',
+              color: paletteCategory === key ? 'white' : 'rgba(200,216,228,0.5)',
+              fontSize: '0.68rem', cursor: 'pointer', fontFamily: "'Noto Sans KR',sans-serif", fontWeight: 700,
+              transition: 'all 0.15s',
+            }}
+          >{label}</button>
+        ))}
+      </div>
+
+      {/* 메뉴 목록 */}
+      {filteredPalette.length === 0 ? (
         <div style={{ color: 'rgba(200,216,228,0.3)', fontSize: '0.78rem', textAlign: 'center', paddingTop: 40 }}>
-          아직 등록된 메뉴가 없어요 🐟
+          {paletteBlocks.length === 0 ? '아직 등록된 메뉴가 없어요 🐟' : '검색 결과가 없어요'}
         </div>
+      ) : (
+        paletteCategory === 'all' && !paletteSearch
+          ? CATEGORY_ORDER.map(cat => {
+              const items = filteredPalette.filter(b => b.category === cat)
+              if (items.length === 0) return null
+              return (
+                <div key={cat}>
+                  <div style={{ fontSize: '0.62rem', color: 'rgba(200,216,228,0.28)', letterSpacing: '0.1em', margin: '10px 0 8px' }}>{CATEGORY_LABELS[cat]}</div>
+                  {items.map(b => <PaletteBlock key={b.id} block={b} onAdd={() => addBlock(b)} />)}
+                </div>
+              )
+            })
+          : filteredPalette.map(b => <PaletteBlock key={b.id} block={b} onAdd={() => addBlock(b)} />)
       )}
       {/* 재료 편집기 이동 버튼 */}
       <div style={{ marginTop: 20, paddingTop: 14, borderTop: '1px solid rgba(255,255,255,0.06)' }}>
