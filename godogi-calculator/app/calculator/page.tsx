@@ -71,6 +71,7 @@ function calcSubLabel(menu: any): string {
 function CalculatorContent() {
   const searchParams = useSearchParams()
   const menuIdParam = searchParams.get('menuId')
+  const returnTo = searchParams.get('returnTo')
   const [user, setUser] = useState<any>(null)
   const [loading, setLoading] = useState(true)
   const [menus, setMenus] = useState<any[]>([])
@@ -307,11 +308,20 @@ function CalculatorContent() {
       />
       <main className="main-content" style={{ marginLeft: 260, flex: 1, padding: '32px 28px 60px', maxWidth: 760 }}>
         <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 24, fontSize: '0.78rem', fontFamily: "'Noto Sans KR', sans-serif" }}>
-          <a href="/" style={{ color: 'var(--text-soft)', textDecoration: 'none', fontWeight: 500 }}>홈</a>
-          <span style={{ color: 'var(--text-soft)', opacity: 0.4 }}>›</span>
-          <a href="/" style={{ color: 'var(--text-soft)', textDecoration: 'none', fontWeight: 500 }}>메뉴 구성</a>
-          <span style={{ color: 'var(--text-soft)', opacity: 0.4 }}>›</span>
-          <span style={{ color: 'var(--text-mid)', fontWeight: 700 }}>원가 편집기</span>
+          {returnTo ? (
+            <a href={returnTo} style={{
+              display: 'inline-flex', alignItems: 'center', gap: 5,
+              background: 'rgba(74,127,165,0.15)', border: '1px solid rgba(74,127,165,0.3)',
+              color: '#7DB8D8', textDecoration: 'none', fontWeight: 700,
+              borderRadius: 8, padding: '5px 12px', fontSize: '0.78rem',
+            }}>← 메뉴구성으로 돌아가기</a>
+          ) : (
+            <>
+              <a href="/" style={{ color: 'var(--text-soft)', textDecoration: 'none', fontWeight: 500 }}>홈</a>
+              <span style={{ color: 'var(--text-soft)', opacity: 0.4 }}>›</span>
+              <span style={{ color: 'var(--text-mid)', fontWeight: 700 }}>원가 편집기</span>
+            </>
+          )}
         </div>
         {currentMenu ? (
           <Calculator

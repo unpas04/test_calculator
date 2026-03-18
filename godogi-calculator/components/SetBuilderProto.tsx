@@ -721,7 +721,7 @@ export default function SetBuilderProto() {
                       onRemove={() => removeBlock(b.id)}
                       onMoveLeft={i > 0 ? () => moveBlock(i, -1) : undefined}
                       onMoveRight={i < blocks.length - 1 ? () => moveBlock(i, 1) : undefined}
-                      onEdit={() => tryNavigate(`/calculator?menuId=${b.menu_id}`)}
+                      onEdit={() => tryNavigate(`/calculator?menuId=${b.menu_id}${editId ? `&returnTo=/proto?id=${editId}` : '&returnTo=/proto'}`)}
                     />
                   </div>
                 ))
