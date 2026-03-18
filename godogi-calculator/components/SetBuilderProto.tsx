@@ -588,7 +588,7 @@ export default function SetBuilderProto() {
       </div>
 
       {/* 카테고리 필터 */}
-      <div style={{ display: 'flex', flexWrap: 'wrap', gap: 4, marginBottom: 12 }}>
+      <div style={{ display: 'flex', gap: 4, marginBottom: 12, overflowX: 'auto', paddingBottom: 2, scrollbarWidth: 'none' }}>
         {CATEGORY_CHIPS.filter(c => c.key === 'all' || paletteBlocks.some(b => b.category === c.key)).map(({ key, label }) => (
           <button
             key={key}
@@ -599,7 +599,7 @@ export default function SetBuilderProto() {
               borderRadius: 20, padding: '3px 10px',
               color: paletteCategory === key ? 'white' : 'rgba(200,216,228,0.5)',
               fontSize: '0.68rem', cursor: 'pointer', fontFamily: "'Noto Sans KR',sans-serif", fontWeight: 700,
-              transition: 'all 0.15s',
+              transition: 'all 0.15s', flexShrink: 0,
             }}
           >{label}</button>
         ))}
