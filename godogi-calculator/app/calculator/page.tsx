@@ -319,9 +319,13 @@ function CalculatorContent() {
             <>
               <a href="/" style={{ color: 'var(--text-soft)', textDecoration: 'none', fontWeight: 500 }}>홈</a>
               <span style={{ color: 'var(--text-soft)', opacity: 0.4 }}>›</span>
-              <a href="/" style={{ color: 'var(--text-soft)', textDecoration: 'none', fontWeight: 500 }}>메뉴 구성</a>
-              <span style={{ color: 'var(--text-soft)', opacity: 0.4 }}>›</span>
               <span style={{ color: 'var(--text-mid)', fontWeight: 700 }}>원가 편집기</span>
+              <a href="/proto" style={{
+                marginLeft: 8, display: 'inline-flex', alignItems: 'center', gap: 4,
+                background: 'rgba(74,127,165,0.12)', border: '1px solid rgba(74,127,165,0.25)',
+                color: '#7DB8D8', textDecoration: 'none', fontWeight: 600,
+                borderRadius: 8, padding: '4px 10px', fontSize: '0.75rem',
+              }}>메뉴 구성 →</a>
             </>
           )}
         </div>
