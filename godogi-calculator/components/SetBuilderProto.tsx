@@ -277,6 +277,7 @@ export default function SetBuilderProto() {
   const [saved, setSaved] = useState(false)
   const [authLoading, setAuthLoading] = useState(true)
   const [userId, setUserId] = useState<string | null>(null)
+  const [isGuestMode, setIsGuestMode] = useState(false)
   const [paletteBlocks, setPaletteBlocks] = useState<Block[]>([])
   const [channel, setChannel] = useState<'delivery' | 'hall'>('delivery')
   const [feeSettings, setFeeSettings] = useState<FeeSettings>(DEFAULT_FEES)
@@ -351,6 +352,7 @@ export default function SetBuilderProto() {
           category: m.category as BlockCategory,
           emoji: m.emoji || '🍽️',
         })))
+        setIsGuestMode(true)
         setAuthLoading(false)
         return
       }
@@ -532,7 +534,7 @@ export default function SetBuilderProto() {
     </div>
   )
 
-  if (!userId) return (
+  if (!userId && !isGuestMode) return (
     <div style={{ minHeight: '100vh', background: '#0F1923', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', gap: 16, fontFamily: "'Noto Sans KR',sans-serif" }}>
       <div style={{ fontSize: '2.5rem' }}>🐟</div>
       <p style={{ color: 'rgba(200,216,228,0.6)', fontSize: '0.9rem', margin: 0 }}>메뉴를 불러오려면 로그인이 필요해요</p>
