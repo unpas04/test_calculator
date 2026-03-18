@@ -505,13 +505,11 @@ export default function HomePage() {
                           <div style={{ display: 'flex', gap: 6, flexWrap: 'wrap' }}>
                             {set.blocks.slice(0, 5).map(b => (
                               <span key={b.id}
-                                onClick={e => { e.stopPropagation(); router.push(`/calculator?menuId=${b.menu_id}&returnTo=/`) }}
                                 style={{
                                   fontSize: '0.73rem',
                                   background: 'rgba(255,255,255,0.05)',
                                   border: '1px solid rgba(255,255,255,0.07)',
                                   borderRadius: 6, padding: '2px 8px',
-                                  cursor: 'pointer',
                                 }}>
                                 {b.emoji} {b.name}
                               </span>
