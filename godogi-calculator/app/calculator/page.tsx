@@ -98,7 +98,7 @@ function CalculatorContent() {
     if (menus.length === 0) {
       const sampleMenus = FIRST_LOGIN_SAMPLES.map(s => ({
         ...defaultMenu(),
-        id: genId(),
+        id: `guest_menu_${s.name}`,
         name: s.name,
         emoji: s.emoji,
         category: s.category,
@@ -109,7 +109,8 @@ function CalculatorContent() {
         ingredients: (s.ingredients || []).map((ing: any) => ({ ...ing, id: genId() })),
       }))
       setMenus(sampleMenus)
-      setCurrentId(sampleMenus[0].id)
+      const target = menuIdParam ? sampleMenus.find(m => m.id === menuIdParam) : null
+      setCurrentId(target ? target.id : sampleMenus[0].id)
     }
   }, [loading, user])
 

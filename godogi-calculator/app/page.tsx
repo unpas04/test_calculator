@@ -490,7 +490,7 @@ export default function HomePage() {
                       exit={{ opacity: 0, scale: 0.96 }}
                       transition={{ delay: i * 0.04 }}
                       whileHover={{ scale: 1.01 }}
-                      onClick={() => router.push(set.id.startsWith('guest_set_') ? '/proto' : `/proto?id=${set.id}`)}
+                      onClick={() => router.push(`/proto?id=${set.id}`)}
                       style={{
                         background: 'linear-gradient(135deg, #162030, #1C2D40)',
                         border: '1px solid rgba(74,127,165,0.18)',

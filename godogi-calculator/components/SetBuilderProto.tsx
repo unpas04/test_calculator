@@ -4,7 +4,7 @@ import { useState, useEffect } from 'react'
 import { useRouter, useSearchParams } from 'next/navigation'
 import { motion, AnimatePresence } from 'framer-motion'
 import { createClient } from '@/lib/supabase'
-import { FIRST_LOGIN_MENU_SAMPLES } from '@/lib/sampleData'
+import { FIRST_LOGIN_MENU_SAMPLES, SAMPLE_SET_DEFINITIONS } from '@/lib/sampleData'
 
 const FEES_KEY = 'godogi_fees'
 
@@ -299,7 +299,34 @@ export default function SetBuilderProto() {
   }, [])
 
   useEffect(() => {
-    if (!editId || !userId) return
+    if (!editId) return
+
+    // 게스트 샘플 세트 로드
+    if (editId.startsWith('guest_set_')) {
+      const idx = parseInt(editId.replace('guest_set_', ''))
+      const def = SAMPLE_SET_DEFINITIONS[idx]
+      if (!def) return
+      const menuMap: Record<string, typeof FIRST_LOGIN_MENU_SAMPLES[0]> = {}
+      FIRST_LOGIN_MENU_SAMPLES.forEach(m => { menuMap[m.name] = m })
+      setSetName(def.name)
+      setSalePrice(def.sale_price > 0 ? def.sale_price.toLocaleString('ko-KR') : '')
+      setChannel(def.channel)
+      const guestBlocks: Block[] = def.menuNames.map((name, j) => {
+        const m = menuMap[name]
+        if (!m) return null
+        const cost = Math.round((m.ingredients || []).reduce((sum: number, ing: any) => {
+          const qty = ing.qty || 1
+          const yld = (ing.yield_ || 100) / 100
+          return sum + (ing.price / qty / yld) * (ing.use_amount || 0)
+        }, 0) + (m.labor || 0) + (m.overhead || 0))
+        return { id: `guest_block_${j}`, menu_id: `guest_menu_${name}`, name: m.name, emoji: m.emoji || '🍽️', cost, category: m.category as BlockCategory }
+      }).filter(Boolean) as Block[]
+      setBlocks(guestBlocks)
+      setIsDirty(false)
+      return
+    }
+
+    if (!userId) return
     const loadSet = async () => {
       const supabase = createClient()
       const { data } = await supabase
@@ -341,8 +368,8 @@ export default function SetBuilderProto() {
       const { data: { session } } = await supabase.auth.getSession()
       if (!session) {
         setPaletteBlocks(FIRST_LOGIN_MENU_SAMPLES.map(m => ({
-          id: `guest_${m.name}`,
-          menu_id: `guest_${m.name}`,
+          id: `guest_menu_${m.name}`,
+          menu_id: `guest_menu_${m.name}`,
           name: m.name,
           cost: Math.round((m.ingredients || []).reduce((sum: number, ing: any) => {
             const qty = ing.qty || 1
