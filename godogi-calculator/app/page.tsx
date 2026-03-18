@@ -214,9 +214,9 @@ export default function HomePage() {
   )
 
   if (!user) return (
-    <main style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', height: '100vh', background: '#0F1923', gap: 24 }}>
-      <motion.div animate={{ rotate: [0, -8, 8, -4, 0] }} transition={{ duration: 2.5, repeat: Infinity, repeatDelay: 4 }}>
-        <svg width="56" height="56" viewBox="0 0 100 100" fill="none">
+    <main style={{ minHeight: '100vh', background: '#0F1923', color: 'white', fontFamily: "'Noto Sans KR', sans-serif", display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', padding: '40px 24px' }}>
+      <motion.div animate={{ rotate: [0, -8, 8, -4, 0] }} transition={{ duration: 2.5, repeat: Infinity, repeatDelay: 4 }} style={{ marginBottom: 20 }}>
+        <svg width="64" height="64" viewBox="0 0 100 100" fill="none">
           <ellipse cx="50" cy="55" rx="32" ry="22" fill="#4A7FA5"/>
           <ellipse cx="50" cy="53" rx="30" ry="20" fill="#5B9EC9"/>
           <polygon points="82,55 100,40 100,70" fill="#4A7FA5"/>
@@ -229,15 +229,36 @@ export default function HomePage() {
           <ellipse cx="30" cy="52" rx="4" ry="2.5" fill="#F4A0A0" opacity="0.6"/>
         </svg>
       </motion.div>
-      <div style={{ textAlign: 'center', color: 'white' }}>
-        <h1 style={{ fontFamily: "'Noto Sans KR',sans-serif", fontSize: '1.3rem', fontWeight: 700, margin: '0 0 6px' }}>고독이의 원가계산기</h1>
-        <p style={{ fontSize: '0.78rem', color: 'rgba(200,216,228,0.4)', margin: 0 }}>소상공인을 위한 메뉴 원가 계산기</p>
+
+      <h1 style={{ fontSize: '1.6rem', fontWeight: 700, margin: '0 0 8px', textAlign: 'center' }}>고독이의 원가계산기</h1>
+      <p style={{ fontSize: '0.9rem', color: 'rgba(200,216,228,0.5)', margin: '0 0 36px', textAlign: 'center' }}>우리 메뉴, 진짜로 남는 장사일까요?</p>
+
+      <div style={{ display: 'flex', flexDirection: 'column', gap: 10, marginBottom: 40, width: '100%', maxWidth: 320 }}>
+        {[
+          { icon: '🧮', text: '재료비 · 인건비 · 간접비 자동 계산' },
+          { icon: '🛵', text: '배달·카드 수수료 포함 실수익 계산' },
+          { icon: '📊', text: '세트 메뉴 원가율 한눈에 비교' },
+        ].map(({ icon, text }) => (
+          <div key={text} style={{ display: 'flex', alignItems: 'center', gap: 12, background: 'rgba(255,255,255,0.04)', borderRadius: 12, padding: '12px 16px' }}>
+            <span style={{ fontSize: '1.2rem' }}>{icon}</span>
+            <span style={{ fontSize: '0.82rem', color: 'rgba(200,216,228,0.75)' }}>{text}</span>
+          </div>
+        ))}
       </div>
-      <button onClick={loginWithGoogle} style={{
-        background: 'white', color: '#1E2D40', border: 'none',
-        borderRadius: 12, padding: '12px 28px',
-        fontFamily: "'Noto Sans KR',sans-serif", fontWeight: 700, fontSize: '0.95rem', cursor: 'pointer',
-      }}>🔑 Google로 시작하기</button>
+
+      <div style={{ display: 'flex', flexDirection: 'column', gap: 10, width: '100%', maxWidth: 320 }}>
+        <motion.button whileTap={{ scale: 0.97 }} onClick={() => router.push('/calculator')} style={{
+          background: 'linear-gradient(135deg, #3A6FA5, #2A5080)', color: 'white', border: 'none',
+          borderRadius: 14, padding: '14px', fontFamily: "'Noto Sans KR', sans-serif",
+          fontWeight: 700, fontSize: '0.95rem', cursor: 'pointer',
+        }}>✏️ 로그인 없이 바로 써보기</motion.button>
+        <motion.button whileTap={{ scale: 0.97 }} onClick={loginWithGoogle} style={{
+          background: 'white', color: '#1E2D40', border: 'none',
+          borderRadius: 14, padding: '14px', fontFamily: "'Noto Sans KR', sans-serif",
+          fontWeight: 700, fontSize: '0.95rem', cursor: 'pointer',
+        }}>🔑 Google로 로그인하기</motion.button>
+        <p style={{ textAlign: 'center', fontSize: '0.68rem', color: 'rgba(200,216,228,0.25)', margin: 0 }}>로그인하면 데이터가 저장돼요</p>
+      </div>
     </main>
   )
 

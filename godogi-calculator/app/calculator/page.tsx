@@ -1,6 +1,7 @@
 'use client'
 
 import { createClient } from '../../lib/supabase'
+import { FIRST_LOGIN_MENU_SAMPLES as FIRST_LOGIN_SAMPLES } from '@/lib/sampleData'
 import { useState, useEffect, useRef, Suspense } from 'react'
 import { useSearchParams } from 'next/navigation'
 import AppSidebar from '../../components/AppSidebar'
@@ -90,6 +91,27 @@ function CalculatorContent() {
     })
     return () => subscription.unsubscribe()
   }, [])
+
+  // 비로그인 게스트: 샘플 메뉴로 시작
+  useEffect(() => {
+    if (loading || user) return
+    if (menus.length === 0) {
+      const sampleMenus = FIRST_LOGIN_SAMPLES.map(s => ({
+        ...defaultMenu(),
+        id: genId(),
+        name: s.name,
+        emoji: s.emoji,
+        category: s.category,
+        labor: s.labor,
+        overhead: s.overhead,
+        batch_yield: s.batch_yield,
+        serving_size: s.serving_size,
+        ingredients: (s.ingredients || []).map((ing: any) => ({ ...ing, id: genId() })),
+      }))
+      setMenus(sampleMenus)
+      setCurrentId(sampleMenus[0].id)
+    }
+  }, [loading, user])
 
   useEffect(() => {
     if (!user) { loadedForUser.current = null; return }
@@ -237,24 +259,6 @@ function CalculatorContent() {
     </main>
   )
 
-  if (!user) return (
-    <main style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', height: '100vh', background: '#1E2D40', gap: 24 }}>
-      <div style={{ textAlign: 'center', color: 'white' }}>
-        <div style={{ fontSize: '2rem', marginBottom: 8 }}>🐟</div>
-        <h1 style={{ fontFamily: 'sans-serif', fontSize: '1.4rem', marginBottom: 4 }}>고독이의 원가계산기</h1>
-        <p style={{ fontSize: '0.85rem', opacity: 0.5 }}>소상공인을 위한 메뉴 원가 계산기</p>
-      </div>
-      <button onClick={loginWithGoogle} style={{
-        background: 'white', color: '#1E2D40', border: 'none',
-        borderRadius: 12, padding: '12px 28px',
-        fontFamily: 'sans-serif', fontSize: '0.95rem',
-        cursor: 'pointer'
-      }}>
-        🔑 Google로 시작하기
-      </button>
-    </main>
-  )
-
   return (
     <div style={{ display: 'flex', minHeight: '100vh' }}>
       <AppSidebar
@@ -267,6 +271,12 @@ function CalculatorContent() {
         onLogout={logout}
       />
       <main className="main-content" style={{ marginLeft: 260, flex: 1, padding: '32px 28px 60px', maxWidth: 760 }}>
+        {!user && (
+          <div style={{ background: 'rgba(74,127,165,0.12)', border: '1px solid rgba(74,127,165,0.25)', borderRadius: 10, padding: '10px 16px', marginBottom: 20, display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 12, fontFamily: "'Noto Sans KR', sans-serif" }}>
+            <span style={{ fontSize: '0.78rem', color: 'rgba(200,216,228,0.6)' }}>🐟 로그인하면 데이터가 저장돼요</span>
+            <button onClick={loginWithGoogle} style={{ background: 'white', color: '#1E2D40', border: 'none', borderRadius: 8, padding: '6px 12px', fontFamily: "'Noto Sans KR', sans-serif", fontWeight: 700, fontSize: '0.75rem', cursor: 'pointer', flexShrink: 0 }}>🔑 로그인</button>
+          </div>
+        )}
         <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 24, fontSize: '0.78rem', fontFamily: "'Noto Sans KR', sans-serif" }}>
           {returnTo ? (
             <a href={returnTo} style={{

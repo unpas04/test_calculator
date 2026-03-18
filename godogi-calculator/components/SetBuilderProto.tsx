@@ -295,6 +295,7 @@ export default function SetBuilderProto() {
   const [channel, setChannel] = useState<'delivery' | 'hall'>('delivery')
   const [feeSettings, setFeeSettings] = useState<FeeSettings>(DEFAULT_FEES)
   const [showFeeModal, setShowFeeModal] = useState(false)
+  const [showLoginModal, setShowLoginModal] = useState(false)
   const [feeForm, setFeeForm] = useState<FeeSettings>(DEFAULT_FEES)
   const [showLeaveWarning, setShowLeaveWarning] = useState(false)
   const [pendingRoute, setPendingRoute] = useState<string | null>(null)
@@ -431,8 +432,17 @@ export default function SetBuilderProto() {
     setIsDirty(true)
   }
 
+  const loginWithGoogle = async () => {
+    const supabase = createClient()
+    await supabase.auth.signInWithOAuth({
+      provider: 'google',
+      options: { redirectTo: `${window.location.origin}/auth/callback` },
+    })
+  }
+
   const handleSave = async () => {
-    if (blocks.length === 0 || !userId) return
+    if (blocks.length === 0) return
+    if (!userId) { setShowLoginModal(true); return }
     const supabase = createClient()
     try {
       let setId = editId
@@ -910,6 +920,32 @@ export default function SetBuilderProto() {
                 </motion.div>
               </motion.div>
             </>
+          )}
+        </AnimatePresence>
+
+        {/* 로그인 모달 */}
+        <AnimatePresence>
+          {showLoginModal && (
+            <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}
+              onClick={() => setShowLoginModal(false)}
+              style={{ position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.6)', zIndex: 200, display: 'flex', alignItems: 'center', justifyContent: 'center', padding: 24 }}>
+              <motion.div initial={{ scale: 0.93, opacity: 0 }} animate={{ scale: 1, opacity: 1 }} exit={{ scale: 0.93, opacity: 0 }}
+                onClick={e => e.stopPropagation()}
+                style={{ background: '#1A2840', borderRadius: 20, padding: '32px 28px', width: '100%', maxWidth: 340, textAlign: 'center', fontFamily: "'Noto Sans KR', sans-serif" }}>
+                <div style={{ fontSize: '2.5rem', marginBottom: 12 }}>🐟</div>
+                <div style={{ color: 'white', fontWeight: 700, fontSize: '1rem', marginBottom: 8 }}>저장하려면 로그인이 필요해요</div>
+                <div style={{ color: 'rgba(200,216,228,0.5)', fontSize: '0.78rem', marginBottom: 24 }}>로그인하면 메뉴 구성이 저장되고<br/>언제든 다시 볼 수 있어요</div>
+                <button onClick={loginWithGoogle} style={{
+                  width: '100%', background: 'white', color: '#1E2D40', border: 'none',
+                  borderRadius: 12, padding: '12px', fontFamily: "'Noto Sans KR', sans-serif",
+                  fontWeight: 700, fontSize: '0.9rem', cursor: 'pointer', marginBottom: 10,
+                }}>🔑 Google로 로그인하기</button>
+                <button onClick={() => setShowLoginModal(false)} style={{
+                  width: '100%', background: 'transparent', color: 'rgba(200,216,228,0.35)', border: 'none',
+                  fontFamily: "'Noto Sans KR', sans-serif", fontSize: '0.78rem', cursor: 'pointer',
+                }}>나중에 할게요</button>
+              </motion.div>
+            </motion.div>
           )}
         </AnimatePresence>
 
