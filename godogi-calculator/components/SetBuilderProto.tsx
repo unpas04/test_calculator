@@ -550,8 +550,11 @@ export default function SetBuilderProto() {
 
         @media (max-width: 768px) {
           .sb-palette  { display: none !important; }
-          .sb-add-btn  { display: block !important; }
-          .sb-wrap     { padding: 16px 14px 24px !important; }
+          .sb-add-btn  { display: flex !important; align-items: center; padding: 8px 10px !important; }
+          .sb-add-text { display: none !important; }
+          .sb-save-text { display: none !important; }
+          .sb-save-btn { padding: 8px 10px !important; }
+          .sb-wrap     { padding: 16px 14px 24px !important; min-width: 0; overflow-x: hidden; box-sizing: border-box; width: 100%; }
           /* 레전드: 모바일에서 금액 숨김 */
           .sb-legend-amount { display: none !important; }
           /* 화살표: 모바일에서 세로 방향으로 */
@@ -677,8 +680,9 @@ export default function SetBuilderProto() {
                 fontFamily: "'Noto Sans KR',sans-serif", fontWeight: 700, fontSize: '0.82rem',
                 cursor: 'pointer', flexShrink: 0,
               }}
-            >＋ 추가</motion.button>
+            >＋<span className="sb-add-text"> 추가</span></motion.button>
             <motion.button
+              className="sb-save-btn"
               whileTap={{ scale: 0.93 }}
               onClick={handleSave}
               animate={saved ? { scale: [1, 1.08, 1] } : {}}
@@ -690,7 +694,7 @@ export default function SetBuilderProto() {
                 cursor: blocks.length > 0 ? 'pointer' : 'default',
                 flexShrink: 0, transition: 'background 0.2s',
               }}
-            >{saved ? '✓ 저장됨' : editId ? '수정 저장' : '저장'}</motion.button>
+            >{saved ? '✓' : editId ? '수정' : '저장'}<span className="sb-save-text">{saved ? ' 저장됨' : editId ? ' 저장' : ''}</span></motion.button>
           </div>
           </div>
 
