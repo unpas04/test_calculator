@@ -660,6 +660,14 @@ export default function SetBuilderProto() {
     <>
       <style>{`
         @keyframes pulse { 0%,100% { opacity:1; } 50% { opacity:0.3; } }
+        .sb-summary-row { scrollbar-width: none; }
+        .sb-summary-row::-webkit-scrollbar { display: none; }
+        @media (max-width: 768px) {
+          .sb-summary-row { gap: 10px !important; }
+          .sb-summary-row input { width: 72px !important; font-size: 0.85rem !important; padding: 5px 7px !important; }
+          .sb-summary-row .sb-sum-label { font-size: 0.58rem !important; }
+          .sb-summary-row .sb-sum-value { font-size: 1rem !important; }
+        }
         .sb-cat-scroll::-webkit-scrollbar { height: 3px; }
         .sb-cat-scroll::-webkit-scrollbar-track { background: rgba(255,255,255,0.04); border-radius: 3px; }
         .sb-cat-scroll::-webkit-scrollbar-thumb { background: rgba(74,127,165,0.4); border-radius: 3px; }
@@ -896,10 +904,10 @@ export default function SetBuilderProto() {
                 <StackedBar blocks={blocks} totalCost={totalCostWithFee} salePrice={salePriceNum} />
 
                 {/* 숫자 요약 행 — 판매가(입력) · 총원가 · 순이익 · 원가율 */}
-                <div style={{ display: 'flex', justifyContent: 'flex-end', flexWrap: 'wrap', gap: 20 }}>
+                <div className="sb-summary-row" style={{ display: 'flex', justifyContent: 'flex-end', flexWrap: 'nowrap', gap: 16, overflowX: 'auto' }}>
                   {/* 판매가 입력 */}
                   <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-end', gap: 5 }}>
-                    <div style={{ fontSize: '0.65rem', color: 'rgba(200,216,228,0.35)' }}>🏷️ 판매가</div>
+                    <div className="sb-sum-label" style={{ fontSize: '0.65rem', color: 'rgba(200,216,228,0.35)' }}>🏷️ 판매가</div>
                     <div style={{ display: 'flex', alignItems: 'center', gap: 5 }}>
                       <input
                         value={salePrice}
@@ -924,11 +932,11 @@ export default function SetBuilderProto() {
 
                   {/* 총 원가 (수수료 포함) */}
                   <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-end', gap: 5 }}>
-                    <div style={{ fontSize: '0.65rem', color: 'rgba(200,216,228,0.35)' }}>💰 총 원가</div>
+                    <div className="sb-sum-label" style={{ fontSize: '0.65rem', color: 'rgba(200,216,228,0.35)' }}>💰 총 원가</div>
                     <motion.div key={totalCostWithFee}
                       initial={{ scale: 1.12, color: '#7EC8A0' }} animate={{ scale: 1, color: 'white' }}
                       transition={{ type: 'spring', stiffness: 400 }}
-                      style={{ fontSize: '1.2rem', fontFamily: "'Noto Sans KR',sans-serif", fontWeight: 700 }}>
+                      className="sb-sum-value" style={{ fontSize: '1.2rem', fontFamily: "'Noto Sans KR',sans-serif", fontWeight: 700 }}>
                       {fmt(totalCostWithFee)}원
                     </motion.div>
                     {feeRate > 0 && (
@@ -946,8 +954,8 @@ export default function SetBuilderProto() {
                           style={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-end', gap: 5 }}
                           initial={{ opacity: 0, y: 6 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0 }}
                           transition={{ type: 'spring', stiffness: 300, delay: 0.04 }}>
-                          <div style={{ fontSize: '0.65rem', color: 'rgba(200,216,228,0.35)' }}>✨ 순이익</div>
-                          <div style={{ fontSize: '1.2rem', fontFamily: "'Noto Sans KR',sans-serif", fontWeight: 700, color: profit! >= 0 ? '#7EC8A0' : '#F08080' }}>
+                          <div className="sb-sum-label" style={{ fontSize: '0.65rem', color: 'rgba(200,216,228,0.35)' }}>✨ 순이익</div>
+                          <div className="sb-sum-value" style={{ fontSize: '1.2rem', fontFamily: "'Noto Sans KR',sans-serif", fontWeight: 700, color: profit! >= 0 ? '#7EC8A0' : '#F08080' }}>
                             {profit! >= 0 ? '+' : ''}{fmt(profit!)}원
                           </div>
                         </motion.div>
@@ -955,11 +963,11 @@ export default function SetBuilderProto() {
                           style={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-end', gap: 5 }}
                           initial={{ opacity: 0, y: 6 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0 }}
                           transition={{ type: 'spring', stiffness: 300, delay: 0.09 }}>
-                          <div style={{ fontSize: '0.65rem', color: 'rgba(200,216,228,0.35)' }}>📈 원가율</div>
+                          <div className="sb-sum-label" style={{ fontSize: '0.65rem', color: 'rgba(200,216,228,0.35)' }}>📈 원가율</div>
                           <motion.div key={costRate.toFixed(1)}
                             initial={{ scale: 1.2 }} animate={{ scale: 1 }}
                             transition={{ type: 'spring', stiffness: 400 }}
-                            style={{ fontSize: '1.2rem', fontFamily: "'Noto Sans KR',sans-serif", fontWeight: 700, color: costRateColor }}>
+                            className="sb-sum-value" style={{ fontSize: '1.2rem', fontFamily: "'Noto Sans KR',sans-serif", fontWeight: 700, color: costRateColor }}>
                             {costRate.toFixed(1)}%
                           </motion.div>
                         </motion.div>

@@ -233,6 +233,9 @@ export default function HomePage() {
       }
     })
     setSets(guestSets)
+    const rates = guestSets.filter(s => s.costRate > 0).map(s => s.costRate)
+    const avgRate = rates.length > 0 ? rates.reduce((a, b) => a + b, 0) / rates.length : null
+    setMenuStats({ total: guestSets.length, avgRate, warnCount: rates.filter(r => r > 60).length })
   }, [isGuest])
 
   // Load sets
@@ -420,14 +423,14 @@ export default function HomePage() {
     <div style={{ minHeight: '100vh', background: '#0F1923', color: 'white', fontFamily: "'Noto Sans KR', sans-serif" }}>
 
       {/* 헤더 */}
-      <header style={{ padding: '24px 24px 20px', borderBottom: '1px solid rgba(255,255,255,0.06)' }}>
-        <div style={{ maxWidth: 680, margin: '0 auto', display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
-          <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
-            <motion.div
+      <header style={{ padding: '16px 16px 14px', borderBottom: '1px solid rgba(255,255,255,0.06)' }}>
+        <div style={{ maxWidth: 680, margin: '0 auto', display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 8 }}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: 10, minWidth: 0 }}>
+            <motion.div style={{ flexShrink: 0 }}
               animate={{ rotate: [0, -8, 8, -4, 0] }}
               transition={{ duration: 2.5, repeat: Infinity, repeatDelay: 5 }}
             >
-              <svg width="44" height="44" viewBox="0 0 100 100" fill="none">
+              <svg width="36" height="36" viewBox="0 0 100 100" fill="none">
                 <ellipse cx="50" cy="55" rx="32" ry="22" fill="#4A7FA5"/>
                 <ellipse cx="50" cy="53" rx="30" ry="20" fill="#5B9EC9"/>
                 <polygon points="82,55 100,40 100,70" fill="#4A7FA5"/>
@@ -440,27 +443,33 @@ export default function HomePage() {
                 <ellipse cx="30" cy="52" rx="4" ry="2.5" fill="#F4A0A0" opacity="0.6"/>
               </svg>
             </motion.div>
-            <div>
-              <h1 style={{ margin: 0, fontSize: '1.15rem', fontWeight: 700, letterSpacing: '-0.01em' }}>고독이의 원가계산기</h1>
-              <p style={{ margin: 0, fontSize: '0.7rem', color: 'rgba(200,216,228,0.4)', marginTop: 2 }}>우리 메뉴, 진짜로 남는 장사일까요?</p>
+            <div style={{ minWidth: 0 }}>
+              <h1 style={{ margin: 0, fontSize: '1rem', fontWeight: 700, letterSpacing: '-0.01em', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>고독이의 원가계산기</h1>
+              <p className="home-subtitle" style={{ margin: 0, fontSize: '0.68rem', color: 'rgba(200,216,228,0.4)', marginTop: 1 }}>우리 메뉴, 진짜로 남는 장사일까요?</p>
             </div>
           </div>
-          <div style={{ display: 'flex', gap: 8, alignItems: 'center' }}>
+          <div style={{ display: 'flex', gap: 6, alignItems: 'center', flexShrink: 0 }}>
             {!user && (
               <button onClick={loginWithGoogle} style={{
                 background: 'white', color: '#1E2D40', border: 'none',
-                borderRadius: 8, padding: '7px 13px',
-                fontSize: '0.72rem', cursor: 'pointer', fontFamily: "'Noto Sans KR', sans-serif", fontWeight: 700,
+                borderRadius: 8, padding: '7px 12px',
+                fontSize: '0.72rem', cursor: 'pointer', fontFamily: "'Noto Sans KR', sans-serif", fontWeight: 700, whiteSpace: 'nowrap',
               }}>🔑 로그인</button>
             )}
-            <button onClick={() => router.push('/calculator')} style={{
+            <button onClick={() => router.push('/calculator')} className="home-editor-btn" style={{
               background: 'rgba(255,255,255,0.05)', border: '1px solid rgba(255,255,255,0.09)',
-              color: 'rgba(200,216,228,0.45)', borderRadius: 8, padding: '7px 13px',
-              fontSize: '0.72rem', cursor: 'pointer', fontFamily: "'Noto Sans KR', sans-serif",
+              color: 'rgba(200,216,228,0.45)', borderRadius: 8, padding: '7px 12px',
+              fontSize: '0.72rem', cursor: 'pointer', fontFamily: "'Noto Sans KR', sans-serif", whiteSpace: 'nowrap',
             }}>원가 편집기 →</button>
           </div>
         </div>
       </header>
+      <style>{`
+        @media (max-width: 480px) {
+          .home-subtitle { display: none !important; }
+          .home-editor-btn { display: none !important; }
+        }
+      `}</style>
 
       {/* 메인 콘텐츠 */}
       <main style={{ maxWidth: 680, margin: '0 auto', padding: `28px 24px ${menuStats ? 300 : 120}px` }}>
@@ -567,7 +576,8 @@ export default function HomePage() {
         <motion.div
           initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }}
           transition={{ delay: 0.2 }}
-          style={{ position: 'fixed', bottom: 80, left: 0, right: 0, zIndex: 20, padding: '0 16px', pointerEvents: 'none' }}
+          className="home-stats-bar"
+          style={{ position: 'fixed', bottom: 88, left: 0, right: 0, zIndex: 20, padding: '0 16px', pointerEvents: 'none' }}
         >
           <div style={{ maxWidth: 680, margin: '0 auto', pointerEvents: 'auto' }}>
             <div style={{
