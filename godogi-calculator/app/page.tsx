@@ -385,34 +385,30 @@ export default function HomePage() {
         <motion.div
           initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }}
           transition={{ delay: 0.2 }}
-          style={{ position: 'fixed', bottom: 90, left: 0, right: 0, zIndex: 20, padding: '0 24px', pointerEvents: 'none' }}
+          style={{ position: 'fixed', bottom: 80, left: 0, right: 0, zIndex: 20, padding: '0 16px', pointerEvents: 'none' }}
         >
           <div style={{ maxWidth: 680, margin: '0 auto', pointerEvents: 'auto' }}>
-            <div style={{ fontSize: '0.68rem', color: 'rgba(200,216,228,0.25)', marginBottom: 10, letterSpacing: '0.06em' }}>내 메뉴 현황</div>
-            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: 10, marginBottom: 10 }}>
+            <div style={{
+              display: 'flex', alignItems: 'center', gap: 10,
+              background: 'rgba(15,25,35,0.94)', backdropFilter: 'blur(14px)',
+              borderRadius: 16, padding: '10px 14px',
+              border: '1px solid rgba(74,127,165,0.15)',
+            }}>
               {[
-                { label: '📋 등록 구성', value: `${menuStats.total}`, unit: '개' },
-                { label: '📈 평균 원가율', value: menuStats.avgRate !== null ? `${menuStats.avgRate.toFixed(1)}%` : '—', color: menuStats.avgRate === null ? undefined : menuStats.avgRate < 40 ? '#7EC8A0' : menuStats.avgRate < 60 ? '#F4A460' : '#F08080' },
-                { label: '⚠️ 주의 구성', value: `${menuStats.warnCount}`, unit: '개', color: menuStats.warnCount > 0 ? '#F08080' : '#7EC8A0' },
-              ].map(({ label, value, unit, color }) => (
-                <div key={label} style={{ background: 'rgba(15,25,35,0.92)', backdropFilter: 'blur(12px)', borderRadius: 14, padding: '14px 16px', border: '1px solid rgba(74,127,165,0.15)' }}>
-                  <div style={{ fontSize: '0.62rem', color: 'rgba(200,216,228,0.35)', marginBottom: 6 }}>{label}</div>
-                  <div style={{ fontSize: '1.4rem', fontWeight: 700, color: color || 'white' }}>
-                    {value}{unit && <span style={{ fontSize: '0.75rem', fontWeight: 400, color: 'rgba(200,216,228,0.4)', marginLeft: 3 }}>{unit}</span>}
-                  </div>
+                { label: '구성', value: `${menuStats.total}개` },
+                { label: '평균 원가율', value: menuStats.avgRate !== null ? `${menuStats.avgRate.toFixed(1)}%` : '—', color: menuStats.avgRate === null ? undefined : menuStats.avgRate < 40 ? '#7EC8A0' : menuStats.avgRate < 60 ? '#F4A460' : '#F08080' },
+                { label: '주의', value: `${menuStats.warnCount}개`, color: menuStats.warnCount > 0 ? '#F08080' : 'rgba(200,216,228,0.5)' },
+              ].map(({ label, value, color }, i) => (
+                <div key={label} style={{ display: 'flex', alignItems: 'baseline', gap: 4, ...(i > 0 ? { borderLeft: '1px solid rgba(255,255,255,0.07)', paddingLeft: 10 } : {}) }}>
+                  <span style={{ fontSize: '0.62rem', color: 'rgba(200,216,228,0.35)' }}>{label}</span>
+                  <span style={{ fontSize: '0.9rem', fontWeight: 700, color: color || 'white' }}>{value}</span>
                 </div>
               ))}
-            </div>
-            <div style={{ display: 'flex', alignItems: 'center', gap: 8, padding: '10px 14px', background: 'rgba(15,25,35,0.92)', backdropFilter: 'blur(12px)', borderRadius: 12, border: '1px solid rgba(255,255,255,0.05)' }}>
-              <span style={{ fontSize: '0.9rem' }}>🐟</span>
-              <span style={{ fontSize: '0.78rem', color: 'rgba(200,216,228,0.45)' }}>
-                {menuStats.avgRate === null
-                  ? '판매가를 입력한 구성이 없어요. 원가 편집기에서 입력해봐요!'
-                  : menuStats.warnCount > 0
-                    ? `원가율 60% 초과 구성이 ${menuStats.warnCount}개 있어요. 점검해봐요!`
-                    : menuStats.avgRate < 40
-                      ? `평균 원가율 ${menuStats.avgRate.toFixed(1)}%! 고독이가 흐뭇해요 🎉`
-                      : `평균 원가율 ${menuStats.avgRate.toFixed(1)}%. 조금 더 줄일 수 있을 것 같아요!`}
+              <div style={{ flex: 1 }} />
+              <span style={{ fontSize: '0.72rem', color: 'rgba(200,216,228,0.35)' }}>
+                🐟 {menuStats.avgRate === null ? '판매가 미입력'
+                  : menuStats.warnCount > 0 ? `${menuStats.warnCount}개 점검 필요`
+                  : menuStats.avgRate < 40 ? '흐뭇해요 🎉' : '조금 더 줄여봐요'}
               </span>
             </div>
           </div>

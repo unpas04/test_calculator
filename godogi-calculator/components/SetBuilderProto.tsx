@@ -129,7 +129,7 @@ function SetBlock({ block, onRemove, onMoveLeft, onMoveRight, onEdit }: {
       {/* ✏️ 편집 버튼 */}
       {onEdit && (
         <motion.button
-          className="sb-remove-btn"
+          className="sb-edit-btn"
           onClick={e => { e.stopPropagation(); onEdit() }}
           whileHover={{ scale: 1.2 }}
           whileTap={{ scale: 0.9 }}
@@ -541,6 +541,8 @@ export default function SetBuilderProto() {
         /* 데스크탑: × 버튼 기본 숨김, hover 시 표시 */
         .sb-remove-btn { opacity: 0; transition: opacity 0.15s; }
         .sb-set-block:hover .sb-remove-btn { opacity: 1 !important; }
+        .sb-edit-btn { opacity: 0; transition: opacity 0.15s; }
+        .sb-set-block:hover .sb-edit-btn { opacity: 1 !important; }
         /* 이동 버튼 */
         .sb-move-btns { opacity: 0; transition: opacity 0.15s; }
         .sb-set-block:hover .sb-move-btns { opacity: 1 !important; }
@@ -602,7 +604,12 @@ export default function SetBuilderProto() {
             position: relative !important;
             top: 0 !important;
             right: 0 !important;
+            left: 0 !important;
             flex-shrink: 0 !important;
+          }
+          /* ✏️ 편집 버튼: 모바일에서 숨김 (원가 편집기 FAB으로 대체) */
+          .sb-edit-btn {
+            display: none !important;
           }
           /* 이동 버튼: 모바일에서 항상 표시 */
           .sb-move-btns {
@@ -616,7 +623,7 @@ export default function SetBuilderProto() {
         }
       `}</style>
 
-      <div style={{ minHeight: '100vh', background: '#0F1923', display: 'flex', fontFamily: "'Noto Sans KR',sans-serif" }}>
+      <div style={{ minHeight: '100vh', background: '#0F1923', display: 'flex', fontFamily: "'Noto Sans KR',sans-serif", overflowX: 'hidden', maxWidth: '100vw' }}>
 
         {/* 왼쪽 팔레트 (데스크탑) */}
         <div className="sb-palette" style={{
