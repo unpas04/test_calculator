@@ -662,11 +662,14 @@ export default function SetBuilderProto() {
         @keyframes pulse { 0%,100% { opacity:1; } 50% { opacity:0.3; } }
         .sb-summary-row { scrollbar-width: none; }
         .sb-summary-row::-webkit-scrollbar { display: none; }
+        .sb-sum-value { white-space: nowrap; }
         @media (max-width: 768px) {
-          .sb-summary-row { gap: 10px !important; }
-          .sb-summary-row input { width: 72px !important; font-size: 0.85rem !important; padding: 5px 7px !important; }
-          .sb-summary-row .sb-sum-label { font-size: 0.58rem !important; }
-          .sb-summary-row .sb-sum-value { font-size: 1rem !important; }
+          .sb-summary-row { gap: 12px !important; justify-content: space-between !important; }
+          .sb-summary-row > * { flex: 1; align-items: center !important; }
+          .sb-summary-row input { width: 68px !important; font-size: 0.82rem !important; padding: 5px 6px !important; }
+          .sb-sum-label { font-size: 0.56rem !important; }
+          .sb-sum-value { font-size: 0.92rem !important; }
+          .sb-fee-sub { display: none !important; }
         }
         .sb-cat-scroll::-webkit-scrollbar { height: 3px; }
         .sb-cat-scroll::-webkit-scrollbar-track { background: rgba(255,255,255,0.04); border-radius: 3px; }
@@ -904,7 +907,7 @@ export default function SetBuilderProto() {
                 <StackedBar blocks={blocks} totalCost={totalCostWithFee} salePrice={salePriceNum} />
 
                 {/* 숫자 요약 행 — 판매가(입력) · 총원가 · 순이익 · 원가율 */}
-                <div className="sb-summary-row" style={{ display: 'flex', justifyContent: 'flex-end', flexWrap: 'nowrap', gap: 16, overflowX: 'auto' }}>
+                <div className="sb-summary-row" style={{ display: 'flex', justifyContent: 'flex-end', flexWrap: 'nowrap', gap: 16, overflowX: 'auto', paddingTop: 4, borderTop: '1px solid rgba(255,255,255,0.06)' }}>
                   {/* 판매가 입력 */}
                   <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-end', gap: 5 }}>
                     <div className="sb-sum-label" style={{ fontSize: '0.65rem', color: 'rgba(200,216,228,0.35)' }}>🏷️ 판매가</div>
@@ -940,7 +943,7 @@ export default function SetBuilderProto() {
                       {fmt(totalCostWithFee)}원
                     </motion.div>
                     {feeRate > 0 && (
-                      <div style={{ fontSize: '0.62rem', color: 'rgba(200,216,228,0.3)' }}>
+                      <div className="sb-fee-sub" style={{ fontSize: '0.62rem', color: 'rgba(200,216,228,0.3)' }}>
                         (제조 {fmt(totalCost)}원 + 수수료)
                       </div>
                     )}
