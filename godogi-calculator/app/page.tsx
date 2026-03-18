@@ -397,17 +397,6 @@ export default function HomePage() {
                           fontSize: '0.78rem', padding: '4px 6px', lineHeight: 1,
                         }}
                       >✕</button>
-                      <div style={{ marginTop: 12, display: 'flex', justifyContent: 'flex-end' }}>
-                        <button
-                          onClick={e => { e.stopPropagation(); router.push(`/proto?id=${set.id}`) }}
-                          style={{
-                            background: 'rgba(74,127,165,0.12)', border: '1px solid rgba(74,127,165,0.25)',
-                            color: '#7DB8D8', borderRadius: 8, padding: '5px 12px',
-                            fontSize: '0.72rem', fontFamily: "'Noto Sans KR', sans-serif",
-                            fontWeight: 700, cursor: 'pointer',
-                          }}
-                        >✏️ 수정</button>
-                      </div>
                     </motion.div>
                   )
                 })}

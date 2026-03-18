@@ -98,11 +98,13 @@ function SetBlock({ block, onRemove, onMoveLeft, onMoveRight, onEdit }: {
       exit={{ scale: 0.3, opacity: 0, y: -8 }}
       transition={{ type: 'spring', stiffness: 480, damping: 26 }}
       whileHover={{ scale: 1.04, y: -3 }}
+      onClick={() => onEdit?.()}
       style={{
         background: s.bg, border: `2px solid ${s.border}`, borderRadius: s.shape,
         padding: isMain ? '18px 16px' : '12px 14px',
         position: 'relative', boxShadow: s.shadow,
         minWidth: isMain ? 120 : 90, textAlign: 'center', userSelect: 'none',
+        cursor: onEdit ? 'pointer' : 'default',
       }}
     >
       {/* 카테고리 뱃지 */}
@@ -126,27 +128,10 @@ function SetBlock({ block, onRemove, onMoveLeft, onMoveRight, onEdit }: {
         </div>
         <div style={{ fontSize: '0.62rem', color: 'rgba(255,255,255,0.35)', flexShrink: 0, background: `${s.border}33`, border: `1px solid ${s.border}66`, borderRadius: 20, padding: '2px 8px' }}>{s.label}</div>
       </div>
-      {/* ✏️ 편집 버튼 */}
-      {onEdit && (
-        <motion.button
-          className="sb-edit-btn"
-          onClick={e => { e.stopPropagation(); onEdit() }}
-          whileHover={{ scale: 1.2 }}
-          whileTap={{ scale: 0.9 }}
-          style={{
-            position: 'absolute', top: -8, left: -8,
-            width: 20, height: 20, borderRadius: '50%',
-            background: '#4A7FA5', border: 'none', color: 'white',
-            fontSize: '0.55rem', cursor: 'pointer',
-            display: 'flex', alignItems: 'center', justifyContent: 'center',
-            boxShadow: '0 2px 6px rgba(74,127,165,0.5)',
-          }}
-        >✏️</motion.button>
-      )}
       {/* × 삭제 버튼 */}
       <motion.button
         className="sb-remove-btn"
-        onClick={onRemove}
+        onClick={e => { e.stopPropagation(); onRemove() }}
         whileHover={{ scale: 1.2 }}
         whileTap={{ scale: 0.9 }}
         style={{
@@ -164,7 +149,7 @@ function SetBlock({ block, onRemove, onMoveLeft, onMoveRight, onEdit }: {
         display: 'flex', gap: 3,
       }}>
         {onMoveLeft && (
-          <motion.button onClick={onMoveLeft} whileTap={{ scale: 0.85 }} style={{
+          <motion.button onClick={e => { e.stopPropagation(); onMoveLeft() }} whileTap={{ scale: 0.85 }} style={{
             width: 18, height: 18, borderRadius: '50%', border: 'none',
             background: 'rgba(255,255,255,0.15)', color: 'rgba(255,255,255,0.7)',
             fontSize: '0.55rem', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center',
@@ -174,7 +159,7 @@ function SetBlock({ block, onRemove, onMoveLeft, onMoveRight, onEdit }: {
           </motion.button>
         )}
         {onMoveRight && (
-          <motion.button onClick={onMoveRight} whileTap={{ scale: 0.85 }} style={{
+          <motion.button onClick={e => { e.stopPropagation(); onMoveRight() }} whileTap={{ scale: 0.85 }} style={{
             width: 18, height: 18, borderRadius: '50%', border: 'none',
             background: 'rgba(255,255,255,0.15)', color: 'rgba(255,255,255,0.7)',
             fontSize: '0.55rem', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center',
