@@ -273,7 +273,7 @@ function CalculatorContent() {
       <main className="main-content" style={{ marginLeft: 260, flex: 1, padding: '32px 28px 60px', maxWidth: 760 }}>
         {!user && (
           <div style={{ background: 'rgba(74,127,165,0.12)', border: '1px solid rgba(74,127,165,0.25)', borderRadius: 10, padding: '10px 16px', marginBottom: 20, display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 12, fontFamily: "'Noto Sans KR', sans-serif" }}>
-            <span style={{ fontSize: '0.78rem', color: 'rgba(200,216,228,0.6)' }}>🐟 로그인하면 데이터가 저장돼요</span>
+            <span style={{ fontSize: '0.78rem', color: '#7DB8D8' }}>🐟 로그인하면 데이터가 저장돼요</span>
             <button onClick={loginWithGoogle} style={{ background: 'white', color: '#1E2D40', border: 'none', borderRadius: 8, padding: '6px 12px', fontFamily: "'Noto Sans KR', sans-serif", fontWeight: 700, fontSize: '0.75rem', cursor: 'pointer', flexShrink: 0 }}>🔑 로그인</button>
           </div>
         )}

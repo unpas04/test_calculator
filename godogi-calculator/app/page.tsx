@@ -87,6 +87,14 @@ export default function HomePage() {
     return () => subscription.unsubscribe()
   }, [])
 
+  // 게스트 온보딩
+  useEffect(() => {
+    if (typeof window === 'undefined') return
+    if (sessionStorage.getItem('godogi_guest') && !localStorage.getItem('godogi_onboarded')) {
+      setShowOnboarding(true)
+    }
+  }, [])
+
   // Load sets
   useEffect(() => {
     if (!user) { loadedForUser.current = null; return }
@@ -264,7 +272,7 @@ export default function HomePage() {
           borderRadius: 14, padding: '14px', fontFamily: "'Noto Sans KR', sans-serif",
           fontWeight: 700, fontSize: '0.95rem', cursor: 'pointer',
         }}>🔑 Google로 로그인하기</motion.button>
-        <p style={{ textAlign: 'center', fontSize: '0.68rem', color: 'rgba(200,216,228,0.55)', margin: 0 }}>로그인하면 데이터가 저장돼요</p>
+        <p style={{ textAlign: 'center', fontSize: '0.68rem', color: '#7DB8D8', margin: 0 }}>로그인하면 데이터가 저장돼요</p>
       </div>
     </main>
   )
