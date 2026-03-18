@@ -18,6 +18,9 @@ export const metadata: Metadata = {
   description: "소상공인을 위한 메뉴 세트 원가 계산기 — 재료비, 인건비, 수수료까지 한눈에",
   keywords: ["원가계산기", "소상공인", "메뉴원가", "배달원가", "식당원가계산"],
   authors: [{ name: "Godogi" }],
+  verification: {
+    google: "Gaxp9t_DzwZ7Rcs8ALCLM5OLWR7YVW_Ebe7E841nOVg",
+  },
   openGraph: {
     title: "고독이의 원가계산기",
     description: "소상공인을 위한 메뉴 세트 원가 계산기",
