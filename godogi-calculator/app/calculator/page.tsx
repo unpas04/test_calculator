@@ -319,6 +319,8 @@ function CalculatorContent() {
             <>
               <a href="/" style={{ color: 'var(--text-soft)', textDecoration: 'none', fontWeight: 500 }}>홈</a>
               <span style={{ color: 'var(--text-soft)', opacity: 0.4 }}>›</span>
+              <a href="/" style={{ color: 'var(--text-soft)', textDecoration: 'none', fontWeight: 500 }}>메뉴 구성</a>
+              <span style={{ color: 'var(--text-soft)', opacity: 0.4 }}>›</span>
               <span style={{ color: 'var(--text-mid)', fontWeight: 700 }}>원가 편집기</span>
             </>
           )}
