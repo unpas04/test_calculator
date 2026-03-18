@@ -267,7 +267,7 @@ export default function HomePage() {
             </motion.div>
             <div>
               <h1 style={{ margin: 0, fontSize: '1.15rem', fontWeight: 700, letterSpacing: '-0.01em' }}>고독이의 원가계산기</h1>
-              <p style={{ margin: 0, fontSize: '0.7rem', color: 'rgba(200,216,228,0.4)', marginTop: 2 }}>내 메뉴를 구성하고 원가를 한눈에</p>
+              <p style={{ margin: 0, fontSize: '0.7rem', color: 'rgba(200,216,228,0.4)', marginTop: 2 }}>우리 메뉴, 진짜로 남는 장사일까요?</p>
             </div>
           </div>
           <button
