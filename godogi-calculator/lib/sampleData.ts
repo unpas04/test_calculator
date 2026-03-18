@@ -8,7 +8,7 @@ interface SampleIngredient {
   sort_order: number
 }
 
-interface SampleMenu {
+export interface SampleMenu {
   name: string
   emoji: string
   category: string

@@ -4,6 +4,7 @@ import { useState, useEffect } from 'react'
 import { useRouter, useSearchParams } from 'next/navigation'
 import { motion, AnimatePresence } from 'framer-motion'
 import { createClient } from '@/lib/supabase'
+import { FIRST_LOGIN_MENU_SAMPLES } from '@/lib/sampleData'
 
 const FEES_KEY = 'godogi_fees'
 
@@ -337,7 +338,22 @@ export default function SetBuilderProto() {
     const loadData = async () => {
       const supabase = createClient()
       const { data: { session } } = await supabase.auth.getSession()
-      if (!session) { setAuthLoading(false); return }
+      if (!session) {
+        setPaletteBlocks(FIRST_LOGIN_MENU_SAMPLES.map(m => ({
+          id: `guest_${m.name}`,
+          menu_id: `guest_${m.name}`,
+          name: m.name,
+          cost: Math.round((m.ingredients || []).reduce((sum: number, ing: any) => {
+            const qty = ing.qty || 1
+            const yld = (ing.yield_ || 100) / 100
+            return sum + (ing.price / qty / yld) * (ing.use_amount || 0)
+          }, 0) + (m.labor || 0) + (m.overhead || 0)),
+          category: m.category as BlockCategory,
+          emoji: m.emoji || '🍽️',
+        })))
+        setAuthLoading(false)
+        return
+      }
       setUserId(session.user.id)
       const { data } = await supabase
         .from('menus')

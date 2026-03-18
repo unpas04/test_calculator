@@ -4,7 +4,7 @@ import { useState, useEffect, useRef } from 'react'
 import { useRouter } from 'next/navigation'
 import { motion, AnimatePresence } from 'framer-motion'
 import { createClient } from '../lib/supabase'
-import { FIRST_LOGIN_MENU_SAMPLES, SAMPLE_SET_DEFINITIONS } from '../lib/sampleData'
+import { FIRST_LOGIN_MENU_SAMPLES, SAMPLE_SET_DEFINITIONS, SampleMenu } from '../lib/sampleData'
 
 const FEES_KEY = 'godogi_fees'
 const DEFAULT_FEES = { delivery_platform: 6.8, delivery_card: 1.5, hall_card: 1.5 }
@@ -87,12 +87,54 @@ export default function HomePage() {
     return () => subscription.unsubscribe()
   }, [])
 
-  // 게스트 온보딩
+  // 게스트 온보딩 + 샘플 세트
   useEffect(() => {
     if (typeof window === 'undefined') return
-    if (sessionStorage.getItem('godogi_guest') && !localStorage.getItem('godogi_onboarded')) {
-      setShowOnboarding(true)
-    }
+    if (!sessionStorage.getItem('godogi_guest')) return
+
+    if (!localStorage.getItem('godogi_onboarded')) setShowOnboarding(true)
+
+    const menuMap: Record<string, SampleMenu> = {}
+    FIRST_LOGIN_MENU_SAMPLES.forEach(m => { menuMap[m.name] = m })
+    const DEFAULT_FEES = { delivery_platform: 6.8, delivery_card: 1.5, hall_card: 1.5 }
+
+    const guestSets: DisplaySet[] = SAMPLE_SET_DEFINITIONS.map((def, i) => {
+      const blocks = def.menuNames.map((name, j) => {
+        const m = menuMap[name]
+        if (!m) return null
+        const ingTotal = (m.ingredients || []).reduce((sum: number, ing: any) => {
+          const qty = ing.qty || 1
+          const yld = (ing.yield_ || 100) / 100
+          return sum + (ing.price / qty / yld) * (ing.use_amount || 0)
+        }, 0)
+        const batchRatio = m.category === 'banchan' && (m.batch_yield || 0) > 0 && (m.serving_size || 0) > 0
+          ? m.serving_size / m.batch_yield : 1
+        return {
+          id: `guest_${i}_${j}`,
+          menu_id: `guest_menu_${name}`,
+          name: m.name, emoji: m.emoji,
+          cost: Math.round((ingTotal + (m.labor || 0) + (m.overhead || 0)) * batchRatio),
+          category: m.category as BlockCategory,
+        }
+      }).filter(Boolean) as DisplaySet['blocks']
+
+      const baseCost = blocks.reduce((s, b) => s + b.cost, 0)
+      const feeRate = def.channel === 'delivery'
+        ? (DEFAULT_FEES.delivery_platform + DEFAULT_FEES.delivery_card) / 100
+        : DEFAULT_FEES.hall_card / 100
+      const totalCost = Math.round(baseCost * (1 + feeRate))
+      return {
+        id: `guest_set_${i}`,
+        name: def.name,
+        channel: def.channel as 'delivery' | 'hall',
+        sale_price: def.sale_price,
+        totalCost,
+        costRate: def.sale_price > 0 ? (totalCost / def.sale_price) * 100 : 0,
+        blocks,
+        created_at: new Date().toISOString(),
+      }
+    })
+    setSets(guestSets)
   }, [])
 
   // Load sets
@@ -351,7 +393,7 @@ export default function HomePage() {
                       exit={{ opacity: 0, scale: 0.96 }}
                       transition={{ delay: i * 0.04 }}
                       whileHover={{ scale: 1.01 }}
-                      onClick={() => router.push(`/proto?id=${set.id}`)}
+                      onClick={() => router.push(set.id.startsWith('guest_set_') ? '/proto' : `/proto?id=${set.id}`)}
                       style={{
                         background: 'linear-gradient(135deg, #162030, #1C2D40)',
                         border: '1px solid rgba(74,127,165,0.18)',
