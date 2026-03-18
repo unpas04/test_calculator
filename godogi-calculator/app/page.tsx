@@ -218,7 +218,9 @@ export default function HomePage() {
     </main>
   )
 
-  if (!user) return (
+  const isGuest = typeof window !== 'undefined' && !!sessionStorage.getItem('godogi_guest')
+
+  if (!user && !isGuest) return (
     <main style={{ minHeight: '100vh', background: '#0F1923', color: 'white', fontFamily: "'Noto Sans KR', sans-serif", display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', padding: '40px 24px' }}>
       <motion.div animate={{ rotate: [0, -8, 8, -4, 0] }} transition={{ duration: 2.5, repeat: Infinity, repeatDelay: 4 }} style={{ marginBottom: 20 }}>
         <svg width="64" height="64" viewBox="0 0 100 100" fill="none">
@@ -252,7 +254,7 @@ export default function HomePage() {
       </div>
 
       <div style={{ display: 'flex', flexDirection: 'column', gap: 10, width: '100%', maxWidth: 320 }}>
-        <motion.button whileTap={{ scale: 0.97 }} onClick={() => router.push('/calculator')} style={{
+        <motion.button whileTap={{ scale: 0.97 }} onClick={() => { sessionStorage.setItem('godogi_guest', '1'); router.push('/') }} style={{
           background: 'linear-gradient(135deg, #3A6FA5, #2A5080)', color: 'white', border: 'none',
           borderRadius: 14, padding: '14px', fontFamily: "'Noto Sans KR', sans-serif",
           fontWeight: 700, fontSize: '0.95rem', cursor: 'pointer',
@@ -262,7 +264,7 @@ export default function HomePage() {
           borderRadius: 14, padding: '14px', fontFamily: "'Noto Sans KR', sans-serif",
           fontWeight: 700, fontSize: '0.95rem', cursor: 'pointer',
         }}>🔑 Google로 로그인하기</motion.button>
-        <p style={{ textAlign: 'center', fontSize: '0.68rem', color: 'rgba(200,216,228,0.25)', margin: 0 }}>로그인하면 데이터가 저장돼요</p>
+        <p style={{ textAlign: 'center', fontSize: '0.68rem', color: 'rgba(200,216,228,0.55)', margin: 0 }}>로그인하면 데이터가 저장돼요</p>
       </div>
     </main>
   )
@@ -296,14 +298,20 @@ export default function HomePage() {
               <p style={{ margin: 0, fontSize: '0.7rem', color: 'rgba(200,216,228,0.4)', marginTop: 2 }}>우리 메뉴, 진짜로 남는 장사일까요?</p>
             </div>
           </div>
-          <button
-            onClick={() => router.push('/calculator')}
-            style={{
+          <div style={{ display: 'flex', gap: 8, alignItems: 'center' }}>
+            {!user && (
+              <button onClick={loginWithGoogle} style={{
+                background: 'white', color: '#1E2D40', border: 'none',
+                borderRadius: 8, padding: '7px 13px',
+                fontSize: '0.72rem', cursor: 'pointer', fontFamily: "'Noto Sans KR', sans-serif", fontWeight: 700,
+              }}>🔑 로그인</button>
+            )}
+            <button onClick={() => router.push('/calculator')} style={{
               background: 'rgba(255,255,255,0.05)', border: '1px solid rgba(255,255,255,0.09)',
               color: 'rgba(200,216,228,0.45)', borderRadius: 8, padding: '7px 13px',
               fontSize: '0.72rem', cursor: 'pointer', fontFamily: "'Noto Sans KR', sans-serif",
-            }}
-          >원가 편집기 →</button>
+            }}>원가 편집기 →</button>
+          </div>
         </div>
       </header>
 
