@@ -128,7 +128,35 @@ function SetBlock({ block, onRemove, onMoveLeft, onMoveRight, onEdit }: {
           <div style={{ fontSize: '0.7rem', color: 'rgba(255,255,255,0.5)', marginTop: 1 }}>{fmt(block.cost)}원</div>
         </div>
         <div style={{ fontSize: '0.62rem', color: 'rgba(255,255,255,0.35)', flexShrink: 0, background: `${s.border}33`, border: `1px solid ${s.border}66`, borderRadius: 20, padding: '2px 8px' }}>{s.label}</div>
+        {onEdit && (
+          <motion.button
+            onClick={e => { e.stopPropagation(); onEdit() }}
+            whileTap={{ scale: 0.9 }}
+            style={{
+              flexShrink: 0, background: 'rgba(74,127,165,0.25)', border: '1px solid rgba(74,127,165,0.5)',
+              borderRadius: 20, padding: '2px 10px', color: '#7DB8D8',
+              fontSize: '0.62rem', cursor: 'pointer', fontFamily: "'Noto Sans KR',sans-serif", fontWeight: 700,
+            }}
+          >수정</motion.button>
+        )}
       </div>
+      {/* ✏️ 수정 버튼 (데스크탑: hover 시 표시) */}
+      {onEdit && (
+        <motion.button
+          className="sb-edit-btn"
+          onClick={e => { e.stopPropagation(); onEdit() }}
+          whileHover={{ scale: 1.15 }}
+          whileTap={{ scale: 0.9 }}
+          style={{
+            position: 'absolute', top: -8, left: -8,
+            width: 20, height: 20, borderRadius: '50%',
+            background: '#4A7FA5', border: 'none', color: 'white',
+            fontSize: '0.6rem', cursor: 'pointer',
+            display: 'flex', alignItems: 'center', justifyContent: 'center',
+            boxShadow: '0 2px 6px rgba(74,127,165,0.5)',
+          }}
+        >✏️</motion.button>
+      )}
       {/* × 삭제 버튼 */}
       <motion.button
         className="sb-remove-btn"
