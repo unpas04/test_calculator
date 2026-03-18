@@ -69,6 +69,8 @@ export default function HomePage() {
   const [sets, setSets] = useState<DisplaySet[]>([])
   const [menuStats, setMenuStats] = useState<{ total: number; avgRate: number | null; warnCount: number } | null>(null)
   const [deleteConfirmId, setDeleteConfirmId] = useState<string | null>(null)
+  const [showOnboarding, setShowOnboarding] = useState(false)
+  const [onboardingStep, setOnboardingStep] = useState(0)
   const router = useRouter()
   const supabase = createClient()
   const loadedForUser = useRef<string | null>(null)
@@ -91,6 +93,7 @@ export default function HomePage() {
     if (loadedForUser.current === user.id) return
     loadedForUser.current = user.id
     loadSets()
+    if (!localStorage.getItem('godogi_onboarded')) setShowOnboarding(true)
   }, [user])
 
   const loadSets = async () => {
@@ -454,6 +457,84 @@ export default function HomePage() {
           fontFamily: "'Noto Sans KR', sans-serif", fontWeight: 700,
         }}
       >＋ 새 메뉴 구성 만들기</motion.button>
+
+      {/* 온보딩 모달 */}
+      <AnimatePresence>
+        {showOnboarding && (() => {
+          const steps = [
+            { icon: '✏️', title: '원가 편집기', desc: '메뉴별 재료비·인건비·간접비를\n입력해서 제조 원가를 계산해요' },
+            { icon: '🧩', title: '메뉴 구성', desc: '여러 메뉴를 묶어 세트를 만들고\n배달·홀 수수료 포함 원가율을 확인해요' },
+            { icon: '📊', title: '홈에서 확인', desc: '등록한 세트의 수익률을 한눈에 보고\n남는 장사인지 바로 알 수 있어요' },
+          ]
+          const isLast = onboardingStep === steps.length - 1
+          const step = steps[onboardingStep]
+          return (
+            <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}
+              style={{ position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.65)', zIndex: 200, display: 'flex', alignItems: 'center', justifyContent: 'center', padding: 24 }}>
+              <motion.div initial={{ scale: 0.9, opacity: 0 }} animate={{ scale: 1, opacity: 1 }} exit={{ scale: 0.9, opacity: 0 }}
+                style={{ background: '#1A2840', borderRadius: 24, padding: '36px 28px', width: '100%', maxWidth: 360, fontFamily: "'Noto Sans KR', sans-serif", textAlign: 'center' }}>
+
+                {/* 로고 */}
+                <svg width="52" height="52" viewBox="0 0 100 100" fill="none" style={{ marginBottom: 16 }}>
+                  <ellipse cx="50" cy="55" rx="32" ry="22" fill="#4A7FA5"/>
+                  <ellipse cx="50" cy="53" rx="30" ry="20" fill="#5B9EC9"/>
+                  <polygon points="82,55 100,40 100,70" fill="#4A7FA5"/>
+                  <ellipse cx="46" cy="58" rx="18" ry="12" fill="#C8E6F5"/>
+                  <circle cx="35" cy="48" r="5" fill="white"/>
+                  <circle cx="35" cy="48" r="3" fill="#1E2D40"/>
+                  <circle cx="36" cy="47" r="1" fill="white"/>
+                  <path d="M 28 56 Q 32 60 36 56" stroke="#1E2D40" strokeWidth="1.5" fill="none" strokeLinecap="round"/>
+                  <ellipse cx="50" cy="33" rx="10" ry="6" fill="#4A7FA5" transform="rotate(-10 50 33)"/>
+                  <ellipse cx="30" cy="52" rx="4" ry="2.5" fill="#F4A0A0" opacity="0.6"/>
+                </svg>
+
+                {onboardingStep === 0 && (
+                  <>
+                    <div style={{ color: 'white', fontWeight: 700, fontSize: '1.1rem', marginBottom: 8 }}>고독이의 원가계산기에 오신 걸 환영해요!</div>
+                    <div style={{ color: 'rgba(200,216,228,0.5)', fontSize: '0.8rem', marginBottom: 28 }}>이렇게 사용하면 돼요 🐟</div>
+                  </>
+                )}
+
+                {/* 스텝 인디케이터 */}
+                <div style={{ display: 'flex', justifyContent: 'center', gap: 6, marginBottom: 28 }}>
+                  {steps.map((_, i) => (
+                    <div key={i} style={{ width: i === onboardingStep ? 20 : 6, height: 6, borderRadius: 3, background: i === onboardingStep ? '#4A7FA5' : 'rgba(255,255,255,0.15)', transition: 'all 0.3s' }} />
+                  ))}
+                </div>
+
+                {/* 스텝 내용 */}
+                <div style={{ background: 'rgba(255,255,255,0.04)', borderRadius: 16, padding: '24px 20px', marginBottom: 28 }}>
+                  <div style={{ fontSize: '2.5rem', marginBottom: 12 }}>{step.icon}</div>
+                  <div style={{ color: 'white', fontWeight: 700, fontSize: '1rem', marginBottom: 8 }}>STEP {onboardingStep + 1}. {step.title}</div>
+                  <div style={{ color: 'rgba(200,216,228,0.55)', fontSize: '0.8rem', lineHeight: 1.7, whiteSpace: 'pre-line' }}>{step.desc}</div>
+                </div>
+
+                {/* 버튼 */}
+                <motion.button whileTap={{ scale: 0.97 }} onClick={() => {
+                  if (isLast) {
+                    localStorage.setItem('godogi_onboarded', '1')
+                    setShowOnboarding(false)
+                    setOnboardingStep(0)
+                  } else {
+                    setOnboardingStep(s => s + 1)
+                  }
+                }} style={{
+                  width: '100%', background: 'linear-gradient(135deg, #3A6FA5, #2A5080)',
+                  color: 'white', border: 'none', borderRadius: 12, padding: '13px',
+                  fontFamily: "'Noto Sans KR', sans-serif", fontWeight: 700, fontSize: '0.9rem', cursor: 'pointer',
+                }}>{isLast ? '시작하기 🐟' : '다음 →'}</motion.button>
+
+                {onboardingStep === 0 && (
+                  <button onClick={() => { localStorage.setItem('godogi_onboarded', '1'); setShowOnboarding(false) }}
+                    style={{ background: 'none', border: 'none', color: 'rgba(200,216,228,0.3)', fontSize: '0.72rem', marginTop: 12, cursor: 'pointer', fontFamily: "'Noto Sans KR', sans-serif" }}>
+                    건너뛰기
+                  </button>
+                )}
+              </motion.div>
+            </motion.div>
+          )
+        })()}
+      </AnimatePresence>
 
       {/* 삭제 확인 모달 */}
       <AnimatePresence>
