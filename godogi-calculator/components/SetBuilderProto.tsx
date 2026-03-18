@@ -588,7 +588,7 @@ export default function SetBuilderProto() {
       </div>
 
       {/* 카테고리 필터 */}
-      <div style={{ display: 'flex', gap: 4, marginBottom: 12, overflowX: 'auto', paddingBottom: 2, scrollbarWidth: 'none' }}>
+      <div className="sb-cat-scroll" style={{ display: 'flex', gap: 4, marginBottom: 12, overflowX: 'auto', paddingBottom: 4 }}>
         {CATEGORY_CHIPS.filter(c => c.key === 'all' || paletteBlocks.some(b => b.category === c.key)).map(({ key, label }) => (
           <button
             key={key}
@@ -660,6 +660,11 @@ export default function SetBuilderProto() {
     <>
       <style>{`
         @keyframes pulse { 0%,100% { opacity:1; } 50% { opacity:0.3; } }
+        .sb-cat-scroll::-webkit-scrollbar { height: 3px; }
+        .sb-cat-scroll::-webkit-scrollbar-track { background: rgba(255,255,255,0.04); border-radius: 3px; }
+        .sb-cat-scroll::-webkit-scrollbar-thumb { background: rgba(74,127,165,0.4); border-radius: 3px; }
+        .sb-cat-scroll::-webkit-scrollbar-thumb:hover { background: rgba(74,127,165,0.7); }
+        .sb-cat-scroll { scrollbar-width: thin; scrollbar-color: rgba(74,127,165,0.4) rgba(255,255,255,0.04); }
         /* 데스크탑: card body ON, row body OFF */
         .sb-block-card-body { display: block; }
         .sb-block-row-body  { display: none; }
