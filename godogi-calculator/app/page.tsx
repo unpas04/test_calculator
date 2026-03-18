@@ -67,6 +67,7 @@ export default function HomePage() {
   const [loading, setLoading] = useState(true)
   const [sets, setSets] = useState<DisplaySet[]>([])
   const [menuStats, setMenuStats] = useState<{ total: number; avgRate: number | null; warnCount: number } | null>(null)
+  const [deleteConfirmId, setDeleteConfirmId] = useState<string | null>(null)
   const router = useRouter()
   const supabase = createClient()
   const loadedForUser = useRef<string | null>(null)
@@ -384,7 +385,7 @@ export default function HomePage() {
                         </div>
                       </div>
                       <button
-                        onClick={e => handleDelete(set.id, e)}
+                        onClick={e => { e.stopPropagation(); setDeleteConfirmId(set.id) }}
                         style={{
                           position: 'absolute', top: 10, right: 10,
                           background: 'transparent', border: 'none',
@@ -392,6 +393,17 @@ export default function HomePage() {
                           fontSize: '0.78rem', padding: '4px 6px', lineHeight: 1,
                         }}
                       >✕</button>
+                      <div style={{ marginTop: 12, display: 'flex', justifyContent: 'flex-end' }}>
+                        <button
+                          onClick={e => { e.stopPropagation(); router.push(`/proto?id=${set.id}`) }}
+                          style={{
+                            background: 'rgba(74,127,165,0.12)', border: '1px solid rgba(74,127,165,0.25)',
+                            color: '#7DB8D8', borderRadius: 8, padding: '5px 12px',
+                            fontSize: '0.72rem', fontFamily: "'Noto Sans KR', sans-serif",
+                            fontWeight: 700, cursor: 'pointer',
+                          }}
+                        >✏️ 수정</button>
+                      </div>
                     </motion.div>
                   )
                 })}
@@ -449,6 +461,38 @@ export default function HomePage() {
           fontFamily: "'Noto Sans KR', sans-serif", fontWeight: 700,
         }}
       >＋ 새 메뉴 구성 만들기</motion.button>
+
+      {/* 삭제 확인 모달 */}
+      <AnimatePresence>
+        {deleteConfirmId && (
+          <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}
+            onClick={() => setDeleteConfirmId(null)}
+            style={{ position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.55)', zIndex: 100, display: 'flex', alignItems: 'center', justifyContent: 'center', padding: 24 }}>
+            <motion.div initial={{ scale: 0.93 }} animate={{ scale: 1 }} exit={{ scale: 0.93 }}
+              onClick={e => e.stopPropagation()}
+              style={{ background: '#1A2840', borderRadius: 18, padding: '28px 24px', width: '100%', maxWidth: 320, fontFamily: "'Noto Sans KR', sans-serif", textAlign: 'center' }}>
+              <div style={{ fontSize: '1.8rem', marginBottom: 12 }}>🗑️</div>
+              <div style={{ color: 'white', fontWeight: 700, fontSize: '0.95rem', marginBottom: 8 }}>메뉴 구성을 삭제할까요?</div>
+              <div style={{ color: 'rgba(200,216,228,0.45)', fontSize: '0.75rem', marginBottom: 24 }}>삭제하면 되돌릴 수 없어요</div>
+              <div style={{ display: 'flex', gap: 8 }}>
+                <button onClick={() => setDeleteConfirmId(null)} style={{
+                  flex: 1, background: 'rgba(255,255,255,0.06)', border: 'none', borderRadius: 10,
+                  color: 'rgba(200,216,228,0.6)', padding: '11px', fontFamily: "'Noto Sans KR', sans-serif",
+                  fontWeight: 700, fontSize: '0.85rem', cursor: 'pointer',
+                }}>취소</button>
+                <button onClick={async e => {
+                  await handleDelete(deleteConfirmId, e as any)
+                  setDeleteConfirmId(null)
+                }} style={{
+                  flex: 1, background: '#C44A4A', border: 'none', borderRadius: 10,
+                  color: 'white', padding: '11px', fontFamily: "'Noto Sans KR', sans-serif",
+                  fontWeight: 700, fontSize: '0.85rem', cursor: 'pointer',
+                }}>삭제</button>
+              </div>
+            </motion.div>
+          </motion.div>
+        )}
+      </AnimatePresence>
     </div>
   )
 }
