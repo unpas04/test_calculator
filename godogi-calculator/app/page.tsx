@@ -18,7 +18,7 @@ interface DisplaySet {
   sale_price: number
   totalCost: number
   costRate: number
-  blocks: { id: string; name: string; emoji: string; cost: number; category: BlockCategory }[]
+  blocks: { id: string; menu_id: string; name: string; emoji: string; cost: number; category: BlockCategory }[]
   created_at: string
 }
 
@@ -39,6 +39,7 @@ function computeSetDisplay(dbSet: any, feeSettings: typeof DEFAULT_FEES): Displa
     .sort((a: any, b: any) => a.sort_order - b.sort_order)
     .map((item: any) => ({
       id: item.id,
+      menu_id: item.menu_id,
       name: item.menus?.name || '삭제된 메뉴',
       emoji: item.menus?.emoji || '🍽️',
       cost: Math.round(calcMenuTotalCost(item.menus || {})),
@@ -345,12 +346,15 @@ export default function HomePage() {
                           <div style={{ fontSize: '0.98rem', fontWeight: 700, marginBottom: 8 }}>{set.name}</div>
                           <div style={{ display: 'flex', gap: 6, flexWrap: 'wrap' }}>
                             {set.blocks.slice(0, 5).map(b => (
-                              <span key={b.id} style={{
-                                fontSize: '0.73rem',
-                                background: 'rgba(255,255,255,0.05)',
-                                border: '1px solid rgba(255,255,255,0.07)',
-                                borderRadius: 6, padding: '2px 8px',
-                              }}>
+                              <span key={b.id}
+                                onClick={e => { e.stopPropagation(); router.push(`/calculator?menuId=${b.menu_id}&returnTo=/`) }}
+                                style={{
+                                  fontSize: '0.73rem',
+                                  background: 'rgba(255,255,255,0.05)',
+                                  border: '1px solid rgba(255,255,255,0.07)',
+                                  borderRadius: 6, padding: '2px 8px',
+                                  cursor: 'pointer',
+                                }}>
                                 {b.emoji} {b.name}
                               </span>
                             ))}
