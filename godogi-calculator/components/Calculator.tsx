@@ -269,9 +269,9 @@ export default function Calculator({ menu, onChange }: Props) {
 
   const card = (children: React.ReactNode) => (
     <div style={{
-      background: 'white', borderRadius: 18, padding: '20px 18px',
-      boxShadow: '0 2px 12px rgba(30,45,64,0.07)',
-      border: '1px solid var(--border)', marginBottom: 16
+      background: '#162030', borderRadius: 18, padding: '20px 18px',
+      boxShadow: '0 4px 16px rgba(0,0,0,0.25)',
+      border: '1px solid rgba(74,127,165,0.15)', marginBottom: 16
     }}>{children}</div>
   )
 
@@ -360,8 +360,8 @@ export default function Calculator({ menu, onChange }: Props) {
               <div style={{ position: 'fixed', inset: 0, zIndex: 99 }} onClick={() => setShowEmojiPicker(false)} />
               <div style={{
                 position: 'absolute', top: '100%', left: 0, zIndex: 100,
-                background: 'white', border: '1.5px solid var(--border)', borderRadius: 12,
-                padding: 10, boxShadow: '0 4px 20px rgba(0,0,0,0.12)',
+                background: '#1A2840', border: '1.5px solid rgba(74,127,165,0.25)', borderRadius: 12,
+                padding: 10, boxShadow: '0 4px 20px rgba(0,0,0,0.4)',
                 display: 'grid', gridTemplateColumns: 'repeat(8, 1fr)', gap: 4, marginTop: 4,
                 minWidth: 260,
               }}>
@@ -482,9 +482,9 @@ export default function Calculator({ menu, onChange }: Props) {
                           {showSugg[ing.id] && suggestions[ing.id]?.length > 0 && (
                             <div style={{
                               position: 'absolute', top: '100%', left: 0, right: 0,
-                              background: 'white', border: '1.5px solid var(--border)',
+                              background: '#1A2840', border: '1.5px solid rgba(74,127,165,0.25)',
                               borderRadius: 10, zIndex: 50,
-                              boxShadow: '0 4px 16px rgba(0,0,0,0.1)',
+                              boxShadow: '0 4px 16px rgba(0,0,0,0.4)',
                               maxHeight: 180, overflowY: 'auto'
                             }}>
                               {suggestions[ing.id].map(item => (
@@ -542,7 +542,7 @@ export default function Calculator({ menu, onChange }: Props) {
                                 <span style={{ fontFamily: "'Noto Sans KR', sans-serif", fontWeight: 700, fontSize: '0.62rem', color: 'var(--text-soft)' }}>구매가(원)</span>
                                 <input
                                   name="price"
-                                  style={{ ...inputStyle, background: 'white', border: '1.5px solid var(--border)' }}
+                                  style={{ ...inputStyle, background: 'rgba(255,255,255,0.06)', border: '1.5px solid rgba(74,127,165,0.2)' }}
                                   value={toComma(ing.price)} inputMode="numeric"
                                   onChange={e => {
                                     const val = fromComma(e.target.value)
@@ -558,7 +558,7 @@ export default function Calculator({ menu, onChange }: Props) {
                                 <div style={{ display: 'flex', gap: 4 }}>
                                   <input
                                     name="qty"
-                                    style={{ ...inputStyle, background: 'white', border: '1.5px solid var(--border)', flex: 1 }}
+                                    style={{ ...inputStyle, background: 'rgba(255,255,255,0.06)', border: '1.5px solid rgba(74,127,165,0.2)', flex: 1 }}
                                     value={toComma(ing.qty)} inputMode="numeric"
                                     onChange={e => {
                                       const val = fromComma(e.target.value)
@@ -568,7 +568,7 @@ export default function Calculator({ menu, onChange }: Props) {
 
                                   />
                                   <select
-                                    style={{ ...inputStyle, background: 'white', border: '1.5px solid var(--border)', width: 48, padding: '8px 2px' }}
+                                    style={{ ...inputStyle, background: 'rgba(255,255,255,0.06)', border: '1.5px solid rgba(74,127,165,0.2)', width: 48, padding: '8px 2px' }}
                                     value={ing.unit}
                                     onChange={e => {
                                       updateIng(ing.id, 'unit', e.target.value)
@@ -585,7 +585,7 @@ export default function Calculator({ menu, onChange }: Props) {
                                 <span style={{ fontFamily: "'Noto Sans KR', sans-serif", fontWeight: 700, fontSize: '0.62rem', color: 'var(--text-soft)' }}>수율(%)</span>
                                 <input
                                   name="yield_"
-                                  style={{ ...inputStyle, background: 'white', border: '1.5px solid var(--border)' }}
+                                  style={{ ...inputStyle, background: 'rgba(255,255,255,0.06)', border: '1.5px solid rgba(74,127,165,0.2)' }}
                                   value={toComma(ing.yield_)} inputMode="numeric"
                                   onChange={e => {
                                     const val = fromComma(e.target.value)
@@ -792,7 +792,7 @@ export default function Calculator({ menu, onChange }: Props) {
           padding: '0 20px'
         }}>
           <div style={{
-            background: 'white', borderRadius: 20, padding: 24,
+            background: '#1A2840', borderRadius: 20, padding: 24,
             width: '100%', maxWidth: 340,
             display: 'flex', flexDirection: 'column', gap: 16
           }}>
@@ -870,7 +870,7 @@ export default function Calculator({ menu, onChange }: Props) {
           padding: '0 20px'
         }}>
           <div style={{
-            background: 'white', borderRadius: 20, padding: 24,
+            background: '#1A2840', borderRadius: 20, padding: 24,
             width: '100%', maxWidth: 340,
             display: 'flex', flexDirection: 'column', gap: 16
           }}>
@@ -948,7 +948,7 @@ export default function Calculator({ menu, onChange }: Props) {
           padding: '0 20px'
         }}>
           <div onClick={e => e.stopPropagation()} style={{
-            background: 'white', borderRadius: 20, padding: 24,
+            background: '#1A2840', borderRadius: 20, padding: 24,
             width: '100%', maxWidth: 340,
             display: 'flex', flexDirection: 'column', gap: 14
           }}>

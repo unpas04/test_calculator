@@ -8,19 +8,19 @@
 ::-webkit-scrollbar-thumb:hover { background: rgba(255,255,255,0.2); }
 
 :root {
-  --navy: #1E2D40;
+  --navy: #C8D8E4;
   --blue: #4A7FA5;
   --blue-light: #7FB3D3;
-  --silver: #C8D8E4;
-  --silver-light: #EEF4F8;
-  --border: #D8E4EC;
-  --text: #2C3E50;
-  --text-mid: #5A6E82;
-  --text-soft: #8FA3B5;
+  --silver: #2A3A4A;
+  --silver-light: rgba(255,255,255,0.07);
+  --border: rgba(74,127,165,0.22);
+  --text: #C8D8E4;
+  --text-mid: rgba(200,216,228,0.6);
+  --text-soft: rgba(200,216,228,0.38);
   --green: #4A8C6F;
   --orange: #E8833A;
   --red: #D95F52;
-  --bg: #F0F4F8;
+  --bg: #0F1923;
 }
 
 body {
