@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useEffect } from 'react'
+import { useState, useEffect, forwardRef, useImperativeHandle } from 'react'
 import { createClient } from '@/lib/supabase'
 import { INGREDIENT_DB } from '@/lib/ingredientDB'
 
@@ -22,7 +22,9 @@ interface Props {
   user: any
 }
 
-export default function Fridge({ user }: Props) {
+export interface FridgeHandle { openAdd: () => void }
+
+export default forwardRef<FridgeHandle, Props>(function Fridge({ user }, ref) {
   const [items, setItems] = useState<FridgeItem[]>([])
   const [selectedCategory, setSelectedCategory] = useState('전체')
   const [showModal, setShowModal] = useState(false)
@@ -88,6 +90,8 @@ export default function Fridge({ user }: Props) {
     setShowModal(true)
   }
 
+  useImperativeHandle(ref, () => ({ openAdd }))
+
   const openEdit = (item: FridgeItem) => {
     setEditItem(item)
     setForm({
@@ -145,15 +149,16 @@ export default function Fridge({ user }: Props) {
   }
 
   return (
-    <div className="fridge-scroll" style={{ flex: 1, overflowY: 'auto', padding: '8px 0' }}>
+    <div style={{ flex: 1, display: 'flex', flexDirection: 'column', overflow: 'hidden' }}>
       <style>{`
         .fridge-scroll::-webkit-scrollbar { width: 4px; }
         .fridge-scroll::-webkit-scrollbar-track { background: transparent; }
         .fridge-scroll::-webkit-scrollbar-thumb { background: rgba(74,127,165,0.35); border-radius: 2px; }
         .fridge-scroll { scrollbar-width: thin; scrollbar-color: rgba(74,127,165,0.35) transparent; }
       `}</style>
-      {/* 검색창 */}
-      <div style={{ padding: '8px 8px 0' }}>
+
+      {/* 검색창 + 카테고리 — 고정 */}
+      <div style={{ flexShrink: 0, padding: '8px 8px 0' }}>
         <input
           value={search}
           onChange={e => setSearch(e.target.value)}
@@ -168,11 +173,9 @@ export default function Fridge({ user }: Props) {
           }}
         />
       </div>
-      {/* 카테고리 필터 */}
       <div style={{
-        display: 'flex', gap: 6, padding: '8px 8px 4px',
-        overflowX: 'auto', flexWrap: 'nowrap',
-        scrollbarWidth: 'none'
+        flexShrink: 0, display: 'flex', gap: 6, padding: '8px 8px 4px',
+        overflowX: 'auto', flexWrap: 'nowrap', scrollbarWidth: 'none'
       }}>
         {CATEGORIES.map(cat => (
           <button key={cat} onClick={() => setSelectedCategory(cat)} style={{
@@ -185,8 +188,8 @@ export default function Fridge({ user }: Props) {
         ))}
       </div>
 
-      {/* 재료 목록 */}
-      <div style={{ padding: '4px 8px' }}>
+      {/* 재료 목록 — 스크롤 */}
+      <div className="fridge-scroll" style={{ flex: 1, overflowY: 'auto', padding: '4px 8px' }}>
         {filtered().map(item => (
           <div key={item.id} style={{
             display: 'flex', alignItems: 'center', gap: 8,
@@ -220,16 +223,6 @@ export default function Fridge({ user }: Props) {
         ))}
       </div>
 
-      {/* 추가 버튼 */}
-      <div style={{ padding: '8px' }}>
-        <button onClick={openAdd} style={{
-          width: '100%', padding: '8px 0',
-          background: 'rgba(74,127,165,0.15)',
-          border: '1.5px dashed rgba(74,127,165,0.4)',
-          borderRadius: 10, color: 'var(--blue-light)',
-          fontFamily: "'Noto Sans KR', sans-serif", fontWeight: 700, fontSize: '0.78rem', cursor: 'pointer'
-        }}>＋ 재료 추가</button>
-      </div>
 
       {/* 모달 */}
       {showModal && (

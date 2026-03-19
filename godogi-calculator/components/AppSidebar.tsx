@@ -1,6 +1,6 @@
 'use client'
-import Fridge from '@/components/Fridge'
-import { useState } from 'react'
+import Fridge, { FridgeHandle } from '@/components/Fridge'
+import { useState, useRef } from 'react'
 import Link from 'next/link'
 
 interface Menu {
@@ -34,6 +34,7 @@ interface Props {
 export default function Sidebar({ menus, currentId, onSelect, onNew, onDelete, user, onLogout }: Props) {
   const [tab, setTab] = useState<'menu' | 'fridge'>('menu')
   const [isOpen, setIsOpen] = useState(false)
+  const fridgeRef = useRef<FridgeHandle>(null)
 
   return (
     <>
@@ -161,17 +162,17 @@ export default function Sidebar({ menus, currentId, onSelect, onNew, onDelete, u
         )}
 
         {/* 냉장고 패널 */}
-        {tab === 'fridge' && <Fridge user={user} />}
+        {tab === 'fridge' && <Fridge ref={fridgeRef} user={user} />}
 
         {/* 하단 버튼 */}
         <div style={{ flexShrink: 0, padding: '12px 16px', borderTop: '1px solid rgba(255,255,255,0.07)', display: 'flex', flexDirection: 'column', gap: 8 }}>
-          <button onClick={onNew} style={{
+          <button onClick={tab === 'menu' ? onNew : () => fridgeRef.current?.openAdd()} style={{
             width: '100%', padding: '10px 0',
             background: 'var(--blue)', color: 'white',
             border: 'none', borderRadius: 10,
             fontFamily: "'Noto Sans KR', sans-serif", fontWeight: 700, fontSize: '0.85rem',
             cursor: 'pointer', letterSpacing: '0.03em'
-          }}>＋ 추가</button>
+          }}>{tab === 'menu' ? '＋ 추가' : '＋ 재료 추가'}</button>
           <button onClick={onLogout} style={{
             width: '100%', padding: '8px 0',
             background: 'transparent', color: 'rgba(200,216,228,0.3)',
