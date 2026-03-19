@@ -633,18 +633,18 @@ export default function SetBuilderProto() {
             })
           : filteredPalette.map(b => <PaletteBlock key={b.id} block={b} onAdd={() => addBlock(b)} />)
       )}
-      {/* 재료 편집기 이동 버튼 */}
+      {/* 원가 편집기 이동 버튼 */}
       <div style={{ marginTop: 20, paddingTop: 14, borderTop: '1px solid rgba(255,255,255,0.06)' }}>
         <button
           onClick={() => tryNavigate('/calculator')}
           style={{
             width: '100%', padding: '10px 0',
-            background: 'rgba(255,255,255,0.04)', border: '1px solid rgba(255,255,255,0.08)',
-            borderRadius: 10, color: 'rgba(200,216,228,0.4)',
+            background: 'rgba(74,127,165,0.15)', border: '1.5px dashed rgba(74,127,165,0.4)',
+            borderRadius: 10, color: 'var(--blue-light)',
             fontFamily: "'Noto Sans KR',sans-serif", fontWeight: 700, fontSize: '0.78rem',
             cursor: 'pointer', letterSpacing: '0.02em',
           }}
-        >원가 편집기 →</button>
+        >＋ 추가</button>
       </div>
     </div>
   )
