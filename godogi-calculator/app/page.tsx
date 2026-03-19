@@ -484,7 +484,18 @@ export default function HomePage() {
 
       {/* 메인 콘텐츠 */}
       <main style={{ maxWidth: 680, margin: '0 auto', padding: `28px 24px ${menuStats ? 300 : 120}px` }}>
-        {sets.length === 0 ? (
+        {loading ? (
+          <div style={{ display: 'flex', flexDirection: 'column', gap: 10, paddingTop: 8 }}>
+            {[1, 2, 3].map(i => (
+              <div key={i} style={{
+                background: 'linear-gradient(135deg, #162030, #1C2D40)',
+                border: '1px solid rgba(74,127,165,0.1)',
+                borderRadius: 16, padding: '16px 18px', height: 110,
+                opacity: 0.5 + i * 0.1,
+              }} />
+            ))}
+          </div>
+        ) : sets.length === 0 ? (
           <motion.div
             initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }}
             transition={{ delay: 0.1 }}
