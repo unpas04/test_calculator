@@ -464,8 +464,8 @@ export default function HomePage() {
               </svg>
             </motion.div>
             <div style={{ minWidth: 0 }}>
-              <h1 style={{ margin: 0, fontSize: '1rem', fontWeight: 700, letterSpacing: '-0.01em', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>고독이의 원가계산기</h1>
-              <p className="home-subtitle" style={{ margin: 0, fontSize: '0.68rem', color: 'rgba(200,216,228,0.4)', marginTop: 1 }}>우리 메뉴, 진짜로 남는 장사일까요?</p>
+              <h1 style={{ margin: 0, fontSize: '0.82rem', fontWeight: 600, letterSpacing: '0.01em', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis', color: 'rgba(200,216,228,0.6)' }}>고독이의 원가계산기</h1>
+              <p className="home-subtitle" style={{ margin: 0, fontSize: '0.65rem', color: 'rgba(200,216,228,0.3)', marginTop: 1 }}>우리 메뉴, 진짜로 남는 장사일까요?</p>
             </div>
           </div>
           <div style={{ display: 'flex', gap: 6, alignItems: 'center', flexShrink: 0 }}>
@@ -538,61 +538,88 @@ export default function HomePage() {
                         cursor: 'pointer', position: 'relative',
                       }}
                     >
-                      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', gap: 12 }}>
-                        {/* 왼쪽 */}
-                        <div style={{ flex: 1, minWidth: 0 }}>
-                          <div style={{ fontSize: '0.98rem', fontWeight: 700, marginBottom: 8 }}>{set.name}</div>
-                          <div style={{ display: 'flex', gap: 6, flexWrap: 'wrap' }}>
-                            {set.blocks.slice(0, 5).map(b => (
-                              <span key={b.id}
-                                style={{
-                                  fontSize: '0.73rem',
-                                  background: 'rgba(255,255,255,0.05)',
-                                  border: '1px solid rgba(255,255,255,0.07)',
-                                  borderRadius: 6, padding: '2px 8px',
-                                }}>
-                                {b.emoji} {b.name}
-                              </span>
-                            ))}
-                            {set.blocks.length > 5 && (
-                              <span style={{ fontSize: '0.73rem', color: 'rgba(200,216,228,0.3)', padding: '2px 4px' }}>
-                                +{set.blocks.length - 5}
-                              </span>
-                            )}
-                          </div>
-                        </div>
-                        {/* 오른쪽 */}
-                        <div style={{ textAlign: 'right', flexShrink: 0, paddingRight: 20 }}>
-                          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'flex-end', gap: 5, marginBottom: 6 }}>
-                            <span style={{
-                              fontSize: '0.62rem', padding: '2px 8px', borderRadius: 20,
-                              background: set.channel === 'delivery' ? 'rgba(74,127,165,0.2)' : 'rgba(74,140,111,0.2)',
-                              color: set.channel === 'delivery' ? '#5B9EC9' : '#4A8C6F',
-                              border: `1px solid ${set.channel === 'delivery' ? 'rgba(74,127,165,0.3)' : 'rgba(74,140,111,0.3)'}`,
-                              fontFamily: "'Noto Sans KR',sans-serif", fontWeight: 700,
-                            }}>
-                              {set.channel === 'delivery' ? '🛵 배달' : '🏠 홀'}
-                            </span>
-                          </div>
-                          <div style={{ fontSize: '0.6rem', color: 'rgba(200,216,228,0.3)', marginBottom: 3 }}>총 원가</div>
-                          <div style={{ fontSize: '1.05rem', fontWeight: 700 }}>
-                            ₩{set.totalCost.toLocaleString('ko-KR')}
-                          </div>
-                          <div style={{ fontSize: '0.68rem', color: ri.color, marginTop: 4 }}>
-                            {ri.label}
-                            {set.costRate > 0 && <span style={{ opacity: 0.6, marginLeft: 4 }}>({Math.round(set.costRate)}%)</span>}
-                          </div>
-                        </div>
-                      </div>
+                      {/* 삭제 버튼 */}
                       <button
                         onClick={e => { e.stopPropagation(); setDeleteConfirmId(set.id) }}
                         style={{
                           position: 'absolute', top: 10, right: 10,
                           background: 'transparent', border: 'none',
-                          color: 'rgba(200,216,228,0.18)', cursor: 'pointer',
-                          fontSize: '0.78rem', padding: '4px 6px', lineHeight: 1,
+                          color: 'rgba(200,216,228,0.15)', cursor: 'pointer',
+                          padding: '4px', lineHeight: 1, display: 'flex',
                         }}
-                      ><X size={11} /></button>
+                      ><X size={12} /></button>
+
+                      {/* 1행: 채널뱃지 + 세트명 */}
+                      <div style={{ display: 'flex', alignItems: 'center', gap: 7, marginBottom: 10, paddingRight: 20 }}>
+                        <span style={{
+                          fontSize: '0.6rem', padding: '2px 7px', borderRadius: 20, flexShrink: 0,
+                          background: set.channel === 'delivery' ? 'rgba(74,127,165,0.25)' : 'rgba(74,140,111,0.25)',
+                          color: set.channel === 'delivery' ? '#5B9EC9' : '#5AAD82',
+                          border: `1px solid ${set.channel === 'delivery' ? 'rgba(74,127,165,0.4)' : 'rgba(74,140,111,0.4)'}`,
+                          fontWeight: 700,
+                        }}>
+                          {set.channel === 'delivery' ? '🛵 배달' : '🏠 홀'}
+                        </span>
+                        <span style={{ fontSize: '1.02rem', fontWeight: 700, lineHeight: 1.2 }}>{set.name}</span>
+                      </div>
+
+                      {/* 2행: 메뉴 칩 */}
+                      <div style={{ display: 'flex', gap: 5, flexWrap: 'wrap', marginBottom: 14 }}>
+                        {set.blocks.slice(0, 6).map(b => (
+                          <span key={b.id} style={{
+                            fontSize: '0.76rem',
+                            background: 'rgba(255,255,255,0.06)',
+                            border: '1px solid rgba(255,255,255,0.09)',
+                            borderRadius: 7, padding: '3px 9px',
+                            color: 'rgba(200,216,228,0.8)',
+                          }}>
+                            {b.emoji} {b.name}
+                          </span>
+                        ))}
+                        {set.blocks.length > 6 && (
+                          <span style={{ fontSize: '0.73rem', color: 'rgba(200,216,228,0.3)', padding: '3px 4px' }}>
+                            +{set.blocks.length - 6}
+                          </span>
+                        )}
+                      </div>
+
+                      {/* 구분선 */}
+                      <div style={{ borderTop: '1px solid rgba(255,255,255,0.06)', paddingTop: 12 }}>
+                        {/* 3행: 판매가 · 총원가 · 원가율 */}
+                        <div style={{ display: 'flex', alignItems: 'center', gap: 0 }}>
+                          {/* 판매가 */}
+                          <div style={{ flex: 1 }}>
+                            <div style={{ fontSize: '0.58rem', color: 'rgba(200,216,228,0.3)', marginBottom: 2 }}>판매가</div>
+                            <div style={{ fontSize: '0.88rem', fontWeight: 600, color: 'rgba(200,216,228,0.65)' }}>
+                              {set.sale_price > 0 ? `${set.sale_price.toLocaleString('ko-KR')}원` : '—'}
+                            </div>
+                          </div>
+                          {/* 구분 */}
+                          <div style={{ width: 1, height: 28, background: 'rgba(255,255,255,0.07)', marginRight: 14, marginLeft: 2, flexShrink: 0 }} />
+                          {/* 총원가 */}
+                          <div style={{ flex: 1 }}>
+                            <div style={{ fontSize: '0.58rem', color: 'rgba(200,216,228,0.3)', marginBottom: 2 }}>총원가</div>
+                            <div style={{ fontSize: '0.88rem', fontWeight: 600, color: 'rgba(200,216,228,0.75)' }}>
+                              {set.totalCost.toLocaleString('ko-KR')}원
+                            </div>
+                          </div>
+                          {/* 원가율 (강조) */}
+                          <div style={{ textAlign: 'right', flexShrink: 0 }}>
+                            {set.costRate > 0 ? (
+                              <>
+                                <div style={{ fontSize: '1.45rem', fontWeight: 800, color: ri.color, lineHeight: 1 }}>
+                                  {Math.round(set.costRate)}%
+                                </div>
+                                <div style={{ fontSize: '0.62rem', color: ri.color, opacity: 0.8, marginTop: 2 }}>
+                                  {ri.label}
+                                </div>
+                              </>
+                            ) : (
+                              <div style={{ fontSize: '0.65rem', color: 'rgba(200,216,228,0.25)' }}>판매가 미입력</div>
+                            )}
+                          </div>
+                        </div>
+                      </div>
                     </motion.div>
                   )
                 })}
