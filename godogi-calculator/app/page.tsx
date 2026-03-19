@@ -178,8 +178,15 @@ export default function HomePage() {
   // Auth
   useEffect(() => {
     supabase.auth.getSession().then(({ data: { session } }) => {
-      setUser(session?.user ?? null)
-      setLoading(false)
+      const u = session?.user ?? null
+      setUser(u)
+      if (!u) {
+        // 로그인 없음 → 게스트 여부 확인
+        const guest = typeof window !== 'undefined' && !!sessionStorage.getItem('godogi_guest')
+        setIsGuest(guest)
+        if (!guest) setLoading(false) // 게스트면 데이터 세팅 후 loading=false
+      }
+      // 로그인 상태면 loadSets() 완료 후 loading=false
     })
     const { data: { subscription } } = supabase.auth.onAuthStateChange((_e, session) => {
       setUser(session?.user ?? null)
@@ -237,6 +244,7 @@ export default function HomePage() {
     const rates = guestSets.filter(s => s.costRate > 0).map(s => s.costRate)
     const avgRate = rates.length > 0 ? rates.reduce((a, b) => a + b, 0) / rates.length : null
     setMenuStats({ total: guestSets.length, avgRate, warnCount: rates.filter(r => r > 60).length })
+    setLoading(false)
   }, [isGuest])
 
   // Load sets
@@ -282,6 +290,7 @@ export default function HomePage() {
     const rates = computed.filter(s => s.costRate > 0).map(s => s.costRate)
     const avgRate = rates.length > 0 ? rates.reduce((a, b) => a + b, 0) / rates.length : null
     setMenuStats({ total: computed.length, avgRate, warnCount: rates.filter(r => r > 60).length })
+    setLoading(false)
   }
 
   const backfillIngredients = async (userId: string) => {
