@@ -916,7 +916,7 @@ export default function SetBuilderProto() {
                 <StackedBar blocks={blocks} totalCost={totalCostWithFee} salePrice={salePriceNum} />
 
                 {/* 숫자 요약 행 — 판매가(입력) · 총원가 · 순이익 · 원가율 */}
-                <div className="sb-summary-row" style={{ display: 'flex', justifyContent: 'flex-end', flexWrap: 'nowrap', gap: 16, overflowX: 'auto', paddingTop: 4, borderTop: '1px solid rgba(255,255,255,0.06)' }}>
+                <div className="sb-summary-row" style={{ display: 'flex', justifyContent: 'flex-end', alignItems: 'flex-end', flexWrap: 'nowrap', gap: 16, overflowX: 'auto', paddingTop: 4, borderTop: '1px solid rgba(255,255,255,0.06)' }}>
                   {/* 판매가 입력 */}
                   <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-end', gap: 5 }}>
                     <div className="sb-sum-label" style={{ fontSize: '0.65rem', color: 'rgba(200,216,228,0.35)' }}>🏷️ 판매가</div>
