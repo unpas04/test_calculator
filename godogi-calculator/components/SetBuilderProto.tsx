@@ -344,11 +344,14 @@ export default function SetBuilderProto() {
       const guestBlocks: Block[] = def.menuNames.map((name, j) => {
         const m = menuMap[name]
         if (!m) return null
-        const cost = Math.round((m.ingredients || []).reduce((sum: number, ing: any) => {
+        const ingTotal = (m.ingredients || []).reduce((sum: number, ing: any) => {
           const qty = ing.qty || 1
           const yld = (ing.yield_ || 100) / 100
           return sum + (ing.price / qty / yld) * (ing.use_amount || 0)
-        }, 0) + (m.labor || 0) + (m.overhead || 0))
+        }, 0)
+        const batchRatio = m.category === 'banchan' && (m.batch_yield || 0) > 0 && (m.serving_size || 0) > 0
+          ? m.serving_size / m.batch_yield : 1
+        const cost = Math.round((ingTotal + (m.labor || 0) + (m.overhead || 0)) * batchRatio)
         return { id: `guest_block_${j}`, menu_id: `guest_menu_${name}`, name: m.name, emoji: m.emoji || '🍽️', cost, category: m.category as BlockCategory }
       }).filter(Boolean) as Block[]
       setBlocks(guestBlocks)
@@ -397,18 +400,23 @@ export default function SetBuilderProto() {
       const supabase = createClient()
       const { data: { session } } = await supabase.auth.getSession()
       if (!session) {
-        setPaletteBlocks(FIRST_LOGIN_MENU_SAMPLES.map(m => ({
-          id: `guest_menu_${m.name}`,
-          menu_id: `guest_menu_${m.name}`,
-          name: m.name,
-          cost: Math.round((m.ingredients || []).reduce((sum: number, ing: any) => {
+        setPaletteBlocks(FIRST_LOGIN_MENU_SAMPLES.map(m => {
+          const ingTotal = (m.ingredients || []).reduce((sum: number, ing: any) => {
             const qty = ing.qty || 1
             const yld = (ing.yield_ || 100) / 100
             return sum + (ing.price / qty / yld) * (ing.use_amount || 0)
-          }, 0) + (m.labor || 0) + (m.overhead || 0)),
-          category: m.category as BlockCategory,
-          emoji: m.emoji || '🍽️',
-        })))
+          }, 0)
+          const batchRatio = m.category === 'banchan' && (m.batch_yield || 0) > 0 && (m.serving_size || 0) > 0
+            ? m.serving_size / m.batch_yield : 1
+          return {
+            id: `guest_menu_${m.name}`,
+            menu_id: `guest_menu_${m.name}`,
+            name: m.name,
+            cost: Math.round((ingTotal + (m.labor || 0) + (m.overhead || 0)) * batchRatio),
+            category: m.category as BlockCategory,
+            emoji: m.emoji || '🍽️',
+          }
+        }))
         setIsGuestMode(true)
         setAuthLoading(false)
         return

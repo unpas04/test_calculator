@@ -144,6 +144,23 @@ function CalculatorContent() {
     loadMenus()
   }, [user])
 
+  // 게스트 메뉴 변경사항 localStorage 자동 저장 (로그인 후 이전용)
+  useEffect(() => {
+    if (user || menus.length === 0) return
+    localStorage.setItem('godogi_guest_menus', JSON.stringify(menus.map(m => ({
+      name: m.name, emoji: m.emoji || '', category: m.category,
+      batch_yield: m.batch_yield || 0, serving_size: m.serving_size || 0,
+      packaging: m.packaging || 0, labor: m.labor || 0, overhead: m.overhead || 0,
+      delivery_fee: m.delivery_fee || 0, card_fee: m.card_fee || 0,
+      sale_price: m.sale_price || 0, memo: m.memo || '',
+      ingredients: (m.ingredients || []).map((ing: any, idx: number) => ({
+        name: ing.name, price: ing.price || 0, qty: ing.qty || 0,
+        unit: ing.unit || 'g', yield_: ing.yield_ || 100,
+        use_amount: ing.use_amount || 0, sort_order: idx,
+      })),
+    }))))
+  }, [menus, user])
+
   const loginWithGoogle = async () => {
     await supabase.auth.signInWithOAuth({
       provider: 'google',

@@ -303,22 +303,26 @@ export default function HomePage() {
   }
 
   const insertSampleData = async (userId: string) => {
+    // 게스트가 수정한 메뉴가 있으면 그걸 우선 사용
+    const savedGuestRaw = localStorage.getItem('godogi_guest_menus')
+    const guestMenus: any[] | null = savedGuestRaw ? JSON.parse(savedGuestRaw) : null
+    const menusSource = guestMenus || FIRST_LOGIN_MENU_SAMPLES
+
     // 메뉴 확인/삽입
     const { data: existingMenus } = await supabase.from('menus').select('id, name').eq('user_id', userId)
     let menuByName: Record<string, string> = {}
 
     if (!existingMenus || existingMenus.length === 0) {
       const { data: insertedMenus } = await supabase.from('menus').insert(
-        FIRST_LOGIN_MENU_SAMPLES.map(({ ingredients: _ing, ...s }) => ({ user_id: userId, ...s }))
+        menusSource.map(({ ingredients: _ing, ...s }: any) => ({ user_id: userId, ...s }))
       ).select()
       if (insertedMenus) {
         menuByName = Object.fromEntries(insertedMenus.map((m: any) => [m.name, m.id]))
-        // 재료 삽입
         const ingredientInserts: any[] = []
         for (const [menuName, menuId] of Object.entries(menuByName)) {
-          const sample = FIRST_LOGIN_MENU_SAMPLES.find(m => m.name === menuName)
-          if (sample?.ingredients?.length) {
-            sample.ingredients.forEach(ing => {
+          const source = menusSource.find((m: any) => m.name === menuName)
+          if (source?.ingredients?.length) {
+            source.ingredients.forEach((ing: any) => {
               ingredientInserts.push({ menu_id: menuId, ...ing })
             })
           }
@@ -329,6 +333,12 @@ export default function HomePage() {
       }
     } else {
       menuByName = Object.fromEntries(existingMenus.map((m: any) => [m.name, m.id]))
+    }
+
+    // 게스트 데이터 정리
+    if (guestMenus) {
+      localStorage.removeItem('godogi_guest_menus')
+      sessionStorage.removeItem('godogi_guest')
     }
 
     // 샘플 세트 삽입
