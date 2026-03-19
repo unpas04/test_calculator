@@ -653,7 +653,7 @@ export default function HomePage() {
           position: 'fixed', bottom: 0, left: 0, right: 0, zIndex: 20,
           background: 'rgba(10,18,28,0.96)', backdropFilter: 'blur(16px)',
           borderTop: '1px solid rgba(74,127,165,0.12)',
-          padding: '10px 16px env(safe-area-inset-bottom, 10px)',
+          padding: '12px 20px env(safe-area-inset-bottom, 12px)',
         }}
       >
         <div style={{ maxWidth: 680, margin: '0 auto', display: 'flex', alignItems: 'center', gap: 10 }}>
