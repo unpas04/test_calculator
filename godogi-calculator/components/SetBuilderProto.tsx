@@ -673,9 +673,9 @@ export default function SetBuilderProto() {
         .sb-summary-row::-webkit-scrollbar { display: none; }
         .sb-sum-value { white-space: nowrap; }
         @media (max-width: 768px) {
-          .sb-summary-row { gap: 12px !important; justify-content: space-between !important; }
-          .sb-summary-row > * { flex: 1; align-items: center !important; }
-          .sb-summary-row input { width: 60px !important; font-size: 0.92rem !important; padding: 2px 6px !important; }
+          .sb-summary-row { gap: 12px !important; justify-content: space-between !important; align-items: flex-end !important; }
+          .sb-summary-row > * { flex: 1; align-items: flex-end !important; }
+          .sb-summary-row input { width: 72px !important; font-size: 0.92rem !important; padding: 2px 6px !important; }
           .sb-sum-label { font-size: 0.56rem !important; }
           .sb-sum-value { font-size: 0.92rem !important; }
           .sb-fee-sub { display: none !important; }
@@ -930,7 +930,7 @@ export default function SetBuilderProto() {
                         placeholder="0"
                         inputMode="numeric"
                         style={{
-                          width: 76, padding: '2px 8px',
+                          width: 94, padding: '2px 8px',
                           background: 'rgba(74,127,165,0.12)',
                           border: '1.5px solid rgba(74,127,165,0.3)',
                           borderRadius: 8, color: 'white',
