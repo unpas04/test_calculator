@@ -140,7 +140,8 @@ export default function Fridge({ user }: Props) {
 
   const labelStyle: React.CSSProperties = {
     fontSize: '0.7rem', color: 'rgba(200,216,228,0.5)',
-    fontFamily: 'Gowun Dodum', marginBottom: 4, display: 'block'
+    fontFamily: "'Noto Sans KR', sans-serif", fontWeight: 700,
+    marginBottom: 4, display: 'block'
   }
 
   return (
@@ -178,7 +179,7 @@ export default function Fridge({ user }: Props) {
             padding: '4px 12px', borderRadius: 20, flexShrink: 0,
             background: selectedCategory === cat ? 'var(--blue)' : 'rgba(255,255,255,0.07)',
             border: 'none', color: selectedCategory === cat ? 'white' : 'rgba(200,216,228,0.5)',
-            fontFamily: 'Gowun Dodum', fontSize: '0.75rem', cursor: 'pointer',
+            fontFamily: "'Noto Sans KR', sans-serif", fontWeight: 700, fontSize: '0.75rem', cursor: 'pointer',
             whiteSpace: 'nowrap'
           }}>{cat}</button>
         ))}
@@ -195,7 +196,7 @@ export default function Fridge({ user }: Props) {
           }}>
             <div style={{ flex: 1, minWidth: 0 }}>
               <div style={{ display: 'flex', alignItems: 'center', gap: 5 }}>
-                <span style={{ fontSize: '0.82rem', color: item.isDB ? 'rgba(200,216,228,0.5)' : 'white', fontFamily: 'Gowun Dodum', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+                <span style={{ fontSize: '0.82rem', color: item.isDB ? 'rgba(200,216,228,0.5)' : 'white', fontFamily: "'Noto Sans KR', sans-serif", fontWeight: 500, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
                   {item.name}
                 </span>
                 {item.isDB && <span style={{ fontSize: '0.55rem', color: 'rgba(200,216,228,0.25)', background: 'rgba(255,255,255,0.05)', padding: '1px 5px', borderRadius: 4 }}>기본</span>}
