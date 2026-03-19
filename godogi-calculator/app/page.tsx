@@ -571,22 +571,29 @@ export default function HomePage() {
                         <span style={{ fontSize: '1.02rem', fontWeight: 700, lineHeight: 1.2 }}>{set.name}</span>
                       </div>
 
-                      {/* 2행: 메뉴 칩 */}
-                      <div style={{ display: 'flex', gap: 5, flexWrap: 'wrap', marginBottom: 14 }}>
-                        {set.blocks.slice(0, 6).map(b => (
+                      {/* 2행: 메뉴 칩 (한 줄 고정) */}
+                      <div style={{ display: 'flex', gap: 5, flexWrap: 'nowrap', overflow: 'hidden', marginBottom: 14 }}>
+                        {set.blocks.slice(0, 4).map(b => (
                           <span key={b.id} style={{
-                            fontSize: '0.76rem',
+                            fontSize: '0.74rem',
                             background: 'rgba(255,255,255,0.06)',
                             border: '1px solid rgba(255,255,255,0.09)',
-                            borderRadius: 7, padding: '3px 9px',
+                            borderRadius: 7, padding: '3px 8px',
                             color: 'rgba(200,216,228,0.8)',
+                            whiteSpace: 'nowrap', flexShrink: 0,
                           }}>
                             {b.emoji} {b.name}
                           </span>
                         ))}
-                        {set.blocks.length > 6 && (
-                          <span style={{ fontSize: '0.73rem', color: 'rgba(200,216,228,0.3)', padding: '3px 4px' }}>
-                            +{set.blocks.length - 6}
+                        {set.blocks.length > 4 && (
+                          <span style={{
+                            fontSize: '0.72rem', color: 'rgba(200,216,228,0.4)',
+                            padding: '3px 6px', flexShrink: 0,
+                            background: 'rgba(255,255,255,0.04)',
+                            border: '1px solid rgba(255,255,255,0.07)',
+                            borderRadius: 7, whiteSpace: 'nowrap',
+                          }}>
+                            +{set.blocks.length - 4}
                           </span>
                         )}
                       </div>
@@ -597,28 +604,28 @@ export default function HomePage() {
                         <div style={{ display: 'flex', alignItems: 'center', gap: 0 }}>
                           {/* 판매가 */}
                           <div style={{ flex: 1 }}>
-                            <div style={{ fontSize: '0.58rem', color: 'rgba(200,216,228,0.3)', marginBottom: 2 }}>판매가</div>
-                            <div style={{ fontSize: '0.88rem', fontWeight: 600, color: 'rgba(200,216,228,0.65)' }}>
+                            <div style={{ fontSize: '0.58rem', color: 'rgba(200,216,228,0.28)', marginBottom: 2 }}>판매가</div>
+                            <div style={{ fontSize: '0.85rem', fontWeight: 500, color: 'rgba(200,216,228,0.5)' }}>
                               {set.sale_price > 0 ? `${set.sale_price.toLocaleString('ko-KR')}원` : '—'}
                             </div>
                           </div>
                           {/* 구분 */}
-                          <div style={{ width: 1, height: 28, background: 'rgba(255,255,255,0.07)', marginRight: 14, marginLeft: 2, flexShrink: 0 }} />
+                          <div style={{ width: 1, height: 26, background: 'rgba(255,255,255,0.06)', marginRight: 12, marginLeft: 2, flexShrink: 0 }} />
                           {/* 총원가 */}
                           <div style={{ flex: 1 }}>
-                            <div style={{ fontSize: '0.58rem', color: 'rgba(200,216,228,0.3)', marginBottom: 2 }}>총원가</div>
-                            <div style={{ fontSize: '0.88rem', fontWeight: 600, color: 'rgba(200,216,228,0.75)' }}>
+                            <div style={{ fontSize: '0.58rem', color: 'rgba(200,216,228,0.28)', marginBottom: 2 }}>총원가</div>
+                            <div style={{ fontSize: '0.85rem', fontWeight: 600, color: 'rgba(200,216,228,0.7)' }}>
                               {set.totalCost.toLocaleString('ko-KR')}원
                             </div>
                           </div>
                           {/* 원가율 (강조) */}
-                          <div style={{ textAlign: 'right', flexShrink: 0 }}>
+                          <div style={{ textAlign: 'right', flexShrink: 0, minWidth: 64 }}>
                             {set.costRate > 0 ? (
                               <>
-                                <div style={{ fontSize: '1.45rem', fontWeight: 800, color: ri.color, lineHeight: 1 }}>
+                                <div style={{ fontSize: '1.5rem', fontWeight: 800, color: ri.color, lineHeight: 1 }}>
                                   {Math.round(set.costRate)}%
                                 </div>
-                                <div style={{ fontSize: '0.62rem', color: ri.color, opacity: 0.8, marginTop: 2 }}>
+                                <div style={{ fontSize: '0.6rem', color: ri.color, opacity: 0.75, marginTop: 3 }}>
                                   {ri.label}
                                 </div>
                               </>
