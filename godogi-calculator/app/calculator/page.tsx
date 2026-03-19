@@ -3,7 +3,7 @@
 import { createClient } from '../../lib/supabase'
 import { FIRST_LOGIN_MENU_SAMPLES as FIRST_LOGIN_SAMPLES } from '@/lib/sampleData'
 import { useState, useEffect, useRef, Suspense } from 'react'
-import { ArrowLeft, ArrowRight } from 'lucide-react'
+import { ArrowLeft } from 'lucide-react'
 import { useSearchParams } from 'next/navigation'
 import AppSidebar from '../../components/AppSidebar'
 import Calculator from '../../components/Calculator'
@@ -296,27 +296,18 @@ function CalculatorContent() {
             <button onClick={loginWithGoogle} style={{ background: 'white', color: '#1E2D40', border: 'none', borderRadius: 8, padding: '6px 12px', fontFamily: "'Noto Sans KR', sans-serif", fontWeight: 700, fontSize: '0.75rem', cursor: 'pointer', flexShrink: 0 }}>🔑 로그인</button>
           </div>
         )}
-        <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 24, fontSize: '0.78rem', fontFamily: "'Noto Sans KR', sans-serif" }}>
-          {returnTo ? (
-            <a href={returnTo} style={{
-              display: 'inline-flex', alignItems: 'center', gap: 5,
-              background: 'rgba(74,127,165,0.15)', border: '1px solid rgba(74,127,165,0.3)',
-              color: '#7DB8D8', textDecoration: 'none', fontWeight: 700,
-              borderRadius: 8, padding: '5px 12px', fontSize: '0.78rem',
-            }}><ArrowLeft size={13} style={{ flexShrink: 0 }} /> 메뉴구성으로 돌아가기</a>
-          ) : (
-            <>
-              <a href="/" style={{ color: 'var(--text-soft)', textDecoration: 'none', fontWeight: 500 }}>홈</a>
-              <span style={{ color: 'var(--text-soft)', opacity: 0.4 }}>›</span>
-              <span style={{ color: 'var(--text-mid)', fontWeight: 700 }}>원가 편집기</span>
-              <a href="/proto" style={{
-                marginLeft: 8, display: 'inline-flex', alignItems: 'center', gap: 4,
-                background: 'rgba(74,127,165,0.12)', border: '1px solid rgba(74,127,165,0.25)',
-                color: '#7DB8D8', textDecoration: 'none', fontWeight: 600,
-                borderRadius: 8, padding: '4px 10px', fontSize: '0.75rem',
-              }}>메뉴 구성 <ArrowRight size={12} style={{ flexShrink: 0 }} /></a>
-            </>
-          )}
+        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 24, fontSize: '0.78rem', fontFamily: "'Noto Sans KR', sans-serif" }}>
+          <a href={returnTo ?? '/proto'} style={{
+            display: 'inline-flex', alignItems: 'center', gap: 5,
+            background: 'rgba(74,127,165,0.15)', border: '1px solid rgba(74,127,165,0.3)',
+            color: '#7DB8D8', textDecoration: 'none', fontWeight: 700,
+            borderRadius: 8, padding: '5px 12px', fontSize: '0.78rem',
+          }}><ArrowLeft size={13} style={{ flexShrink: 0 }} /> 메뉴구성</a>
+          <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
+            <a href="/" style={{ color: 'var(--text-soft)', textDecoration: 'none', fontWeight: 500 }}>홈</a>
+            <span style={{ color: 'var(--text-soft)', opacity: 0.4 }}>›</span>
+            <span style={{ color: 'var(--text-mid)', fontWeight: 700 }}>원가 편집기</span>
+          </div>
         </div>
         {currentMenu ? (
           <Calculator

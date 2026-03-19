@@ -844,7 +844,7 @@ export default function SetBuilderProto() {
                 cursor: blocks.length > 0 ? 'pointer' : 'default',
                 flexShrink: 0, transition: 'background 0.2s',
               }}
-            >{saved ? '✓' : editId ? '수정' : '저장'}<span className="sb-save-text">{saved ? ' 저장됨' : editId ? ' 저장' : ''}</span></motion.button>
+            >{saved ? '✓' : '저장'}<span className="sb-save-text">{saved ? ' 저장됨' : ''}</span></motion.button>
           </div>
           </div>
 
