@@ -306,4 +306,4 @@ export default forwardRef<FridgeHandle, Props>(function Fridge({ user }, ref) {
       )}
     </div>
   )
-}
+})
