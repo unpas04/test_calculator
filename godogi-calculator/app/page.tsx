@@ -571,29 +571,22 @@ export default function HomePage() {
                         <span style={{ fontSize: '1.02rem', fontWeight: 700, lineHeight: 1.2 }}>{set.name}</span>
                       </div>
 
-                      {/* 2행: 메뉴 칩 (한 줄 고정) */}
-                      <div style={{ display: 'flex', gap: 5, flexWrap: 'nowrap', overflow: 'hidden', marginBottom: 14 }}>
-                        {set.blocks.slice(0, 4).map(b => (
+                      {/* 2행: 메뉴 칩 */}
+                      <div style={{ display: 'flex', gap: 5, flexWrap: 'wrap', marginBottom: 14 }}>
+                        {set.blocks.slice(0, 6).map(b => (
                           <span key={b.id} style={{
                             fontSize: '0.74rem',
                             background: 'rgba(255,255,255,0.06)',
                             border: '1px solid rgba(255,255,255,0.09)',
                             borderRadius: 7, padding: '3px 8px',
                             color: 'rgba(200,216,228,0.8)',
-                            whiteSpace: 'nowrap', flexShrink: 0,
                           }}>
                             {b.emoji} {b.name}
                           </span>
                         ))}
-                        {set.blocks.length > 4 && (
-                          <span style={{
-                            fontSize: '0.72rem', color: 'rgba(200,216,228,0.4)',
-                            padding: '3px 6px', flexShrink: 0,
-                            background: 'rgba(255,255,255,0.04)',
-                            border: '1px solid rgba(255,255,255,0.07)',
-                            borderRadius: 7, whiteSpace: 'nowrap',
-                          }}>
-                            +{set.blocks.length - 4}
+                        {set.blocks.length > 6 && (
+                          <span style={{ fontSize: '0.72rem', color: 'rgba(200,216,228,0.3)', padding: '3px 4px' }}>
+                            +{set.blocks.length - 6}
                           </span>
                         )}
                       </div>
