@@ -916,7 +916,7 @@ export default function SetBuilderProto() {
                 <StackedBar blocks={blocks} totalCost={totalCostWithFee} salePrice={salePriceNum} />
 
                 {/* 숫자 요약 행 — 판매가(입력) · 총원가 · 순이익 · 원가율 */}
-                <div className="sb-summary-row" style={{ display: 'flex', justifyContent: 'flex-end', alignItems: 'flex-end', flexWrap: 'nowrap', gap: 16, overflowX: 'auto', paddingTop: 4, borderTop: '1px solid rgba(255,255,255,0.06)' }}>
+                <div className="sb-summary-row" style={{ display: 'flex', justifyContent: 'flex-end', flexWrap: 'nowrap', gap: 16, overflowX: 'auto', paddingTop: 4, borderTop: '1px solid rgba(255,255,255,0.06)' }}>
                   {/* 판매가 입력 */}
                   <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-end', gap: 5 }}>
                     <div className="sb-sum-label" style={{ fontSize: '0.65rem', color: 'rgba(200,216,228,0.35)' }}>🏷️ 판매가</div>
@@ -930,12 +930,12 @@ export default function SetBuilderProto() {
                         placeholder="0"
                         inputMode="numeric"
                         style={{
-                          width: 96, padding: '6px 10px',
-                          background: 'rgba(255,255,255,0.08)',
-                          border: '1.5px solid rgba(74,127,165,0.4)',
-                          borderRadius: 9, color: 'white',
+                          width: 80, padding: '0 2px',
+                          background: 'transparent',
+                          border: 'none', borderBottom: '1.5px solid rgba(74,127,165,0.5)',
+                          borderRadius: 0, color: 'white',
                           fontFamily: "'Noto Sans KR',sans-serif", fontWeight: 700,
-                          fontSize: '1rem', outline: 'none', textAlign: 'right',
+                          fontSize: '1.2rem', outline: 'none', textAlign: 'right',
                         }}
                       />
                       <span style={{ fontSize: '0.8rem', color: 'rgba(200,216,228,0.4)' }}>원</span>
