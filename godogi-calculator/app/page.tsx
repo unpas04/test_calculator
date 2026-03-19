@@ -489,10 +489,18 @@ export default function HomePage() {
           .home-subtitle { display: none !important; }
           .home-editor-btn { display: none !important; }
         }
+        /* 모바일: 통합 바 표시, PC floating 숨김 */
+        .home-bottom-mobile { display: flex !important; }
+        .home-bottom-pc { display: none !important; }
+        @media (min-width: 641px) {
+          .home-bottom-mobile { display: none !important; }
+          .home-bottom-pc { display: block !important; }
+          .home-main { padding-bottom: 220px !important; }
+        }
       `}</style>
 
       {/* 메인 콘텐츠 */}
-      <main style={{ maxWidth: 680, margin: '0 auto', padding: '28px 24px 100px' }}>
+      <main className="home-main" style={{ maxWidth: 680, margin: '0 auto', padding: '28px 24px 100px' }}>
         {loading ? (
           <div style={{ display: 'flex', flexDirection: 'column', gap: 10, paddingTop: 8 }}>
             {[1, 2, 3].map(i => (
@@ -629,8 +637,9 @@ export default function HomePage() {
         )}
       </main>
 
-      {/* 하단 고정 바: 통계 + FAB 통합 */}
+      {/* ── 모바일: 통계 + FAB 통합 바 ── */}
       <motion.div
+        className="home-bottom-mobile"
         initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }}
         transition={{ delay: 0.15 }}
         style={{
@@ -641,9 +650,8 @@ export default function HomePage() {
         }}
       >
         <div style={{ maxWidth: 680, margin: '0 auto', display: 'flex', alignItems: 'center', gap: 10 }}>
-          {/* 통계 */}
           {menuStats && (
-            <div style={{ display: 'flex', alignItems: 'center', gap: 0, flex: 1, minWidth: 0, overflow: 'hidden' }}>
+            <div style={{ display: 'flex', alignItems: 'center', flex: 1, minWidth: 0, overflow: 'hidden' }}>
               {[
                 { label: '구성', value: `${menuStats.total}개` },
                 { label: '평균 원가율', value: menuStats.avgRate !== null ? `${menuStats.avgRate.toFixed(1)}%` : '—', color: menuStats.avgRate === null ? undefined : menuStats.avgRate < 40 ? '#7EC8A0' : menuStats.avgRate < 60 ? '#F4A460' : '#F08080' },
@@ -656,7 +664,6 @@ export default function HomePage() {
               ))}
             </div>
           )}
-          {/* FAB */}
           <motion.button
             whileHover={{ scale: 1.03 }} whileTap={{ scale: 0.96 }}
             onClick={() => router.push('/proto')}
@@ -671,6 +678,57 @@ export default function HomePage() {
           >＋ 새 메뉴 구성</motion.button>
         </div>
       </motion.div>
+
+      {/* ── PC: 통계 바 (floating) ── */}
+      {menuStats && (
+        <motion.div
+          className="home-bottom-pc"
+          initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }}
+          transition={{ delay: 0.2 }}
+          style={{ position: 'fixed', bottom: 88, left: 0, right: 0, zIndex: 20, padding: '0 16px', pointerEvents: 'none' }}
+        >
+          <div style={{ maxWidth: 680, margin: '0 auto', pointerEvents: 'auto' }}>
+            <div style={{
+              display: 'flex', alignItems: 'center', gap: 10,
+              background: 'rgba(15,25,35,0.94)', backdropFilter: 'blur(14px)',
+              borderRadius: 16, padding: '10px 14px',
+              border: '1px solid rgba(74,127,165,0.15)',
+            }}>
+              {[
+                { label: '구성', value: `${menuStats.total}개` },
+                { label: '평균 원가율', value: menuStats.avgRate !== null ? `${menuStats.avgRate.toFixed(1)}%` : '—', color: menuStats.avgRate === null ? undefined : menuStats.avgRate < 40 ? '#7EC8A0' : menuStats.avgRate < 60 ? '#F4A460' : '#F08080' },
+                { label: '주의', value: `${menuStats.warnCount}개`, color: menuStats.warnCount > 0 ? '#F08080' : 'rgba(200,216,228,0.5)' },
+              ].map(({ label, value, color }, i) => (
+                <div key={label} style={{ display: 'flex', alignItems: 'baseline', gap: 4, ...(i > 0 ? { borderLeft: '1px solid rgba(255,255,255,0.07)', paddingLeft: 10 } : {}) }}>
+                  <span style={{ fontSize: '0.62rem', color: 'rgba(200,216,228,0.35)' }}>{label}</span>
+                  <span style={{ fontSize: '0.9rem', fontWeight: 700, color: color || 'white' }}>{value}</span>
+                </div>
+              ))}
+              <div style={{ flex: 1 }} />
+              <span style={{ fontSize: '0.72rem', color: 'rgba(200,216,228,0.35)' }}>
+                🐟 {menuStats.avgRate === null ? '판매가 미입력'
+                  : menuStats.warnCount > 0 ? `${menuStats.warnCount}개 점검 필요`
+                  : menuStats.avgRate < 40 ? '흐뭇해요 🎉' : '조금 더 줄여봐요'}
+              </span>
+            </div>
+          </div>
+        </motion.div>
+      )}
+
+      {/* ── PC: FAB (floating) ── */}
+      <motion.button
+        className="home-bottom-pc"
+        whileHover={{ scale: 1.04 }} whileTap={{ scale: 0.96 }}
+        onClick={() => router.push('/proto')}
+        style={{
+          position: 'fixed', bottom: 28, right: 24,
+          background: 'linear-gradient(135deg, #3A6FA5, #2A5080)',
+          border: 'none', borderRadius: 18, color: 'white', fontSize: '0.9rem',
+          padding: '14px 22px', cursor: 'pointer',
+          boxShadow: '0 8px 28px rgba(58,111,165,0.4)',
+          fontFamily: "'Noto Sans KR', sans-serif", fontWeight: 700,
+        }}
+      >＋ 새 메뉴 구성 만들기</motion.button>
 
       {/* 온보딩 모달 */}
       <OnboardingModal
