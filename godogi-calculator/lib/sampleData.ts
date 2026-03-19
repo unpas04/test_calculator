@@ -147,9 +147,9 @@ export const SAMPLE_SET_DEFINITIONS: {
 }[] = [
   {
     name: '제육볶음 정식',
-    channel: 'delivery',
+    channel: 'hall',
     sale_price: 9000,
-    menuNames: ['제육볶음', '공깃밥', '김치', '포장용기', '비닐봉투'],
+    menuNames: ['제육볶음', '공깃밥', '김치'],
   },
   {
     name: '된장찌개 정식',
@@ -161,6 +161,6 @@ export const SAMPLE_SET_DEFINITIONS: {
     name: '순두부찌개 배달 세트',
     channel: 'delivery',
     sale_price: 10000,
-    menuNames: ['순두부찌개', '공깃밥', '김치', '포장용기'],
+    menuNames: ['순두부찌개', '공깃밥', '김치', '포장용기', '비닐봉투', '냅킨·수저'],
   },
 ]
