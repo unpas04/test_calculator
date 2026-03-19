@@ -675,7 +675,7 @@ export default function SetBuilderProto() {
         @media (max-width: 768px) {
           .sb-summary-row { gap: 12px !important; justify-content: space-between !important; }
           .sb-summary-row > * { flex: 1; align-items: center !important; }
-          .sb-summary-row input { width: 68px !important; font-size: 0.82rem !important; padding: 5px 6px !important; }
+          .sb-summary-row input { width: 68px !important; font-size: 0.92rem !important; padding: 0 2px !important; }
           .sb-sum-label { font-size: 0.56rem !important; }
           .sb-sum-value { font-size: 0.92rem !important; }
           .sb-fee-sub { display: none !important; }
