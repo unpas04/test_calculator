@@ -402,10 +402,10 @@ export default function Calculator({ menu, onChange }: Props) {
           {[{ v: true, l: '🥤 기성품' }, { v: false, l: '☕ 직접제조' }].map(({ v, l }) => (
             <button key={String(v)} onClick={() => setDrinkSimple(v)} style={{
               flex: 1, padding: '7px 0', borderRadius: 9, border: 'none',
-              background: drinkSimple === v ? 'white' : 'transparent',
+              background: drinkSimple === v ? 'rgba(74,127,165,0.35)' : 'transparent',
               color: 'var(--navy)', fontFamily: "'Noto Sans KR', sans-serif", fontWeight: 700,
               fontSize: '0.8rem', cursor: 'pointer',
-              boxShadow: drinkSimple === v ? '0 1px 4px rgba(0,0,0,0.1)' : 'none',
+              boxShadow: drinkSimple === v ? '0 1px 4px rgba(0,0,0,0.2)' : 'none',
             }}>{l}</button>
           ))}
         </div>
@@ -700,7 +700,7 @@ export default function Calculator({ menu, onChange }: Props) {
 
       {/* 결과 — 반찬 */}
       {menu.category === 'banchan' && (
-        <div style={{ background: 'var(--navy)', borderRadius: 20, padding: '24px 22px', marginTop: 16 }}>
+        <div style={{ background: '#1A2840', borderRadius: 20, padding: '24px 22px', marginTop: 16 }}>
           <div style={{ fontFamily: "'Noto Sans KR', sans-serif", fontWeight: 700, fontSize: '0.8rem', color: 'rgba(200,216,228,0.5)', marginBottom: 16 }}>📊 계산 결과</div>
           <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 12, marginBottom: 12 }}>
             <div style={{ background: 'rgba(255,255,255,0.05)', borderRadius: 14, padding: '14px 16px' }}>
@@ -731,7 +731,7 @@ export default function Calculator({ menu, onChange }: Props) {
 
       {/* 결과 — 기타 */}
       {menu.category === 'extra' && (
-        <div style={{ background: 'var(--navy)', borderRadius: 20, padding: '24px 22px', marginTop: 16 }}>
+        <div style={{ background: '#1A2840', borderRadius: 20, padding: '24px 22px', marginTop: 16 }}>
           <div style={{ fontFamily: "'Noto Sans KR', sans-serif", fontWeight: 700, fontSize: '0.8rem', color: 'rgba(200,216,228,0.5)', marginBottom: 16 }}>📊 계산 결과</div>
           <div style={{ background: 'rgba(200,132,58,0.15)', borderRadius: 14, padding: '16px', marginBottom: 12, border: '1px solid rgba(200,132,58,0.25)' }}>
             <div style={{ fontSize: '0.72rem', color: 'rgba(200,216,228,0.5)', marginBottom: 6 }}>📦 단가</div>
@@ -753,7 +753,7 @@ export default function Calculator({ menu, onChange }: Props) {
 
       {/* 결과 — 메인/사이드/음료 */}
       {!['banchan', 'extra'].includes(menu.category || 'main') && (
-        <div style={{ background: 'var(--navy)', borderRadius: 20, padding: '24px 22px', marginTop: 16 }}>
+        <div style={{ background: '#1A2840', borderRadius: 20, padding: '24px 22px', marginTop: 16 }}>
           <div style={{ fontFamily: "'Noto Sans KR', sans-serif", fontWeight: 700, fontSize: '0.8rem', color: 'rgba(200,216,228,0.5)', marginBottom: 16 }}>📊 계산 결과</div>
           <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 12, marginBottom: 16 }}>
             {[
@@ -777,7 +777,7 @@ export default function Calculator({ menu, onChange }: Props) {
       <button onClick={handleExport} style={{
         position: 'fixed', bottom: 24, right: 24, zIndex: 50,
         width: 48, height: 48, borderRadius: '50%',
-        background: 'var(--navy)', color: 'white',
+        background: '#4A7FA5', color: 'white',
         border: 'none', fontSize: '1.2rem',
         cursor: 'pointer', boxShadow: '0 4px 14px rgba(30,45,64,0.3)',
         display: 'flex', alignItems: 'center', justifyContent: 'center',
@@ -831,7 +831,7 @@ export default function Calculator({ menu, onChange }: Props) {
             </div>
             {laborResult !== null && !isNaN(laborResult) && (
               <div style={{
-                background: 'var(--navy)', borderRadius: 14, padding: '14px 16px',
+                background: 'rgba(74,127,165,0.2)', borderRadius: 14, padding: '14px 16px',
                 display: 'flex', justifyContent: 'space-between', alignItems: 'center'
               }}>
                 <span style={{ fontSize: '0.78rem', color: 'rgba(200,216,228,0.7)' }}>메뉴 1개당 인건비</span>
@@ -909,7 +909,7 @@ export default function Calculator({ menu, onChange }: Props) {
             </div>
             {overheadResult !== null && !isNaN(overheadResult) && (
               <div style={{
-                background: 'var(--navy)', borderRadius: 14, padding: '14px 16px',
+                background: 'rgba(74,127,165,0.2)', borderRadius: 14, padding: '14px 16px',
                 display: 'flex', justifyContent: 'space-between', alignItems: 'center'
               }}>
                 <span style={{ fontSize: '0.78rem', color: 'rgba(200,216,228,0.7)' }}>메뉴 1개당 간접비</span>
@@ -972,7 +972,7 @@ export default function Calculator({ menu, onChange }: Props) {
               </p>
             </div>
             <button onClick={() => setShowBatchModal(false)} style={{
-              padding: '10px 0', background: 'var(--navy)', border: 'none',
+              padding: '10px 0', background: '#4A7FA5', border: 'none',
               borderRadius: 10, color: 'white',
               fontFamily: "'Noto Sans KR', sans-serif", fontWeight: 700, fontSize: '0.85rem', cursor: 'pointer'
             }}>확인</button>

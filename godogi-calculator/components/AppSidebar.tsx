@@ -40,7 +40,7 @@ export default function Sidebar({ menus, currentId, onSelect, onNew, onDelete, u
       {/* 모바일 토글 버튼 */}
       <button onClick={() => setIsOpen(!isOpen)} style={{
         position: 'fixed', top: 12, left: 12, zIndex: 30,
-        background: 'var(--navy)', color: '#fff',
+        background: '#1A2840', color: '#fff',
         border: 'none', borderRadius: 10,
         padding: '8px 12px', fontSize: '1.1rem', cursor: 'pointer',
         display: 'none'
@@ -58,7 +58,7 @@ export default function Sidebar({ menus, currentId, onSelect, onNew, onDelete, u
       <aside style={{
         width: 260,
         height: '100vh',
-        background: 'var(--navy)',
+        background: '#1A2840',
         display: 'flex',
         flexDirection: 'column',
         position: 'fixed',
