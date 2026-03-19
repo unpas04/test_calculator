@@ -134,7 +134,7 @@ export default function Fridge({ user }: Props) {
     background: 'rgba(255,255,255,0.07)',
     border: '1px solid rgba(200,216,228,0.15)',
     borderRadius: 8, color: 'white',
-    fontFamily: 'Gowun Dodum', fontSize: '0.85rem',
+    fontFamily: "'Noto Sans KR', sans-serif", fontWeight: 400, fontSize: '0.85rem',
     outline: 'none'
   }
 
@@ -163,7 +163,7 @@ export default function Fridge({ user }: Props) {
             background: 'rgba(255,255,255,0.07)',
             border: '1px solid rgba(200,216,228,0.15)',
             borderRadius: 10, color: 'white',
-            fontFamily: 'Gowun Dodum', fontSize: '0.82rem',
+            fontFamily: "'Noto Sans KR', sans-serif", fontWeight: 400, fontSize: '0.82rem',
             outline: 'none', boxSizing: 'border-box' as const
           }}
         />

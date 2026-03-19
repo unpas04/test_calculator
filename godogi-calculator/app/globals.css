@@ -1,4 +1,4 @@
-@import url('https://fonts.googleapis.com/css2?family=Black+Han+Sans&family=Gowun+Dodum&family=Noto+Sans+KR:wght@600;700&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Black+Han+Sans&family=Gowun+Dodum&family=Noto+Sans+KR:wght@400;600;700&display=swap');
 
 * { box-sizing: border-box; margin: 0; padding: 0; }
 
@@ -24,7 +24,7 @@
 }
 
 body {
-  font-family: 'Gowun Dodum', sans-serif;
+  font-family: 'Noto Sans KR', sans-serif;
   background: var(--bg);
   color: var(--text);
 }
