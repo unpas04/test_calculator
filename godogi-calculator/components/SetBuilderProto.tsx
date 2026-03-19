@@ -3,6 +3,7 @@
 import { useState, useEffect } from 'react'
 import { useRouter, useSearchParams } from 'next/navigation'
 import { motion, AnimatePresence } from 'framer-motion'
+import { Plus, Pencil, X, ChevronUp, ChevronDown, ChevronLeft, ChevronRight, Settings } from 'lucide-react'
 import { createClient } from '@/lib/supabase'
 import { FIRST_LOGIN_MENU_SAMPLES, SAMPLE_SET_DEFINITIONS } from '@/lib/sampleData'
 
@@ -79,7 +80,7 @@ function PaletteBlock({ block, onAdd }: { block: Block; onAdd: () => void }) {
         <div style={{ fontFamily: "'Noto Sans KR',sans-serif", fontWeight: 700, fontSize: isMain ? '0.85rem' : '0.78rem', color: 'white' }}>{block.name}</div>
         <div style={{ fontSize: '0.68rem', color: 'rgba(255,255,255,0.45)', marginTop: 1 }}>{fmt(block.cost)}원</div>
       </div>
-      <span style={{ fontSize: '0.9rem', color: 'rgba(255,255,255,0.3)' }}>＋</span>
+      <Plus size={13} color="rgba(255,255,255,0.3)" />
     </motion.div>
   )
 }
@@ -155,7 +156,7 @@ function SetBlock({ block, onRemove, onMoveLeft, onMoveRight, onEdit }: {
             display: 'flex', alignItems: 'center', justifyContent: 'center',
             boxShadow: '0 2px 6px rgba(74,127,165,0.5)',
           }}
-        >✏️</motion.button>
+        ><Pencil size={10} /></motion.button>
       )}
       {/* × 삭제 버튼 */}
       <motion.button
@@ -171,7 +172,7 @@ function SetBlock({ block, onRemove, onMoveLeft, onMoveRight, onEdit }: {
           display: 'flex', alignItems: 'center', justifyContent: 'center',
           boxShadow: '0 2px 6px rgba(217,95,82,0.5)',
         }}
-      >✕</motion.button>
+      ><X size={10} /></motion.button>
       {/* ← → 순서 이동 버튼 */}
       <div className="sb-move-btns" style={{
         position: 'absolute', bottom: -10, left: '50%', transform: 'translateX(-50%)',
@@ -183,8 +184,8 @@ function SetBlock({ block, onRemove, onMoveLeft, onMoveRight, onEdit }: {
             background: 'rgba(255,255,255,0.15)', color: 'rgba(255,255,255,0.7)',
             fontSize: '0.55rem', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center',
           }}>
-            <span className="sb-move-h">◀</span>
-            <span className="sb-move-v">▲</span>
+            <span className="sb-move-h"><ChevronLeft size={9} /></span>
+            <span className="sb-move-v"><ChevronUp size={9} /></span>
           </motion.button>
         )}
         {onMoveRight && (
@@ -193,8 +194,8 @@ function SetBlock({ block, onRemove, onMoveLeft, onMoveRight, onEdit }: {
             background: 'rgba(255,255,255,0.15)', color: 'rgba(255,255,255,0.7)',
             fontSize: '0.55rem', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center',
           }}>
-            <span className="sb-move-h">▶</span>
-            <span className="sb-move-v">▼</span>
+            <span className="sb-move-h"><ChevronRight size={9} /></span>
+            <span className="sb-move-v"><ChevronDown size={9} /></span>
           </motion.button>
         )}
       </div>
@@ -829,7 +830,7 @@ export default function SetBuilderProto() {
                 fontFamily: "'Noto Sans KR',sans-serif", fontWeight: 700, fontSize: '0.82rem',
                 cursor: 'pointer', flexShrink: 0,
               }}
-            >＋<span className="sb-add-text"> 추가</span></motion.button>
+            ><Plus size={14} /><span className="sb-add-text"> 추가</span></motion.button>
             <motion.button
               className="sb-save-btn"
               whileTap={{ scale: 0.93 }}
@@ -908,7 +909,7 @@ export default function SetBuilderProto() {
                     background: 'rgba(255,255,255,0.06)', border: '1px solid rgba(255,255,255,0.1)',
                     color: 'rgba(200,216,228,0.4)', borderRadius: 8, padding: '5px 8px',
                     fontSize: '0.75rem', cursor: 'pointer',
-                  }}>⚙️</button>
+                  }}><Settings size={14} /></button>
                 </div>
 
                 {/* 스택 바 차트 */}
@@ -1016,9 +1017,9 @@ export default function SetBuilderProto() {
             padding: '9px 14px', cursor: 'pointer',
             fontFamily: "'Noto Sans KR',sans-serif", fontWeight: 700,
             boxShadow: '0 4px 16px rgba(0,0,0,0.3)',
-            zIndex: 30,
+            zIndex: 30, display: 'flex', alignItems: 'center', gap: 6,
           }}
-        >✏️ 원가 편집기</motion.button>
+        ><Pencil size={13} /> 원가 편집기</motion.button>
 
         {/* 이탈 경고 모달 */}
         <AnimatePresence>
@@ -1112,7 +1113,7 @@ export default function SetBuilderProto() {
                 }}
               >
                 <div style={{ fontFamily: "'Noto Sans KR',sans-serif", fontWeight: 700, fontSize: '0.95rem', color: 'white', marginBottom: 20 }}>
-                  ⚙️ 수수료 설정
+                  <span style={{ display: 'flex', alignItems: 'center', gap: 6 }}><Settings size={15} /> 수수료 설정</span>
                 </div>
 
                 {/* 배달 채널 */}

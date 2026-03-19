@@ -3,6 +3,7 @@
 import { createClient } from '../../lib/supabase'
 import { FIRST_LOGIN_MENU_SAMPLES as FIRST_LOGIN_SAMPLES } from '@/lib/sampleData'
 import { useState, useEffect, useRef, Suspense } from 'react'
+import { ArrowLeft, ArrowRight } from 'lucide-react'
 import { useSearchParams } from 'next/navigation'
 import AppSidebar from '../../components/AppSidebar'
 import Calculator from '../../components/Calculator'
@@ -302,7 +303,7 @@ function CalculatorContent() {
               background: 'rgba(74,127,165,0.15)', border: '1px solid rgba(74,127,165,0.3)',
               color: '#7DB8D8', textDecoration: 'none', fontWeight: 700,
               borderRadius: 8, padding: '5px 12px', fontSize: '0.78rem',
-            }}>← 메뉴구성으로 돌아가기</a>
+            }}><ArrowLeft size={13} style={{ flexShrink: 0 }} /> 메뉴구성으로 돌아가기</a>
           ) : (
             <>
               <a href="/" style={{ color: 'var(--text-soft)', textDecoration: 'none', fontWeight: 500 }}>홈</a>
@@ -313,7 +314,7 @@ function CalculatorContent() {
                 background: 'rgba(74,127,165,0.12)', border: '1px solid rgba(74,127,165,0.25)',
                 color: '#7DB8D8', textDecoration: 'none', fontWeight: 600,
                 borderRadius: 8, padding: '4px 10px', fontSize: '0.75rem',
-              }}>메뉴 구성 →</a>
+              }}>메뉴 구성 <ArrowRight size={12} style={{ flexShrink: 0 }} /></a>
             </>
           )}
         </div>

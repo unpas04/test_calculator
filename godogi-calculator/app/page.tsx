@@ -3,6 +3,7 @@
 import { useState, useEffect, useRef } from 'react'
 import { useRouter } from 'next/navigation'
 import { motion, AnimatePresence } from 'framer-motion'
+import { X } from 'lucide-react'
 import { createClient } from '../lib/supabase'
 import { FIRST_LOGIN_MENU_SAMPLES, SAMPLE_SET_DEFINITIONS, SampleMenu } from '../lib/sampleData'
 
@@ -571,7 +572,7 @@ export default function HomePage() {
                           color: 'rgba(200,216,228,0.18)', cursor: 'pointer',
                           fontSize: '0.78rem', padding: '4px 6px', lineHeight: 1,
                         }}
-                      >✕</button>
+                      ><X size={11} /></button>
                     </motion.div>
                   )
                 })}
