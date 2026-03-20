@@ -1023,21 +1023,27 @@ export default function SetBuilderProto() {
         ><Pencil size={13} /> 원가 편집기</motion.button>
 
         {/* 모바일 전용 구성추가 FAB */}
-        <motion.button
+        <div
           className="sb-add-fab"
-          whileTap={{ scale: 0.95 }}
-          onClick={() => setShowPalette(true)}
           style={{
-            position: 'fixed', bottom: 24, left: '50%', transform: 'translateX(-50%)',
-            background: 'rgba(74,127,165,0.9)', backdropFilter: 'blur(10px)',
-            border: '1px solid rgba(74,127,165,0.6)', borderRadius: 24,
-            color: 'white', fontSize: '0.88rem',
-            padding: '12px 28px', cursor: 'pointer',
-            fontFamily: "'Noto Sans KR',sans-serif", fontWeight: 700,
-            boxShadow: '0 4px 20px rgba(74,127,165,0.4)',
-            zIndex: 30, display: 'none', alignItems: 'center', gap: 8,
+            position: 'fixed', bottom: 20, left: '50%', transform: 'translateX(-50%)',
+            zIndex: 30, display: 'none',
           }}
-        ><span style={{ fontSize: '1.1rem', lineHeight: 1 }}>＋</span> 구성 추가</motion.button>
+        >
+          <motion.button
+            whileTap={{ scale: 0.95 }}
+            onClick={() => setShowPalette(true)}
+            style={{
+              background: 'rgba(74,127,165,0.85)', backdropFilter: 'blur(10px)',
+              border: '1px solid rgba(74,127,165,0.5)', borderRadius: 20,
+              color: 'white', fontSize: '0.78rem',
+              padding: '8px 20px', cursor: 'pointer',
+              fontFamily: "'Noto Sans KR',sans-serif", fontWeight: 700,
+              boxShadow: '0 3px 14px rgba(74,127,165,0.35)',
+              display: 'flex', alignItems: 'center', gap: 6, whiteSpace: 'nowrap',
+            }}
+          ><span style={{ fontSize: '1rem', lineHeight: 1 }}>＋</span> 구성 추가</motion.button>
+        </div>
 
         {/* 이탈 경고 모달 */}
         <AnimatePresence>
