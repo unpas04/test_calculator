@@ -408,6 +408,7 @@ function CalculatorContent() {
           <Calculator
             menu={currentMenu}
             onChange={handleChange}
+            onOpenFridge={() => { setShowFridgeSheet(true); loadFridgeItems() }}
           />
         ) : menusLoading ? (
           <div style={{ textAlign: 'center', paddingTop: 80, color: 'var(--text-soft)', fontFamily: "'Noto Sans KR',sans-serif" }}>

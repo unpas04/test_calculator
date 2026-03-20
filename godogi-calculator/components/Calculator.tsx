@@ -83,9 +83,10 @@ function defaultIngredient(): Ingredient {
 interface Props {
   menu: Menu
   onChange: (menu: Menu) => void
+  onOpenFridge?: () => void
 }
 
-export default function Calculator({ menu, onChange }: Props) {
+export default function Calculator({ menu, onChange, onOpenFridge }: Props) {
   const supabase = createClient()
   const exportRef = useRef<HTMLDivElement>(null)
 
@@ -464,7 +465,7 @@ export default function Calculator({ menu, onChange }: Props) {
           </thead>
           <tbody>
             {menu.ingredients.map((ing, idx) => (
-              <tr key={ing.id}>
+              <tr key={ing.id} className={!ing.name ? 'ing-row-empty' : ''}>
                 <td colSpan={5} style={{ padding: 0 }}>
                   <table style={{ width: '100%', borderCollapse: 'collapse' }}>
                     <tbody>
@@ -611,12 +612,21 @@ export default function Calculator({ menu, onChange }: Props) {
             ))}
           </tbody>
         </table>
-        <button onClick={addIng} style={{
+        {/* PC: 빈 행 추가 */}
+        <button onClick={addIng} className="add-ing-desktop" style={{
           marginTop: 12, background: 'none',
           border: '1.5px dashed var(--blue-light)', color: 'var(--blue)',
           borderRadius: 10, padding: '8px 18px',
           fontFamily: "'Noto Sans KR', sans-serif", fontWeight: 700, fontSize: '0.82rem', cursor: 'pointer'
         }}>＋ 재료 추가</button>
+        {/* 모바일: 냉장고 바텀시트 열기 */}
+        <button onClick={() => onOpenFridge?.()} className="add-ing-mobile" style={{
+          marginTop: 12, width: '100%', background: 'none',
+          border: '1.5px dashed rgba(74,127,165,0.4)', color: 'rgba(125,184,216,0.7)',
+          borderRadius: 10, padding: '10px 0',
+          fontFamily: "'Noto Sans KR', sans-serif", fontWeight: 700, fontSize: '0.82rem', cursor: 'pointer',
+          display: 'none',
+        }}>🧊 재료 추가</button>
       </>)}
 
       {/* 배치 수율 (반찬 / 음료 직접제조) */}
@@ -983,6 +993,9 @@ export default function Calculator({ menu, onChange }: Props) {
       <style>{`
         @media (max-width: 768px) {
           .ing-detail-grid { grid-template-columns: 1fr 1fr !important; }
+          .ing-row-empty { display: none !important; }
+          .add-ing-desktop { display: none !important; }
+          .add-ing-mobile { display: block !important; }
         }
       `}</style>
 
