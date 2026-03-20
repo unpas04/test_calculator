@@ -180,7 +180,11 @@ export default function HomePage() {
     supabase.auth.getSession().then(({ data: { session } }) => {
       const u = session?.user ?? null
       setUser(u)
-      if (!u) {
+      if (u) {
+        // 로그인 상태 → 게스트 플래그 완전 정리
+        sessionStorage.removeItem('godogi_guest')
+        setIsGuest(false)
+      } else {
         // 로그인 없음 → 게스트 여부 확인
         const guest = typeof window !== 'undefined' && !!sessionStorage.getItem('godogi_guest')
         setIsGuest(guest)
