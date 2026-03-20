@@ -51,7 +51,7 @@ export default async function Image() {
 
         {/* 제목 */}
         <div style={{
-          color: 'white', fontSize: 64, fontWeight: 700,
+          color: 'white', fontSize: 64, fontWeight: 900,
           letterSpacing: '-0.02em', marginBottom: 18,
         }}>
           고독이의 원가계산기

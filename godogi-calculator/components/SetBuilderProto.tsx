@@ -700,6 +700,7 @@ export default function SetBuilderProto() {
 
         @media (max-width: 768px) {
           .sb-palette  { display: none !important; }
+          .sb-add-fab  { display: flex !important; }
           .sb-add-btn  { display: flex !important; align-items: center; padding: 8px 10px !important; }
           .sb-add-text { display: none !important; }
           .sb-save-text { display: none !important; }
@@ -1020,6 +1021,23 @@ export default function SetBuilderProto() {
             zIndex: 30, display: 'flex', alignItems: 'center', gap: 6,
           }}
         ><Pencil size={13} /> 원가 편집기</motion.button>
+
+        {/* 모바일 전용 구성추가 FAB */}
+        <motion.button
+          className="sb-add-fab"
+          whileTap={{ scale: 0.95 }}
+          onClick={() => setShowPalette(true)}
+          style={{
+            position: 'fixed', bottom: 24, left: '50%', transform: 'translateX(-50%)',
+            background: 'rgba(74,127,165,0.9)', backdropFilter: 'blur(10px)',
+            border: '1px solid rgba(74,127,165,0.6)', borderRadius: 24,
+            color: 'white', fontSize: '0.88rem',
+            padding: '12px 28px', cursor: 'pointer',
+            fontFamily: "'Noto Sans KR',sans-serif", fontWeight: 700,
+            boxShadow: '0 4px 20px rgba(74,127,165,0.4)',
+            zIndex: 30, display: 'none', alignItems: 'center', gap: 8,
+          }}
+        ><span style={{ fontSize: '1.1rem', lineHeight: 1 }}>＋</span> 구성 추가</motion.button>
 
         {/* 이탈 경고 모달 */}
         <AnimatePresence>
