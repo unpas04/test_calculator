@@ -13,6 +13,8 @@ const geistMono = Geist_Mono({
   subsets: ["latin"],
 });
 
+const BASE_URL = 'https://godogicalculator.vercel.app'
+
 export const metadata: Metadata = {
   title: "고독이의 원가계산기",
   description: "배달 수수료, 카드 수수료, 인건비까지 포함한 메뉴 원가를 한 번에 계산하세요. 소상공인·식당 사장님을 위한 무료 세트 메뉴 원가 계산기",
@@ -31,16 +33,31 @@ export const metadata: Metadata = {
     "카드 수수료 포함 마진 계산",
   ],
   authors: [{ name: "Godogi" }],
+  metadataBase: new URL(BASE_URL),
   verification: {
     google: "Gaxp9t_DzwZ7Rcs8ALCLM5OLWR7YVW_Ebe7E841nOVg",
   },
   openGraph: {
     title: "고독이의 원가계산기",
     description: "배달 수수료, 카드 수수료, 인건비까지 포함한 메뉴 원가를 한 번에 계산하세요. 소상공인·식당 사장님을 위한 무료 세트 메뉴 원가 계산기",
-    url: "https://godogicalculator.vercel.app",
+    url: BASE_URL,
     siteName: "고독이의 원가계산기",
     locale: "ko_KR",
     type: "website",
+    images: [
+      {
+        url: '/opengraph-image',
+        width: 1200,
+        height: 630,
+        alt: '고독이의 원가계산기 — 배달 수수료·인건비 포함 실원가 한 번에',
+      },
+    ],
+  },
+  twitter: {
+    card: 'summary_large_image',
+    title: '고독이의 원가계산기',
+    description: '배달 수수료, 카드 수수료, 인건비까지 포함한 메뉴 원가를 한 번에 계산하세요.',
+    images: ['/opengraph-image'],
   },
   icons: {
     icon: [
@@ -70,6 +87,21 @@ export default function RootLayout({
           gtag('js', new Date());
           gtag('config', 'G-GK7DL033V8');
         `}</Script>
+        {process.env.NEXT_PUBLIC_KAKAO_JS_KEY && (
+          <>
+            <Script
+              src="https://t1.kakaocdn.net/kakao_js_sdk/2.7.2/kakao.min.js"
+              integrity="sha384-TiCUE00h649CAMonG018J2ujOgDKW/kVWlChEuu4jK2vxfAAD0eZxzCKakxg55G4"
+              crossOrigin="anonymous"
+              strategy="afterInteractive"
+            />
+            <Script id="kakao-init" strategy="afterInteractive">{`
+              if (window.Kakao && !window.Kakao.isInitialized()) {
+                window.Kakao.init('${process.env.NEXT_PUBLIC_KAKAO_JS_KEY}');
+              }
+            `}</Script>
+          </>
+        )}
       </head>
       <body className={`${geistSans.variable} ${geistMono.variable} antialiased`}>
         {children}

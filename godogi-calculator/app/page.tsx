@@ -6,6 +6,7 @@ import { motion, AnimatePresence } from 'framer-motion'
 import { X } from 'lucide-react'
 import { createClient } from '../lib/supabase'
 import { FIRST_LOGIN_MENU_SAMPLES, SAMPLE_SET_DEFINITIONS, SampleMenu } from '../lib/sampleData'
+import ShareButton from '../components/ShareButton'
 
 const FEES_KEY = 'godogi_fees'
 const DEFAULT_FEES = { delivery_platform: 6.8, delivery_card: 1.5, hall_card: 1.5 }
@@ -480,6 +481,11 @@ export default function HomePage() {
                 fontSize: '0.72rem', cursor: 'pointer', fontFamily: "'Noto Sans KR', sans-serif", fontWeight: 700, whiteSpace: 'nowrap',
               }}>🔑 로그인</button>
             )}
+            <ShareButton
+              utm_source="kakao"
+              utm_medium="social"
+              utm_campaign="home_header"
+            />
             <button onClick={() => router.push('/calculator')} className="home-editor-btn" style={{
               background: 'rgba(255,255,255,0.05)', border: '1px solid rgba(255,255,255,0.09)',
               color: 'rgba(200,216,228,0.45)', borderRadius: 8, padding: '7px 12px',
