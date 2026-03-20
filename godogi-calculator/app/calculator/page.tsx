@@ -94,6 +94,7 @@ function CalculatorContent() {
   const loadedForUser = useRef<string | null>(null)
   const pendingSave = useRef<any>(null)
   const saveMenuRef = useRef<any>(null)
+  const dirtyMenus = useRef<Set<string>>(new Set())
 
   useEffect(() => {
     supabase.auth.getSession().then(({ data: { session } }) => {
@@ -146,12 +147,18 @@ function CalculatorContent() {
       if (error) { console.error(error); return }
 
       if (menuList && menuList.length > 0) {
-        const formatted = menuList.map((m: any) => ({
-          ...m,
-          delivery_fee: m.delivery_fee,
-          card_fee: m.card_fee,
-          ingredients: (m.ingredients || []).sort((a: any, b: any) => a.sort_order - b.sort_order)
-        }))
+        const formatted = menuList.map((m: any) => {
+          const sorted = (m.ingredients || []).sort((a: any, b: any) => a.sort_order - b.sort_order)
+          // 중복 재료 dedup (이름 기준) — 버그로 생긴 중복 자동 정리
+          const seen = new Set<string>()
+          const deduped = sorted.filter((ing: any) => {
+            if (!ing.name) return false
+            if (seen.has(ing.name)) { dirtyMenus.current.add(m.id); return false }
+            seen.add(ing.name)
+            return true
+          })
+          return { ...m, delivery_fee: m.delivery_fee, card_fee: m.card_fee, ingredients: deduped }
+        })
         setMenus(formatted)
         const target = menuIdParam ? formatted.find((m: any) => m.id === menuIdParam) : null
         setCurrentId(target ? target.id : formatted[0].id)
@@ -197,6 +204,7 @@ function CalculatorContent() {
   const currentMenu = menus.find(m => m.id === currentId) ?? null
 
   const handleChange = (updated: any) => {
+    dirtyMenus.current.add(updated.id)
     setMenus(prev => prev.map(m => m.id === updated.id ? updated : m))
   }
 
@@ -383,7 +391,11 @@ function CalculatorContent() {
     if (autoSaveTimer.current) clearTimeout(autoSaveTimer.current)
     autoSaveTimer.current = setTimeout(() => {
       const m = pendingSave.current
-      if (m) { pendingSave.current = null; saveMenuRef.current(m) }
+      pendingSave.current = null
+      if (m && dirtyMenus.current.has(m.id)) {
+        dirtyMenus.current.delete(m.id)
+        saveMenuRef.current(m)
+      }
     }, 1000)
     return () => clearTimeout(autoSaveTimer.current)
   }, [currentMenu])

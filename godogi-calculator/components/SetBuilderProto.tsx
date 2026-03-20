@@ -423,20 +423,36 @@ export default function SetBuilderProto() {
         return
       }
       setUserId(session.user.id)
+
+      // 캐시 있으면 즉시 표시
+      const MENU_CACHE_KEY = `godogi_menus_${session.user.id}`
+      const cached = localStorage.getItem(MENU_CACHE_KEY)
+      if (cached) {
+        try { setPaletteBlocks(JSON.parse(cached)); setAuthLoading(false) } catch {}
+      }
+
       const { data } = await supabase
         .from('menus')
         .select('*, ingredients(*)')
         .eq('user_id', session.user.id)
         .order('created_at', { ascending: true })
       if (data) {
-        setPaletteBlocks(data.map((m: any) => ({
-          id: m.id,
-          menu_id: m.id,
-          name: m.name,
-          cost: Math.round(calcMenuTotalCost(m)),
-          category: (['main', 'side', 'banchan', 'drink', 'extra'].includes(m.category) ? m.category : 'main') as BlockCategory,
-          emoji: m.emoji || '🍽️',
-        })))
+        const blocks = data.map((m: any) => {
+          // 중복 재료 dedup
+          const seen = new Set<string>()
+          const deduped = (m.ingredients || []).filter((ing: any) => {
+            if (!ing.name || seen.has(ing.name)) return false
+            seen.add(ing.name); return true
+          })
+          return {
+            id: m.id, menu_id: m.id, name: m.name,
+            cost: Math.round(calcMenuTotalCost({ ...m, ingredients: deduped })),
+            category: (['main', 'side', 'banchan', 'drink', 'extra'].includes(m.category) ? m.category : 'main') as BlockCategory,
+            emoji: m.emoji || '🍽️',
+          }
+        })
+        setPaletteBlocks(blocks)
+        localStorage.setItem(MENU_CACHE_KEY, JSON.stringify(blocks))
       }
       setAuthLoading(false)
     }
