@@ -92,12 +92,17 @@ function CalculatorContent() {
     supabase.auth.getSession().then(({ data: { session } }) => {
       setUser(session?.user ?? null)
       setLoading(false)
+    }).catch(() => {
+      setUser(null)
+      setLoading(false)
     })
     const { data: { subscription } } = supabase.auth.onAuthStateChange((_e, session) => {
       setUser(session?.user ?? null)
       setLoading(false)
     })
-    return () => subscription.unsubscribe()
+    // 5초 안에 로딩 안 끝나면 강제 해제
+    const fallback = setTimeout(() => setLoading(false), 5000)
+    return () => { subscription.unsubscribe(); clearTimeout(fallback) }
   }, [])
 
   // 비로그인 게스트: 샘플 메뉴로 시작
@@ -189,13 +194,12 @@ function CalculatorContent() {
     setMenus(prev => prev.map(m => m.id === updated.id ? updated : m))
   }
 
-  // 냉장고 아이템 로드
-  useEffect(() => {
+  // 냉장고 아이템 로드 (시트 열 때만)
+  const loadFridgeItems = async () => {
     if (!user) { setFridgeItems([]); return }
-    supabase.from('fridge').select('*').eq('user_id', user.id).then(({ data }) => {
-      setFridgeItems(data || [])
-    })
-  }, [user])
+    const { data } = await supabase.from('fridge').select('*').eq('user_id', user.id)
+    setFridgeItems(data || [])
+  }
 
   const mergedFridgeItems = () => {
     const fridgeNames = fridgeItems.map((i: any) => i.name)
@@ -373,7 +377,7 @@ function CalculatorContent() {
       {/* 모바일 냉장고 FAB */}
       <div className="calc-fridge-fab" style={{ position: 'fixed', bottom: 20, left: 20, zIndex: 30, display: 'none' }}>
         <button
-          onClick={() => setShowFridgeSheet(true)}
+          onClick={() => { setShowFridgeSheet(true); loadFridgeItems() }}
           style={{
             background: 'rgba(26,40,64,0.92)', backdropFilter: 'blur(10px)',
             border: '1px solid rgba(74,127,165,0.4)', borderRadius: 20,
