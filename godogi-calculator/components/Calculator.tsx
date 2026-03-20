@@ -150,18 +150,20 @@ export default function Calculator({ menu, onChange, onOpenFridge, onSave }: Pro
     : menu
   const calc = calcMenu(menuForCalc)
 
-  useEffect(() => {
-    const loadFridge = async () => {
-      const { data: { session } } = await supabase.auth.getSession()
-      if (!session) return
-      const { data } = await supabase.from('fridge').select('*').eq('user_id', session.user.id)
-      if (data) setFridgeItems(data)
-    }
-    loadFridge()
-  }, [])
+  // fridge 자동완성: 재료명 입력 시 첫 타이핑에만 lazy load
+  const fridgeLoaded = useRef(false)
+  const loadFridgeOnce = async () => {
+    if (fridgeLoaded.current) return
+    fridgeLoaded.current = true
+    const { data: { session } } = await supabase.auth.getSession()
+    if (!session) return
+    const { data } = await supabase.from('fridge').select('*').eq('user_id', session.user.id)
+    if (data) setFridgeItems(data)
+  }
 
   const handleNameInput = (id: string, val: string) => {
     updateIng(id, 'name', val)
+    loadFridgeOnce()
     if (val.length < 1) {
       setSuggestions(prev => ({ ...prev, [id]: [] }))
       return

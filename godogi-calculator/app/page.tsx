@@ -262,15 +262,7 @@ export default function HomePage() {
     setSetsLoading(true)
     const feeSettings = JSON.parse(localStorage.getItem(FEES_KEY) || JSON.stringify(DEFAULT_FEES))
 
-    // 첫 로그인 체크
-    const { data: existingSets } = await supabase.from('sets').select('id').eq('user_id', user.id)
-    if (existingSets?.length === 0) {
-      await insertSampleData(user.id)
-    } else {
-      // backfill: 블로킹하지 않고 백그라운드 실행
-      backfillIngredients(user.id)
-    }
-
+    // 쿼리 1번으로 통합: 결과가 없으면 첫 로그인으로 처리
     const { data, error } = await supabase
       .from('sets')
       .select(`
@@ -285,14 +277,29 @@ export default function HomePage() {
       .eq('user_id', user.id)
       .order('created_at', { ascending: false })
 
-    if (error) { console.error(error); return }
+    if (error) { console.error(error); setSetsLoading(false); return }
 
-    const computed = (data || []).map(s => computeSetDisplay(s, feeSettings))
-    setSets(computed)
-
-    const rates = computed.filter(s => s.costRate > 0).map(s => s.costRate)
-    const avgRate = rates.length > 0 ? rates.reduce((a, b) => a + b, 0) / rates.length : null
-    setMenuStats({ total: computed.length, avgRate, warnCount: rates.filter(r => r > 60).length })
+    if (!data || data.length === 0) {
+      await insertSampleData(user.id)
+      // 삽입 후 재로드
+      const { data: data2 } = await supabase
+        .from('sets')
+        .select(`id, name, sale_price, channel, created_at, set_items(id, sort_order, menu_id, menus(id, name, category, emoji, labor, overhead, batch_yield, serving_size, ingredients(id, price, qty, unit, yield_, use_amount)))`)
+        .eq('user_id', user.id).order('created_at', { ascending: false })
+      const computed2 = (data2 || []).map(s => computeSetDisplay(s, feeSettings))
+      setSets(computed2)
+      const rates2 = computed2.filter(s => s.costRate > 0).map(s => s.costRate)
+      setMenuStats({ total: computed2.length, avgRate: rates2.length > 0 ? rates2.reduce((a, b) => a + b, 0) / rates2.length : null, warnCount: rates2.filter(r => r > 60).length })
+    } else {
+      const computed = data.map(s => computeSetDisplay(s, feeSettings))
+      setSets(computed)
+      const rates = computed.filter(s => s.costRate > 0).map(s => s.costRate)
+      setMenuStats({ total: computed.length, avgRate: rates.length > 0 ? rates.reduce((a, b) => a + b, 0) / rates.length : null, warnCount: rates.filter(r => r > 60).length })
+      // backfill: 한 번도 안 한 경우만 (localStorage 체크)
+      if (!localStorage.getItem('godogi_backfill_done')) {
+        backfillIngredients(user.id).then(() => localStorage.setItem('godogi_backfill_done', '1'))
+      }
+    }
     setSetsLoading(false)
   }
 
