@@ -1011,7 +1011,7 @@ export default function SetBuilderProto() {
           whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.95 }}
           onClick={() => tryNavigate('/calculator')}
           style={{
-            position: 'fixed', bottom: 24, right: 24,
+            position: 'fixed', bottom: 20, right: 24,
             background: 'rgba(17,27,39,0.92)', backdropFilter: 'blur(10px)',
             border: '1px solid rgba(74,127,165,0.3)', borderRadius: 14,
             color: 'rgba(200,216,228,0.7)', fontSize: '0.75rem',
