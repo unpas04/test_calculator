@@ -49,7 +49,7 @@ export const metadata: Metadata = {
         url: '/opengraph-image',
         width: 1200,
         height: 630,
-        alt: '고독이의 원가계산기 — 배달 수수료·인건비 포함 실원가 한 번에',
+        alt: '고독이의 원가계산기 — 우리 메뉴, 진짜로 남는 장사일까요?',
       },
     ],
   },

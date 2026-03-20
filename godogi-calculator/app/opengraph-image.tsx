@@ -1,7 +1,7 @@
 import { ImageResponse } from 'next/og'
 
 export const runtime = 'edge'
-export const alt = '고독이의 원가계산기 — 배달 수수료·인건비 포함 실원가 한 번에'
+export const alt = '고독이의 원가계산기 — 우리 메뉴, 진짜로 남는 장사일까요?'
 export const size = { width: 1200, height: 630 }
 export const contentType = 'image/png'
 
@@ -59,10 +59,11 @@ export default async function Image() {
 
         {/* 부제목 */}
         <div style={{
-          color: 'rgba(200,216,228,0.7)', fontSize: 28,
-          marginBottom: 48, fontWeight: 400,
+          color: 'rgba(200,216,228,0.75)', fontSize: 30,
+          marginBottom: 48, fontWeight: 500,
+          letterSpacing: '-0.01em',
         }}>
-          배달 수수료 · 인건비 포함 실원가를 한 번에
+          우리 메뉴, 진짜로 남는 장사일까요?
         </div>
 
         {/* 태그 3개 */}
