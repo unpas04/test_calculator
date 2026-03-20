@@ -9,6 +9,7 @@ import AppSidebar from '../../components/AppSidebar'
 import Calculator from '../../components/Calculator'
 
 const FRIDGE_CATEGORIES = ['전체', '육류', '채소', '양념/소스', '유제품', '곡류/면', '과일', '수산물', '기타']
+const FRIDGE_UNITS = ['g', 'ml', '개', '팩', 'kg', 'L']
 
 function genId() {
   return crypto.randomUUID()
@@ -84,6 +85,10 @@ function CalculatorContent() {
   const [fridgeItems, setFridgeItems] = useState<any[]>([])
   const [fridgeSearch, setFridgeSearch] = useState('')
   const [fridgeCategory, setFridgeCategory] = useState('전체')
+  const [fridgeConfirm, setFridgeConfirm] = useState<any | null>(null)
+  const [showFridgeForm, setShowFridgeForm] = useState(false)
+  const [fridgeEditItem, setFridgeEditItem] = useState<any | null>(null)
+  const [fridgeForm, setFridgeForm] = useState({ name: '', price: '', per: '', unit: 'g', yield_: '100', category: '기타' })
   const supabase = createClient()
   const autoSaveTimer = useRef<any>(null)
   const loadedForUser = useRef<string | null>(null)
@@ -228,8 +233,48 @@ function CalculatorContent() {
       ? currentMenu.ingredients.map((i: any, idx: number) => idx === emptyIdx ? newIng : i)
       : [...currentMenu.ingredients, newIng]
     handleChange({ ...currentMenu, ingredients: newIngredients })
+    setFridgeConfirm(null)
     setShowFridgeSheet(false)
     setFridgeSearch('')
+  }
+
+  const openFridgeEdit = (item: any) => {
+    setFridgeEditItem(item)
+    setFridgeForm({
+      name: item.name,
+      price: String(item.price),
+      per: String(item.per),
+      unit: item.unit,
+      yield_: String(item.yield_),
+      category: item.category,
+    })
+    setShowFridgeForm(true)
+  }
+
+  const openFridgeAdd = () => {
+    setFridgeEditItem(null)
+    setFridgeForm({ name: '', price: '', per: '', unit: 'g', yield_: '100', category: '기타' })
+    setShowFridgeForm(true)
+  }
+
+  const handleFridgeSave = async () => {
+    if (!fridgeForm.name.trim() || !user) return
+    const payload = {
+      user_id: user.id,
+      name: fridgeForm.name,
+      price: parseFloat(fridgeForm.price) || 0,
+      per: parseFloat(fridgeForm.per) || 0,
+      unit: fridgeForm.unit,
+      yield_: parseFloat(fridgeForm.yield_) || 100,
+      category: fridgeForm.category,
+    }
+    if (fridgeEditItem && !fridgeEditItem.isDB) {
+      await supabase.from('fridge').update(payload).eq('id', fridgeEditItem.id)
+    } else {
+      await supabase.from('fridge').insert(payload)
+    }
+    setShowFridgeForm(false)
+    loadFridgeItems()
   }
 
   const handleNew = () => {
@@ -397,7 +442,7 @@ function CalculatorContent() {
       {/* 냉장고 바텀시트 */}
       {showFridgeSheet && (
         <>
-          <div onClick={() => { setShowFridgeSheet(false); setFridgeSearch('') }}
+          <div onClick={() => { setShowFridgeSheet(false); setFridgeSearch(''); setFridgeConfirm(null) }}
             style={{ position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.65)', zIndex: 40 }} />
           <div style={{
             position: 'fixed', bottom: 0, left: 0, right: 0, zIndex: 50,
@@ -405,12 +450,23 @@ function CalculatorContent() {
             maxHeight: '75svh', display: 'flex', flexDirection: 'column',
             paddingBottom: 'calc(env(safe-area-inset-bottom, 0px) + 16px)',
           }}>
+            {/* 드래그 핸들 */}
             <div style={{ display: 'flex', justifyContent: 'center', padding: '12px 0 4px' }}>
               <div style={{ width: 36, height: 4, borderRadius: 2, background: 'rgba(255,255,255,0.12)' }} />
             </div>
-            <div style={{ padding: '4px 16px 12px', borderBottom: '1px solid rgba(255,255,255,0.06)' }}>
-              <div style={{ fontSize: '0.88rem', fontFamily: "'Noto Sans KR',sans-serif", fontWeight: 700, color: 'white', marginBottom: 10 }}>
-                🧊 냉장고에서 재료 추가
+
+            {/* 헤더 */}
+            <div style={{ padding: '4px 16px 12px', borderBottom: '1px solid rgba(255,255,255,0.06)', display: 'flex', flexDirection: 'column', gap: 10 }}>
+              <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+                <span style={{ fontSize: '0.88rem', fontFamily: "'Noto Sans KR',sans-serif", fontWeight: 700, color: 'white' }}>🧊 냉장고</span>
+                {user && (
+                  <button onClick={openFridgeAdd} style={{
+                    background: 'rgba(74,127,165,0.2)', border: '1px solid rgba(74,127,165,0.4)',
+                    borderRadius: 8, color: '#7DB8D8', fontSize: '0.75rem',
+                    padding: '5px 12px', cursor: 'pointer',
+                    fontFamily: "'Noto Sans KR',sans-serif", fontWeight: 700,
+                  }}>＋ 추가</button>
+                )}
               </div>
               <input
                 placeholder="재료 검색..."
@@ -425,7 +481,9 @@ function CalculatorContent() {
                 }}
               />
             </div>
-            <div style={{ display: 'flex', gap: 6, overflowX: 'auto', padding: '10px 16px', flexShrink: 0 }}>
+
+            {/* 카테고리 */}
+            <div style={{ display: 'flex', gap: 6, overflowX: 'auto', padding: '10px 16px', flexShrink: 0, scrollbarWidth: 'none' }}>
               {FRIDGE_CATEGORIES.map(cat => (
                 <button key={cat} onClick={() => setFridgeCategory(cat)} style={{
                   padding: '5px 12px', borderRadius: 20, border: 'none', cursor: 'pointer',
@@ -436,29 +494,143 @@ function CalculatorContent() {
                 }}>{cat}</button>
               ))}
             </div>
+
+            {/* 재료 목록 */}
             <div style={{ overflowY: 'auto', flex: 1, padding: '0 12px 8px' }}>
               {filteredFridgeItems().length === 0 ? (
                 <div style={{ textAlign: 'center', padding: '24px 0', color: 'rgba(200,216,228,0.35)', fontSize: '0.82rem', fontFamily: "'Noto Sans KR',sans-serif" }}>
                   검색 결과가 없어요
                 </div>
               ) : filteredFridgeItems().map((item: any) => (
-                <button key={item.id} onClick={() => handleFridgePick(item)} style={{
+                <div key={item.id} style={{
                   width: '100%', padding: '11px 12px', marginBottom: 6,
                   background: 'rgba(255,255,255,0.04)', border: '1px solid rgba(255,255,255,0.06)',
-                  borderRadius: 10, cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'space-between',
-                  fontFamily: "'Noto Sans KR',sans-serif",
-                }}>
-                  <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
-                    <span style={{ fontSize: '0.88rem', color: 'white', fontWeight: 700 }}>{item.name}</span>
-                    {item.isDB && <span style={{ fontSize: '0.65rem', color: 'rgba(200,216,228,0.3)', fontWeight: 400 }}>기본</span>}
+                  borderRadius: 10, display: 'flex', alignItems: 'center', justifyContent: 'space-between',
+                  fontFamily: "'Noto Sans KR',sans-serif", cursor: 'pointer',
+                }} onClick={() => setFridgeConfirm(item)}>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: 8, flex: 1, minWidth: 0 }}>
+                    <div style={{ minWidth: 0 }}>
+                      <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
+                        <span style={{ fontSize: '0.88rem', color: 'white', fontWeight: 700 }}>{item.name}</span>
+                        {item.isDB && <span style={{ fontSize: '0.62rem', color: 'rgba(200,216,228,0.3)', fontWeight: 400 }}>기본</span>}
+                      </div>
+                      <div style={{ fontSize: '0.72rem', color: 'rgba(200,216,228,0.4)', marginTop: 2 }}>
+                        {(item.price || 0).toLocaleString()}원 / {item.per}{item.unit}
+                        {item.yield_ !== 100 && ` · 수율 ${item.yield_}%`}
+                      </div>
+                    </div>
                   </div>
-                  <span style={{ fontSize: '0.78rem', color: 'rgba(200,216,228,0.45)', fontWeight: 400 }}>
-                    {(item.price || 0).toLocaleString()}원/{item.per}{item.unit}
-                  </span>
-                </button>
+                  <button onClick={e => { e.stopPropagation(); openFridgeEdit(item) }} style={{
+                    background: 'rgba(255,255,255,0.06)', border: 'none', borderRadius: 6,
+                    color: 'rgba(200,216,228,0.5)', fontSize: '0.72rem',
+                    padding: '4px 10px', cursor: 'pointer',
+                    fontFamily: "'Noto Sans KR',sans-serif", fontWeight: 700, flexShrink: 0,
+                  }}>수정</button>
+                </div>
               ))}
             </div>
           </div>
+
+          {/* 추가 확인 모달 */}
+          {fridgeConfirm && (
+            <div style={{ position: 'fixed', inset: 0, zIndex: 60, display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '0 24px' }}
+              onClick={() => setFridgeConfirm(null)}>
+              <div onClick={e => e.stopPropagation()} style={{
+                background: '#1A2840', borderRadius: 20, padding: '24px 22px',
+                width: '100%', maxWidth: 300, border: '1px solid rgba(74,127,165,0.25)',
+                fontFamily: "'Noto Sans KR',sans-serif",
+              }}>
+                <div style={{ fontSize: '0.95rem', fontWeight: 700, color: 'white', marginBottom: 6 }}>
+                  {fridgeConfirm.name}
+                </div>
+                <div style={{ fontSize: '0.78rem', color: 'rgba(200,216,228,0.45)', marginBottom: 20 }}>
+                  {(fridgeConfirm.price || 0).toLocaleString()}원 / {fridgeConfirm.per}{fridgeConfirm.unit}
+                  {fridgeConfirm.yield_ !== 100 && ` · 수율 ${fridgeConfirm.yield_}%`}
+                  <br />현재 메뉴에 추가할까요?
+                </div>
+                <div style={{ display: 'flex', gap: 8 }}>
+                  <button onClick={() => setFridgeConfirm(null)} style={{
+                    flex: 1, padding: '10px 0', background: 'rgba(255,255,255,0.06)',
+                    border: 'none', borderRadius: 10, color: 'rgba(200,216,228,0.5)',
+                    fontFamily: "'Noto Sans KR',sans-serif", fontWeight: 700, fontSize: '0.82rem', cursor: 'pointer',
+                  }}>취소</button>
+                  <button onClick={() => handleFridgePick(fridgeConfirm)} style={{
+                    flex: 1, padding: '10px 0', background: '#4A7FA5',
+                    border: 'none', borderRadius: 10, color: 'white',
+                    fontFamily: "'Noto Sans KR',sans-serif", fontWeight: 700, fontSize: '0.82rem', cursor: 'pointer',
+                  }}>추가</button>
+                </div>
+              </div>
+            </div>
+          )}
+
+          {/* 수정/추가 폼 모달 */}
+          {showFridgeForm && (
+            <div style={{ position: 'fixed', inset: 0, zIndex: 60, display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '0 24px', background: 'rgba(0,0,0,0.4)' }}
+              onClick={() => setShowFridgeForm(false)}>
+              <div onClick={e => e.stopPropagation()} style={{
+                background: '#1E2D40', borderRadius: 20, padding: 24,
+                width: '100%', maxWidth: 320, display: 'flex', flexDirection: 'column', gap: 14,
+                fontFamily: "'Noto Sans KR',sans-serif",
+              }}>
+                <div style={{ fontWeight: 700, color: 'white', fontSize: '1rem' }}>
+                  {fridgeEditItem ? (fridgeEditItem.isDB ? '매입가 수정 🧊' : '재료 수정') : '재료 추가 🧊'}
+                </div>
+                {fridgeEditItem?.isDB && (
+                  <div style={{ fontSize: '0.72rem', color: 'rgba(200,216,228,0.4)', background: 'rgba(255,255,255,0.05)', padding: '8px 10px', borderRadius: 8 }}>
+                    수정하면 내 냉장고에 저장돼요
+                  </div>
+                )}
+                {[
+                  { label: '재료명', key: 'name', disabled: !!fridgeEditItem, placeholder: '재료명' },
+                ].map(({ label, key, disabled, placeholder }) => (
+                  <div key={key}>
+                    <label style={{ fontSize: '0.7rem', color: 'rgba(200,216,228,0.5)', fontWeight: 700, marginBottom: 4, display: 'block' }}>{label}</label>
+                    <input style={{ width: '100%', padding: '8px 10px', background: 'rgba(255,255,255,0.07)', border: '1px solid rgba(200,216,228,0.15)', borderRadius: 8, color: 'white', fontFamily: "'Noto Sans KR',sans-serif", fontWeight: 400, fontSize: '0.85rem', outline: 'none', boxSizing: 'border-box' as const }}
+                      value={fridgeForm[key as keyof typeof fridgeForm]} placeholder={placeholder}
+                      onChange={e => setFridgeForm(f => ({ ...f, [key]: e.target.value }))}
+                      disabled={disabled} />
+                  </div>
+                ))}
+                <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 10 }}>
+                  {[{ label: '구매가 (원)', key: 'price' }, { label: '구매량', key: 'per' }].map(({ label, key }) => (
+                    <div key={key}>
+                      <label style={{ fontSize: '0.7rem', color: 'rgba(200,216,228,0.5)', fontWeight: 700, marginBottom: 4, display: 'block' }}>{label}</label>
+                      <input style={{ width: '100%', padding: '8px 10px', background: 'rgba(255,255,255,0.07)', border: '1px solid rgba(200,216,228,0.15)', borderRadius: 8, color: 'white', fontFamily: "'Noto Sans KR',sans-serif", fontWeight: 400, fontSize: '0.85rem', outline: 'none', boxSizing: 'border-box' as const }}
+                        value={fridgeForm[key as keyof typeof fridgeForm]} inputMode="numeric" placeholder="0"
+                        onChange={e => setFridgeForm(f => ({ ...f, [key]: e.target.value }))} />
+                    </div>
+                  ))}
+                </div>
+                <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 10 }}>
+                  <div>
+                    <label style={{ fontSize: '0.7rem', color: 'rgba(200,216,228,0.5)', fontWeight: 700, marginBottom: 4, display: 'block' }}>단위</label>
+                    <select style={{ width: '100%', padding: '8px 10px', background: 'rgba(255,255,255,0.07)', border: '1px solid rgba(200,216,228,0.15)', borderRadius: 8, color: 'white', fontFamily: "'Noto Sans KR',sans-serif", fontWeight: 400, fontSize: '0.85rem', outline: 'none' }}
+                      value={fridgeForm.unit} onChange={e => setFridgeForm(f => ({ ...f, unit: e.target.value }))}>
+                      {FRIDGE_UNITS.map(u => <option key={u} style={{ background: '#1E2D40' }}>{u}</option>)}
+                    </select>
+                  </div>
+                  <div>
+                    <label style={{ fontSize: '0.7rem', color: 'rgba(200,216,228,0.5)', fontWeight: 700, marginBottom: 4, display: 'block' }}>수율 (%)</label>
+                    <input style={{ width: '100%', padding: '8px 10px', background: 'rgba(255,255,255,0.07)', border: '1px solid rgba(200,216,228,0.15)', borderRadius: 8, color: 'white', fontFamily: "'Noto Sans KR',sans-serif", fontWeight: 400, fontSize: '0.85rem', outline: 'none', boxSizing: 'border-box' as const }}
+                      value={fridgeForm.yield_} inputMode="numeric" placeholder="100"
+                      onChange={e => setFridgeForm(f => ({ ...f, yield_: e.target.value }))} />
+                  </div>
+                </div>
+                <div>
+                  <label style={{ fontSize: '0.7rem', color: 'rgba(200,216,228,0.5)', fontWeight: 700, marginBottom: 4, display: 'block' }}>카테고리</label>
+                  <select style={{ width: '100%', padding: '8px 10px', background: 'rgba(255,255,255,0.07)', border: '1px solid rgba(200,216,228,0.15)', borderRadius: 8, color: 'white', fontFamily: "'Noto Sans KR',sans-serif", fontWeight: 400, fontSize: '0.85rem', outline: 'none' }}
+                    value={fridgeForm.category} onChange={e => setFridgeForm(f => ({ ...f, category: e.target.value }))}>
+                    {FRIDGE_CATEGORIES.filter(c => c !== '전체').map(c => <option key={c} style={{ background: '#1E2D40' }}>{c}</option>)}
+                  </select>
+                </div>
+                <div style={{ display: 'flex', gap: 8, marginTop: 4 }}>
+                  <button onClick={() => setShowFridgeForm(false)} style={{ flex: 1, padding: '10px 0', background: 'rgba(255,255,255,0.07)', border: 'none', borderRadius: 10, color: 'rgba(200,216,228,0.5)', fontFamily: "'Noto Sans KR',sans-serif", fontWeight: 700, fontSize: '0.82rem', cursor: 'pointer' }}>취소</button>
+                  <button onClick={handleFridgeSave} style={{ flex: 1, padding: '10px 0', background: '#4A7FA5', border: 'none', borderRadius: 10, color: 'white', fontFamily: "'Noto Sans KR',sans-serif", fontWeight: 700, fontSize: '0.82rem', cursor: 'pointer' }}>저장</button>
+                </div>
+              </div>
+            </div>
+          )}
         </>
       )}
 
