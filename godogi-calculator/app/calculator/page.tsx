@@ -2,11 +2,14 @@
 
 import { createClient } from '../../lib/supabase'
 import { FIRST_LOGIN_MENU_SAMPLES as FIRST_LOGIN_SAMPLES } from '@/lib/sampleData'
+import { INGREDIENT_DB } from '@/lib/ingredientDB'
 import { useState, useEffect, useRef, Suspense } from 'react'
 import { ArrowLeft } from 'lucide-react'
 import { useSearchParams } from 'next/navigation'
 import AppSidebar from '../../components/AppSidebar'
 import Calculator from '../../components/Calculator'
+
+const FRIDGE_CATEGORIES = ['전체', '육류', '채소', '양념/소스', '유제품', '곡류/면', '과일', '수산물', '기타']
 
 function genId() {
   return crypto.randomUUID()
@@ -77,6 +80,10 @@ function CalculatorContent() {
   const [loading, setLoading] = useState(true)
   const [menus, setMenus] = useState<any[]>([])
   const [currentId, setCurrentId] = useState<string | null>(null)
+  const [showFridgeSheet, setShowFridgeSheet] = useState(false)
+  const [fridgeItems, setFridgeItems] = useState<any[]>([])
+  const [fridgeSearch, setFridgeSearch] = useState('')
+  const [fridgeCategory, setFridgeCategory] = useState('전체')
   const supabase = createClient()
   const autoSaveTimer = useRef<any>(null)
   const loadedForUser = useRef<string | null>(null)
@@ -180,6 +187,48 @@ function CalculatorContent() {
 
   const handleChange = (updated: any) => {
     setMenus(prev => prev.map(m => m.id === updated.id ? updated : m))
+  }
+
+  // 냉장고 아이템 로드
+  useEffect(() => {
+    if (!user) { setFridgeItems([]); return }
+    supabase.from('fridge').select('*').eq('user_id', user.id).then(({ data }) => {
+      setFridgeItems(data || [])
+    })
+  }, [user])
+
+  const mergedFridgeItems = () => {
+    const fridgeNames = fridgeItems.map((i: any) => i.name)
+    const dbItems = INGREDIENT_DB
+      .filter(d => !fridgeNames.includes(d.name))
+      .map(d => ({ ...d, id: 'db_' + d.name, isDB: true }))
+    return [...fridgeItems, ...dbItems]
+  }
+
+  const filteredFridgeItems = () => mergedFridgeItems().filter(i => {
+    const matchCat = fridgeCategory === '전체' || i.category === fridgeCategory
+    const matchSearch = i.name.includes(fridgeSearch)
+    return matchCat && matchSearch
+  })
+
+  const handleFridgePick = (item: any) => {
+    if (!currentMenu) return
+    const emptyIdx = currentMenu.ingredients.findIndex((i: any) => !i.name)
+    const newIng = {
+      id: emptyIdx >= 0 ? currentMenu.ingredients[emptyIdx].id : genId(),
+      name: item.name,
+      price: item.price,
+      qty: item.per,
+      unit: item.unit,
+      yield_: item.yield_,
+      use_amount: 0,
+    }
+    const newIngredients = emptyIdx >= 0
+      ? currentMenu.ingredients.map((i: any, idx: number) => idx === emptyIdx ? newIng : i)
+      : [...currentMenu.ingredients, newIng]
+    handleChange({ ...currentMenu, ingredients: newIngredients })
+    setShowFridgeSheet(false)
+    setFridgeSearch('')
   }
 
   const handleNew = () => {
@@ -321,12 +370,99 @@ function CalculatorContent() {
           </div>
         )}
       </main>
+      {/* 모바일 냉장고 FAB */}
+      <div className="calc-fridge-fab" style={{ position: 'fixed', bottom: 20, left: 20, zIndex: 30, display: 'none' }}>
+        <button
+          onClick={() => setShowFridgeSheet(true)}
+          style={{
+            background: 'rgba(26,40,64,0.92)', backdropFilter: 'blur(10px)',
+            border: '1px solid rgba(74,127,165,0.4)', borderRadius: 20,
+            color: '#7DB8D8', fontSize: '0.78rem',
+            padding: '8px 18px', cursor: 'pointer',
+            fontFamily: "'Noto Sans KR',sans-serif", fontWeight: 700,
+            boxShadow: '0 3px 14px rgba(0,0,0,0.3)',
+            display: 'flex', alignItems: 'center', gap: 6, whiteSpace: 'nowrap',
+          }}
+        >🧊 냉장고</button>
+      </div>
+
+      {/* 냉장고 바텀시트 */}
+      {showFridgeSheet && (
+        <>
+          <div onClick={() => { setShowFridgeSheet(false); setFridgeSearch('') }}
+            style={{ position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.65)', zIndex: 40 }} />
+          <div style={{
+            position: 'fixed', bottom: 0, left: 0, right: 0, zIndex: 50,
+            background: '#111B27', borderRadius: '22px 22px 0 0',
+            maxHeight: '72vh', display: 'flex', flexDirection: 'column',
+            paddingBottom: 'calc(env(safe-area-inset-bottom, 0px) + 16px)',
+          }}>
+            <div style={{ display: 'flex', justifyContent: 'center', padding: '12px 0 4px' }}>
+              <div style={{ width: 36, height: 4, borderRadius: 2, background: 'rgba(255,255,255,0.12)' }} />
+            </div>
+            <div style={{ padding: '4px 16px 12px', borderBottom: '1px solid rgba(255,255,255,0.06)' }}>
+              <div style={{ fontSize: '0.88rem', fontFamily: "'Noto Sans KR',sans-serif", fontWeight: 700, color: 'white', marginBottom: 10 }}>
+                🧊 냉장고에서 재료 추가
+              </div>
+              <input
+                placeholder="재료 검색..."
+                value={fridgeSearch}
+                onChange={e => setFridgeSearch(e.target.value)}
+                autoFocus
+                style={{
+                  width: '100%', padding: '8px 12px', boxSizing: 'border-box',
+                  background: 'rgba(255,255,255,0.07)', border: '1px solid rgba(200,216,228,0.15)',
+                  borderRadius: 10, color: 'white',
+                  fontFamily: "'Noto Sans KR',sans-serif", fontWeight: 400, fontSize: '0.85rem',
+                  outline: 'none',
+                }}
+              />
+            </div>
+            <div style={{ display: 'flex', gap: 6, overflowX: 'auto', padding: '10px 16px', flexShrink: 0 }}>
+              {FRIDGE_CATEGORIES.map(cat => (
+                <button key={cat} onClick={() => setFridgeCategory(cat)} style={{
+                  padding: '5px 12px', borderRadius: 20, border: 'none', cursor: 'pointer',
+                  background: fridgeCategory === cat ? '#4A7FA5' : 'rgba(255,255,255,0.06)',
+                  color: fridgeCategory === cat ? 'white' : 'rgba(200,216,228,0.5)',
+                  fontFamily: "'Noto Sans KR',sans-serif", fontWeight: 700, fontSize: '0.75rem',
+                  whiteSpace: 'nowrap', flexShrink: 0,
+                }}>{cat}</button>
+              ))}
+            </div>
+            <div style={{ overflowY: 'auto', flex: 1, padding: '0 12px 8px' }}>
+              {filteredFridgeItems().length === 0 ? (
+                <div style={{ textAlign: 'center', padding: '24px 0', color: 'rgba(200,216,228,0.35)', fontSize: '0.82rem', fontFamily: "'Noto Sans KR',sans-serif" }}>
+                  검색 결과가 없어요
+                </div>
+              ) : filteredFridgeItems().map((item: any) => (
+                <button key={item.id} onClick={() => handleFridgePick(item)} style={{
+                  width: '100%', padding: '11px 12px', marginBottom: 6,
+                  background: 'rgba(255,255,255,0.04)', border: '1px solid rgba(255,255,255,0.06)',
+                  borderRadius: 10, cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'space-between',
+                  fontFamily: "'Noto Sans KR',sans-serif",
+                }}>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+                    <span style={{ fontSize: '0.88rem', color: 'white', fontWeight: 700 }}>{item.name}</span>
+                    {item.isDB && <span style={{ fontSize: '0.65rem', color: 'rgba(200,216,228,0.3)', fontWeight: 400 }}>기본</span>}
+                  </div>
+                  <span style={{ fontSize: '0.78rem', color: 'rgba(200,216,228,0.45)', fontWeight: 400 }}>
+                    {(item.price || 0).toLocaleString()}원/{item.per}{item.unit}
+                  </span>
+                </button>
+              ))}
+            </div>
+          </div>
+        </>
+      )}
+
       <style>{`
         @media (max-width: 768px) {
           .main-content {
             margin-left: 0 !important;
             padding-top: 64px !important;
+            padding-bottom: calc(env(safe-area-inset-bottom, 0px) + 90px) !important;
           }
+          .calc-fridge-fab { display: flex !important; }
         }
       `}</style>
     </div>
