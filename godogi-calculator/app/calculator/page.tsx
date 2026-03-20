@@ -394,7 +394,7 @@ function CalculatorContent() {
           <div style={{
             position: 'fixed', bottom: 0, left: 0, right: 0, zIndex: 50,
             background: '#111B27', borderRadius: '22px 22px 0 0',
-            maxHeight: '72vh', display: 'flex', flexDirection: 'column',
+            maxHeight: '75svh', display: 'flex', flexDirection: 'column',
             paddingBottom: 'calc(env(safe-area-inset-bottom, 0px) + 16px)',
           }}>
             <div style={{ display: 'flex', justifyContent: 'center', padding: '12px 0 4px' }}>
@@ -408,7 +408,6 @@ function CalculatorContent() {
                 placeholder="재료 검색..."
                 value={fridgeSearch}
                 onChange={e => setFridgeSearch(e.target.value)}
-                autoFocus
                 style={{
                   width: '100%', padding: '8px 12px', boxSizing: 'border-box',
                   background: 'rgba(255,255,255,0.07)', border: '1px solid rgba(200,216,228,0.15)',
