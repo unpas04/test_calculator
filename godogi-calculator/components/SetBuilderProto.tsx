@@ -705,7 +705,7 @@ export default function SetBuilderProto() {
           .sb-add-text { display: none !important; }
           .sb-save-text { display: none !important; }
           .sb-save-btn { padding: 8px 10px !important; }
-          .sb-wrap     { padding: 16px 14px 24px !important; min-width: 0; overflow-x: hidden; box-sizing: border-box; width: 100%; }
+          .sb-wrap     { padding: 16px 14px calc(env(safe-area-inset-bottom, 0px) + 100px) !important; min-width: 0; overflow-x: hidden; box-sizing: border-box; width: 100%; }
           /* 레전드: 모바일에서 금액 숨김 */
           .sb-legend-amount { display: none !important; }
           /* 화살표: 모바일에서 세로 방향으로 */
