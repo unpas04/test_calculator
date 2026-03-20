@@ -92,6 +92,7 @@ function CalculatorContent() {
   const supabase = createClient()
   const autoSaveTimer = useRef<any>(null)
   const loadedForUser = useRef<string | null>(null)
+  const prevMenuRef = useRef<any>(null)
 
   useEffect(() => {
     supabase.auth.getSession().then(({ data: { session } }) => {
@@ -300,71 +301,80 @@ function CalculatorContent() {
     setCurrentId(next.length > 0 ? next[0].id : null)
   }
 
+  const saveMenu = async (menu: any) => {
+    if (!user || !menu) return
+    if (!menu.created_at && !menu.name) return
+    try {
+      let menuId = menu.id
+      if (!menu.created_at) {
+        const { data, error } = await supabase.from('menus').insert({
+          user_id: user.id,
+          name: menu.name,
+          category: menu.category || 'main',
+          emoji: menu.emoji || '',
+          batch_yield: menu.batch_yield || 0,
+          serving_size: menu.serving_size || 0,
+          packaging: menu.packaging,
+          labor: menu.labor,
+          overhead: menu.overhead,
+          delivery_fee: menu.delivery_fee,
+          card_fee: menu.card_fee,
+          sale_price: menu.sale_price,
+          memo: menu.memo || '',
+        }).select().single()
+        if (error || !data) return
+        menuId = data.id
+        setMenus(prev => prev.map(m =>
+          m.id === menu.id ? { ...m, id: data.id, created_at: data.created_at } : m
+        ))
+        setCurrentId(data.id)
+      } else {
+        await supabase.from('menus').update({
+          name: menu.name,
+          category: menu.category || 'main',
+          emoji: menu.emoji || '',
+          batch_yield: menu.batch_yield || 0,
+          serving_size: menu.serving_size || 0,
+          packaging: menu.packaging,
+          labor: menu.labor,
+          overhead: menu.overhead,
+          delivery_fee: menu.delivery_fee,
+          card_fee: menu.card_fee,
+          sale_price: menu.sale_price,
+          memo: menu.memo || '',
+          updated_at: new Date().toISOString()
+        }).eq('id', menuId)
+      }
+      await supabase.from('ingredients').delete().eq('menu_id', menuId)
+      const ings = menu.ingredients.map((ing: any, idx: number) => ({
+        menu_id: menuId,
+        name: ing.name,
+        price: ing.price,
+        qty: ing.qty,
+        unit: ing.unit,
+        yield_: ing.yield_,
+        use_amount: ing.use_amount,
+        sort_order: idx
+      }))
+      if (ings.length > 0) await supabase.from('ingredients').insert(ings)
+    } catch (err) {
+      console.error('Auto-save error:', err)
+    }
+  }
+
   useEffect(() => {
     if (!user || !currentMenu) return
     if (!currentMenu.created_at && !currentMenu.name) return
+
+    // 메뉴가 전환됐으면 이전 메뉴 즉시 저장
+    if (prevMenuRef.current && prevMenuRef.current.id !== currentMenu.id) {
+      if (autoSaveTimer.current) clearTimeout(autoSaveTimer.current)
+      saveMenu(prevMenuRef.current)
+    }
+    prevMenuRef.current = currentMenu
+
     if (autoSaveTimer.current) clearTimeout(autoSaveTimer.current)
-    autoSaveTimer.current = setTimeout(async () => {
-      try {
-        let menuId = currentMenu.id
-
-        if (!currentMenu.created_at) {
-          const { data, error } = await supabase.from('menus').insert({
-            user_id: user.id,
-            name: currentMenu.name,
-            category: currentMenu.category || 'main',
-            emoji: currentMenu.emoji || '',
-            batch_yield: currentMenu.batch_yield || 0,
-            serving_size: currentMenu.serving_size || 0,
-            packaging: currentMenu.packaging,
-            labor: currentMenu.labor,
-            overhead: currentMenu.overhead,
-            delivery_fee: currentMenu.delivery_fee,
-            card_fee: currentMenu.card_fee,
-            sale_price: currentMenu.sale_price,
-            memo: currentMenu.memo || '',
-          }).select().single()
-          if (error || !data) return
-          menuId = data.id
-          setMenus(prev => prev.map(m =>
-            m.id === currentMenu.id ? { ...m, id: data.id, created_at: data.created_at } : m
-          ))
-          setCurrentId(data.id)
-        } else {
-          await supabase.from('menus').update({
-            name: currentMenu.name,
-            category: currentMenu.category || 'main',
-            emoji: currentMenu.emoji || '',
-            batch_yield: currentMenu.batch_yield || 0,
-            serving_size: currentMenu.serving_size || 0,
-            packaging: currentMenu.packaging,
-            labor: currentMenu.labor,
-            overhead: currentMenu.overhead,
-            delivery_fee: currentMenu.delivery_fee,
-            card_fee: currentMenu.card_fee,
-            sale_price: currentMenu.sale_price,
-            memo: currentMenu.memo || '',
-            updated_at: new Date().toISOString()
-          }).eq('id', menuId)
-        }
-
-        await supabase.from('ingredients').delete().eq('menu_id', menuId)
-        const ings = currentMenu.ingredients.map((ing: any, idx: number) => ({
-          menu_id: menuId,
-          name: ing.name,
-          price: ing.price,
-          qty: ing.qty,
-          unit: ing.unit,
-          yield_: ing.yield_,
-          use_amount: ing.use_amount,
-          sort_order: idx
-        }))
-        if (ings.length > 0) await supabase.from('ingredients').insert(ings)
-      } catch (err) {
-        console.error('Auto-save error:', err)
-      }
-    }, 1000)
-    return () => clearTimeout(autoSaveTimer.current)
+    autoSaveTimer.current = setTimeout(() => saveMenu(currentMenu), 1000)
   }, [currentMenu])
 
   if (loading) return (
