@@ -502,6 +502,7 @@ export default function HomePage() {
         /* 모바일: 통합 바 표시, PC floating 숨김 */
         .home-bottom-mobile { display: flex !important; }
         .home-bottom-pc { display: none !important; }
+        .home-main { padding-bottom: calc(env(safe-area-inset-bottom, 0px) + 100px) !important; }
         @media (min-width: 641px) {
           .home-bottom-mobile { display: none !important; }
           .home-bottom-pc { display: block !important; }
