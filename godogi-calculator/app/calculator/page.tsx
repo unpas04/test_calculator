@@ -187,6 +187,8 @@ function CalculatorContent() {
 
   const logout = async () => {
     await supabase.auth.signOut()
+    localStorage.removeItem('godogi_sets_cache')
+    localStorage.removeItem('godogi_backfill_done')
     setUser(null)
     setMenus([])
     setCurrentId(null)

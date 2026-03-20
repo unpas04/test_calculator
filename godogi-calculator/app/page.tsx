@@ -156,6 +156,8 @@ function OnboardingModal({ show, step, setStep, onClose }: {
   )
 }
 
+const SETS_CACHE_KEY = 'godogi_sets_cache'
+
 export default function HomePage() {
   const [user, setUser] = useState<any>(null)
   const [loading, setLoading] = useState(true)
@@ -259,8 +261,19 @@ export default function HomePage() {
   }, [user])
 
   const loadSets = async () => {
-    setSetsLoading(true)
     const feeSettings = JSON.parse(localStorage.getItem(FEES_KEY) || JSON.stringify(DEFAULT_FEES))
+
+    // 캐시 있으면 즉시 표시
+    const cached = localStorage.getItem(SETS_CACHE_KEY)
+    if (cached) {
+      try {
+        const { sets: cachedSets, stats } = JSON.parse(cached)
+        setSets(cachedSets)
+        setMenuStats(stats)
+      } catch {}
+    } else {
+      setSetsLoading(true)
+    }
 
     // 쿼리 1번으로 통합: 결과가 없으면 첫 로그인으로 처리
     const { data, error } = await supabase
@@ -292,10 +305,13 @@ export default function HomePage() {
       setMenuStats({ total: computed2.length, avgRate: rates2.length > 0 ? rates2.reduce((a, b) => a + b, 0) / rates2.length : null, warnCount: rates2.filter(r => r > 60).length })
     } else {
       const computed = data.map(s => computeSetDisplay(s, feeSettings))
-      setSets(computed)
       const rates = computed.filter(s => s.costRate > 0).map(s => s.costRate)
-      setMenuStats({ total: computed.length, avgRate: rates.length > 0 ? rates.reduce((a, b) => a + b, 0) / rates.length : null, warnCount: rates.filter(r => r > 60).length })
-      // backfill: 한 번도 안 한 경우만 (localStorage 체크)
+      const stats = { total: computed.length, avgRate: rates.length > 0 ? rates.reduce((a, b) => a + b, 0) / rates.length : null, warnCount: rates.filter(r => r > 60).length }
+      setSets(computed)
+      setMenuStats(stats)
+      // 캐시 저장
+      localStorage.setItem(SETS_CACHE_KEY, JSON.stringify({ sets: computed, stats }))
+      // backfill: 최초 1회만
       if (!localStorage.getItem('godogi_backfill_done')) {
         backfillIngredients(user.id).then(() => localStorage.setItem('godogi_backfill_done', '1'))
       }
