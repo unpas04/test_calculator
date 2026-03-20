@@ -159,6 +159,7 @@ function OnboardingModal({ show, step, setStep, onClose }: {
 export default function HomePage() {
   const [user, setUser] = useState<any>(null)
   const [loading, setLoading] = useState(true)
+  const [setsLoading, setSetsLoading] = useState(false)
   const [isGuest, setIsGuest] = useState(false)
   const [sets, setSets] = useState<DisplaySet[]>([])
   const [menuStats, setMenuStats] = useState<{ total: number; avgRate: number | null; warnCount: number } | null>(null)
@@ -182,16 +183,13 @@ export default function HomePage() {
       const u = session?.user ?? null
       setUser(u)
       if (u) {
-        // 로그인 상태 → 게스트 플래그 완전 정리
         sessionStorage.removeItem('godogi_guest')
         setIsGuest(false)
       } else {
-        // 로그인 없음 → 게스트 여부 확인
         const guest = typeof window !== 'undefined' && !!sessionStorage.getItem('godogi_guest')
         setIsGuest(guest)
-        if (!guest) setLoading(false) // 게스트면 데이터 세팅 후 loading=false
       }
-      // 로그인 상태면 loadSets() 완료 후 loading=false
+      setLoading(false) // auth 확인 즉시 로딩 해제 (DB 대기 없음)
     })
     const { data: { subscription } } = supabase.auth.onAuthStateChange((_e, session) => {
       setUser(session?.user ?? null)
@@ -249,7 +247,6 @@ export default function HomePage() {
     const rates = guestSets.filter(s => s.costRate > 0).map(s => s.costRate)
     const avgRate = rates.length > 0 ? rates.reduce((a, b) => a + b, 0) / rates.length : null
     setMenuStats({ total: guestSets.length, avgRate, warnCount: rates.filter(r => r > 60).length })
-    setLoading(false)
   }, [isGuest])
 
   // Load sets
@@ -262,6 +259,7 @@ export default function HomePage() {
   }, [user])
 
   const loadSets = async () => {
+    setSetsLoading(true)
     const feeSettings = JSON.parse(localStorage.getItem(FEES_KEY) || JSON.stringify(DEFAULT_FEES))
 
     // 첫 로그인 체크
@@ -269,8 +267,8 @@ export default function HomePage() {
     if (existingSets?.length === 0) {
       await insertSampleData(user.id)
     } else {
-      // 메뉴는 있는데 재료가 없는 경우 backfill
-      await backfillIngredients(user.id)
+      // backfill: 블로킹하지 않고 백그라운드 실행
+      backfillIngredients(user.id)
     }
 
     const { data, error } = await supabase
@@ -295,7 +293,7 @@ export default function HomePage() {
     const rates = computed.filter(s => s.costRate > 0).map(s => s.costRate)
     const avgRate = rates.length > 0 ? rates.reduce((a, b) => a + b, 0) / rates.length : null
     setMenuStats({ total: computed.length, avgRate, warnCount: rates.filter(r => r > 60).length })
-    setLoading(false)
+    setSetsLoading(false)
   }
 
   const backfillIngredients = async (userId: string) => {
@@ -512,7 +510,7 @@ export default function HomePage() {
 
       {/* 메인 콘텐츠 */}
       <main className="home-main" style={{ maxWidth: 680, margin: '0 auto', padding: '28px 24px 100px' }}>
-        {loading ? (
+        {setsLoading ? (
           <div style={{ display: 'flex', flexDirection: 'column', gap: 10, paddingTop: 8 }}>
             {[1, 2, 3].map(i => (
               <div key={i} style={{
