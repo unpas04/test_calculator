@@ -2,7 +2,6 @@
 
 import { createClient } from '../../lib/supabase'
 import { FIRST_LOGIN_MENU_SAMPLES as FIRST_LOGIN_SAMPLES } from '@/lib/sampleData'
-import { INGREDIENT_DB } from '@/lib/ingredientDB'
 import { useState, useEffect, useRef, Suspense } from 'react'
 import { ArrowLeft } from 'lucide-react'
 import { useSearchParams } from 'next/navigation'
@@ -93,17 +92,12 @@ function CalculatorContent() {
     supabase.auth.getSession().then(({ data: { session } }) => {
       setUser(session?.user ?? null)
       setLoading(false)
-    }).catch(() => {
-      setUser(null)
-      setLoading(false)
     })
     const { data: { subscription } } = supabase.auth.onAuthStateChange((_e, session) => {
       setUser(session?.user ?? null)
       setLoading(false)
     })
-    // 5초 안에 로딩 안 끝나면 강제 해제
-    const fallback = setTimeout(() => setLoading(false), 5000)
-    return () => { subscription.unsubscribe(); clearTimeout(fallback) }
+    return () => subscription.unsubscribe()
   }, [])
 
   // 비로그인 게스트: 샘플 메뉴로 시작
@@ -197,22 +191,22 @@ function CalculatorContent() {
     setMenus(prev => prev.map(m => m.id === updated.id ? updated : m))
   }
 
-  // 냉장고 아이템 로드 (시트 열 때만)
+  // 냉장고 아이템 로드 (시트 열 때만, INGREDIENT_DB도 이때 dynamic import)
   const loadFridgeItems = async () => {
     if (!user) { setFridgeItems([]); return }
-    const { data } = await supabase.from('fridge').select('*').eq('user_id', user.id)
-    setFridgeItems(data || [])
-  }
-
-  const mergedFridgeItems = () => {
-    const fridgeNames = fridgeItems.map((i: any) => i.name)
+    const [{ data }, { INGREDIENT_DB }] = await Promise.all([
+      supabase.from('fridge').select('*').eq('user_id', user.id),
+      import('@/lib/ingredientDB'),
+    ])
+    const userItems = data || []
+    const fridgeNames = userItems.map((i: any) => i.name)
     const dbItems = INGREDIENT_DB
       .filter(d => !fridgeNames.includes(d.name))
       .map(d => ({ ...d, id: 'db_' + d.name, isDB: true }))
-    return [...fridgeItems, ...dbItems]
+    setFridgeItems([...userItems, ...dbItems])
   }
 
-  const filteredFridgeItems = () => mergedFridgeItems().filter(i => {
+  const filteredFridgeItems = () => fridgeItems.filter((i: any) => {
     const matchCat = fridgeCategory === '전체' || i.category === fridgeCategory
     const matchSearch = i.name.includes(fridgeSearch)
     return matchCat && matchSearch
