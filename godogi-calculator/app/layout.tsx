@@ -46,7 +46,7 @@ export const metadata: Metadata = {
     type: "website",
     images: [
       {
-        url: '/opengraph-image',
+        url: '/og-image.png',
         width: 1200,
         height: 630,
         alt: '고독이의 원가계산기 — 우리 메뉴, 진짜로 남는 장사일까요?',
@@ -57,7 +57,7 @@ export const metadata: Metadata = {
     card: 'summary_large_image',
     title: '고독이의 원가계산기',
     description: '배달 수수료, 카드 수수료, 인건비까지 포함한 메뉴 원가를 한 번에 계산하세요.',
-    images: ['/opengraph-image'],
+    images: ['/og-image.png'],
   },
   icons: {
     icon: [
