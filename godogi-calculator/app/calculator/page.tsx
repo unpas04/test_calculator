@@ -220,6 +220,13 @@ function CalculatorContent() {
 
   const handleFridgePick = (item: any) => {
     if (!currentMenu) return
+    // 이미 동일 재료가 있으면 추가 안 함
+    if (currentMenu.ingredients.some((i: any) => i.name === item.name)) {
+      setFridgeConfirm(null)
+      setShowFridgeSheet(false)
+      setFridgeSearch('')
+      return
+    }
     const emptyIdx = currentMenu.ingredients.findIndex((i: any) => !i.name)
     const newIng = {
       id: emptyIdx >= 0 ? currentMenu.ingredients[emptyIdx].id : genId(),
@@ -419,6 +426,7 @@ function CalculatorContent() {
             menu={currentMenu}
             onChange={handleChange}
             onOpenFridge={() => { setShowFridgeSheet(true); loadFridgeItems() }}
+            onSave={() => { if (autoSaveTimer.current) clearTimeout(autoSaveTimer.current); saveMenu(currentMenu) }}
           />
         ) : menusLoading ? (
           <div style={{ textAlign: 'center', paddingTop: 80, color: 'var(--text-soft)', fontFamily: "'Noto Sans KR',sans-serif" }}>

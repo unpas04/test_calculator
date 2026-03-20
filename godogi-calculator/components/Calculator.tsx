@@ -84,9 +84,10 @@ interface Props {
   menu: Menu
   onChange: (menu: Menu) => void
   onOpenFridge?: () => void
+  onSave?: () => void
 }
 
-export default function Calculator({ menu, onChange, onOpenFridge }: Props) {
+export default function Calculator({ menu, onChange, onOpenFridge, onSave }: Props) {
   const supabase = createClient()
   const exportRef = useRef<HTMLDivElement>(null)
 
@@ -335,7 +336,7 @@ export default function Calculator({ menu, onChange, onOpenFridge }: Props) {
             cursor: 'text', maxWidth: '100%', width: '100%'
           }}
         />
-        <button onClick={() => { setShowSaved(true); setTimeout(() => setShowSaved(false), 1800) }} style={{
+        <button onClick={() => { onSave?.(); setShowSaved(true); setTimeout(() => setShowSaved(false), 1800) }} style={{
           background: showSaved ? 'var(--green)' : 'var(--silver-light)',
           color: showSaved ? 'white' : 'var(--text-mid)',
           border: 'none', borderRadius: 12, padding: '10px 16px',
