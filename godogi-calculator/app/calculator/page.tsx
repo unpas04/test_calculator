@@ -92,7 +92,8 @@ function CalculatorContent() {
   const supabase = createClient()
   const autoSaveTimer = useRef<any>(null)
   const loadedForUser = useRef<string | null>(null)
-  const prevMenuRef = useRef<any>(null)
+  const pendingSave = useRef<any>(null)
+  const saveMenuRef = useRef<any>(null)
 
   useEffect(() => {
     supabase.auth.getSession().then(({ data: { session } }) => {
@@ -369,20 +370,33 @@ function CalculatorContent() {
     }
   }
 
+  // saveMenuRef: stale closure 방지용 항상 최신 saveMenu 참조
+  saveMenuRef.current = saveMenu
+
+  // 자동저장: 변경사항을 pendingSave에 기록 + 1초 debounce
   useEffect(() => {
     if (!user || !currentMenu) return
     if (!currentMenu.created_at && !currentMenu.name) return
-
-    // 메뉴가 전환됐으면 이전 메뉴 즉시 저장
-    if (prevMenuRef.current && prevMenuRef.current.id !== currentMenu.id) {
-      if (autoSaveTimer.current) clearTimeout(autoSaveTimer.current)
-      saveMenu(prevMenuRef.current)
-    }
-    prevMenuRef.current = currentMenu
-
+    pendingSave.current = currentMenu
     if (autoSaveTimer.current) clearTimeout(autoSaveTimer.current)
-    autoSaveTimer.current = setTimeout(() => saveMenu(currentMenu), 1000)
+    autoSaveTimer.current = setTimeout(() => {
+      const m = pendingSave.current
+      if (m) { pendingSave.current = null; saveMenuRef.current(m) }
+    }, 1000)
+    return () => clearTimeout(autoSaveTimer.current)
   }, [currentMenu])
+
+  // 메뉴 전환 시 pending 저장 (timer 취소 후 즉시 저장)
+  useEffect(() => {
+    return () => {
+      if (pendingSave.current) {
+        if (autoSaveTimer.current) clearTimeout(autoSaveTimer.current)
+        const m = pendingSave.current
+        pendingSave.current = null
+        saveMenuRef.current?.(m)
+      }
+    }
+  }, [currentId])
 
   if (loading) return (
     <main style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', height: '100vh', background: '#F0F4F8' }}>
