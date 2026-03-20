@@ -80,6 +80,7 @@ function CalculatorContent() {
   const [loading, setLoading] = useState(true)
   const [menus, setMenus] = useState<any[]>([])
   const [currentId, setCurrentId] = useState<string | null>(null)
+  const [menusLoading, setMenusLoading] = useState(false)
   const [showFridgeSheet, setShowFridgeSheet] = useState(false)
   const [fridgeItems, setFridgeItems] = useState<any[]>([])
   const [fridgeSearch, setFridgeSearch] = useState('')
@@ -133,12 +134,14 @@ function CalculatorContent() {
     loadedForUser.current = user.id
 
     const loadMenus = async () => {
+      setMenusLoading(true)
       const { data: menuList, error } = await supabase
         .from('menus')
         .select('*, ingredients(*)')
         .eq('user_id', user.id)
         .order('created_at', { ascending: true })
 
+      setMenusLoading(false)
       if (error) { console.error(error); return }
 
       if (menuList && menuList.length > 0) {
@@ -367,6 +370,13 @@ function CalculatorContent() {
             menu={currentMenu}
             onChange={handleChange}
           />
+        ) : menusLoading ? (
+          <div style={{ textAlign: 'center', paddingTop: 80, color: 'var(--text-soft)', fontFamily: "'Noto Sans KR',sans-serif" }}>
+            <div style={{ fontSize: '2.5rem', marginBottom: 16, animation: 'swim 1.2s ease-in-out infinite alternate' }}>🐟</div>
+            <div style={{ fontSize: '0.9rem', color: 'rgba(200,216,228,0.5)', marginBottom: 6 }}>메뉴를 불러오는 중이에요</div>
+            <div style={{ fontSize: '0.72rem', color: 'rgba(200,216,228,0.3)' }}>첫 접속 시 잠깐 걸릴 수 있어요</div>
+            <style>{`@keyframes swim { from { transform: translateX(-6px); } to { transform: translateX(6px); } }`}</style>
+          </div>
         ) : (
           <div style={{ textAlign: 'center', paddingTop: 80, color: 'var(--text-soft)' }}>
             <div style={{ fontSize: '3rem', marginBottom: 16 }}>🐟</div>
