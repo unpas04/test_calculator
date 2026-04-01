@@ -344,11 +344,29 @@ export async function POST(request: Request) {
       }
     }
 
-    const items = Array.from(itemMap.values())
-      .filter(item => item.confidence >= 0.5) // 신뢰도 50% 이상만
-      .sort((a, b) => b.confidence - a.confidence) // 신뢰도 순 정렬
+    // 신뢰도 낮은 것도 포함 (디버깅용: 신뢰도 30% 이상)
+    const allItems = Array.from(itemMap.values())
+      .sort((a, b) => b.confidence - a.confidence)
 
-    return NextResponse.json({ items, count: items.length })
+    const items = allItems.filter(item => item.confidence >= 0.5)
+    const lowConfidenceItems = allItems.filter(item => item.confidence < 0.5 && item.confidence >= 0.3)
+
+    // DEBUG 정보
+    const debug = {
+      filesCount: files.length,
+      totalExtracted: allItems.length,
+      highConfidence: items.length,
+      lowConfidence: lowConfidenceItems.length,
+      allItems: allItems.map(i => ({ name: i.name, conf: Math.round(i.confidence * 100) })),
+    }
+
+    console.log('[OCR Debug]', debug)
+
+    return NextResponse.json({
+      items,
+      count: items.length,
+      debug, // 디버그 정보도 반환
+    })
   } catch (error) {
     console.error('OCR error:', error)
     return NextResponse.json(

@@ -320,6 +320,7 @@ function CalculatorContent() {
       if (!response.ok) throw new Error('OCR failed')
 
       const data = await response.json()
+      console.log('[OCR Response]', data) // 디버그 로그
       setOcrResults(data.items || [])
       setOcrSelected(new Set())
       setShowOcrResults(true)
