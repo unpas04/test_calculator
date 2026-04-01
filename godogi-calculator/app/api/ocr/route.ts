@@ -49,18 +49,29 @@ async function callGoogleVision(base64Image: string): Promise<{ fullText: string
       status: response.status,
       statusText: response.statusText,
       error: data.error,
+      errorMessage: data.error?.message,
     })
     throw new Error(`Google Vision API failed: ${data.error?.message || response.statusText}`)
   }
 
   const fullAnnotation = data.responses?.[0]?.fullTextAnnotation
   const textAnnotations = data.responses?.[0]?.textAnnotations
+  const responseError = data.responses?.[0]?.error
 
   // 디버그 로그
+  if (responseError) {
+    console.error('[Google Vision Response Error]', {
+      code: responseError.code,
+      message: responseError.message,
+    })
+  }
+
   console.log('[Google Vision Response]', {
     hasFullAnnotation: !!fullAnnotation,
     hasTextAnnotations: !!textAnnotations && textAnnotations.length > 0,
     textLength: textAnnotations?.[0]?.description?.length || 0,
+    fullTextLength: fullAnnotation?.text?.length || 0,
+    annotationsCount: textAnnotations?.length || 0,
   })
 
   if (!fullAnnotation && (!textAnnotations || textAnnotations.length === 0)) {
