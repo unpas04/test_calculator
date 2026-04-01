@@ -89,12 +89,17 @@ function CalculatorContent() {
   const [showFridgeForm, setShowFridgeForm] = useState(false)
   const [fridgeEditItem, setFridgeEditItem] = useState<any | null>(null)
   const [fridgeForm, setFridgeForm] = useState({ name: '', price: '', per: '', unit: 'g', yield_: '100', category: '기타' })
+  const [showOcrResults, setShowOcrResults] = useState(false)
+  const [ocrProcessing, setOcrProcessing] = useState(false)
+  const [ocrResults, setOcrResults] = useState<any[]>([])
+  const [ocrSelected, setOcrSelected] = useState<Set<number>>(new Set())
   const supabase = createClient()
   const autoSaveTimer = useRef<any>(null)
   const loadedForUser = useRef<string | null>(null)
   const pendingSave = useRef<any>(null)
   const saveMenuRef = useRef<any>(null)
   const dirtyMenus = useRef<Set<string>>(new Set())
+  const fileInputRef = useRef<HTMLInputElement>(null)
 
   useEffect(() => {
     supabase.auth.getSession().then(({ data: { session } }) => {
@@ -294,6 +299,62 @@ function CalculatorContent() {
     }
     setShowFridgeForm(false)
     loadFridgeItems()
+  }
+
+  const handleOcrUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const files = e.currentTarget.files
+    if (!files || files.length === 0) return
+
+    setOcrProcessing(true)
+    try {
+      const formData = new FormData()
+      for (let i = 0; i < files.length; i++) {
+        formData.append('images', files[i])
+      }
+
+      const response = await fetch('/api/ocr', {
+        method: 'POST',
+        body: formData,
+      })
+
+      if (!response.ok) throw new Error('OCR failed')
+
+      const data = await response.json()
+      setOcrResults(data.items || [])
+      setOcrSelected(new Set())
+      setShowOcrResults(true)
+    } catch (err) {
+      console.error('OCR upload error:', err)
+      alert('영수증 처리 실패. 다시 시도해주세요.')
+    } finally {
+      setOcrProcessing(false)
+      if (fileInputRef.current) fileInputRef.current.value = ''
+    }
+  }
+
+  const handleOcrAdd = async () => {
+    if (!user || ocrSelected.size === 0) return
+    try {
+      const toAdd = Array.from(ocrSelected).map(idx => ocrResults[idx])
+      const payload = toAdd.map(item => ({
+        user_id: user.id,
+        name: item.name,
+        price: item.price,
+        per: item.per,
+        unit: item.unit,
+        yield_: 100,
+        category: '기타',
+      }))
+
+      await supabase.from('fridge').insert(payload)
+      setShowOcrResults(false)
+      setOcrResults([])
+      setOcrSelected(new Set())
+      loadFridgeItems()
+    } catch (err) {
+      console.error('OCR add error:', err)
+      alert('저장 실패')
+    }
   }
 
   const handleNew = () => {
@@ -507,14 +568,24 @@ function CalculatorContent() {
               <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
                 <span style={{ fontSize: '0.88rem', fontFamily: "'Noto Sans KR',sans-serif", fontWeight: 700, color: 'white' }}>🧊 냉장고</span>
                 {user && (
-                  <button onClick={openFridgeAdd} style={{
-                    background: 'rgba(74,127,165,0.2)', border: '1px solid rgba(74,127,165,0.4)',
-                    borderRadius: 8, color: '#7DB8D8', fontSize: '0.75rem',
-                    padding: '5px 12px', cursor: 'pointer',
-                    fontFamily: "'Noto Sans KR',sans-serif", fontWeight: 700,
-                  }}>＋ 추가</button>
+                  <div style={{ display: 'flex', gap: 8 }}>
+                    <button onClick={() => fileInputRef.current?.click()} disabled={ocrProcessing} style={{
+                      background: 'rgba(150,100,200,0.2)', border: '1px solid rgba(150,100,200,0.4)',
+                      borderRadius: 8, color: '#C8B3F5', fontSize: '0.75rem',
+                      padding: '5px 12px', cursor: ocrProcessing ? 'not-allowed' : 'pointer',
+                      fontFamily: "'Noto Sans KR',sans-serif", fontWeight: 700,
+                      opacity: ocrProcessing ? 0.5 : 1,
+                    }}>📷 영수증</button>
+                    <button onClick={openFridgeAdd} style={{
+                      background: 'rgba(74,127,165,0.2)', border: '1px solid rgba(74,127,165,0.4)',
+                      borderRadius: 8, color: '#7DB8D8', fontSize: '0.75rem',
+                      padding: '5px 12px', cursor: 'pointer',
+                      fontFamily: "'Noto Sans KR',sans-serif", fontWeight: 700,
+                    }}>＋ 추가</button>
+                  </div>
                 )}
               </div>
+              <input ref={fileInputRef} type="file" multiple accept="image/*" onChange={handleOcrUpload} style={{ display: 'none' }} capture="environment" />
               <input
                 placeholder="재료 검색..."
                 value={fridgeSearch}
@@ -675,6 +746,80 @@ function CalculatorContent() {
                   <button onClick={() => setShowFridgeForm(false)} style={{ flex: 1, padding: '10px 0', background: 'rgba(255,255,255,0.07)', border: 'none', borderRadius: 10, color: 'rgba(200,216,228,0.5)', fontFamily: "'Noto Sans KR',sans-serif", fontWeight: 700, fontSize: '0.82rem', cursor: 'pointer' }}>취소</button>
                   <button onClick={handleFridgeSave} style={{ flex: 1, padding: '10px 0', background: '#4A7FA5', border: 'none', borderRadius: 10, color: 'white', fontFamily: "'Noto Sans KR',sans-serif", fontWeight: 700, fontSize: '0.82rem', cursor: 'pointer' }}>저장</button>
                 </div>
+              </div>
+            </div>
+          )}
+
+          {/* OCR 결과 리뷰 모달 */}
+          {showOcrResults && (
+            <div style={{ position: 'fixed', inset: 0, zIndex: 55, display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '0 16px', background: 'rgba(0,0,0,0.5)' }}
+              onClick={() => setShowOcrResults(false)}>
+              <div onClick={e => e.stopPropagation()} style={{
+                background: '#111B27', borderRadius: 20, padding: '20px 16px',
+                width: '100%', maxWidth: 360, maxHeight: '70vh', display: 'flex', flexDirection: 'column', gap: 12,
+                fontFamily: "'Noto Sans KR',sans-serif", overflowY: 'auto',
+              }}>
+                <div style={{ fontWeight: 700, color: 'white', fontSize: '1rem', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                  <span>📷 영수증 분석 ({ocrResults.length}개)</span>
+                  <button onClick={() => setShowOcrResults(false)} style={{ background: 'none', border: 'none', color: 'rgba(200,216,228,0.5)', cursor: 'pointer', fontSize: '1.2rem' }}>×</button>
+                </div>
+
+                {ocrProcessing ? (
+                  <div style={{ textAlign: 'center', padding: '24px 0', color: 'rgba(200,216,228,0.5)', fontSize: '0.85rem' }}>
+                    분석 중...
+                  </div>
+                ) : ocrResults.length === 0 ? (
+                  <div style={{ textAlign: 'center', padding: '24px 0', color: 'rgba(200,216,228,0.35)', fontSize: '0.85rem' }}>
+                    인식된 재료가 없어요. 다시 찍어볼까요?
+                  </div>
+                ) : (
+                  <>
+                    <div style={{ display: 'flex', gap: 8, borderBottom: '1px solid rgba(255,255,255,0.06)', paddingBottom: 8 }}>
+                      <button onClick={() => setOcrSelected(ocrSelected.size === ocrResults.length ? new Set() : new Set(ocrResults.map((_, i) => i)))} style={{
+                        background: 'rgba(74,127,165,0.2)', border: '1px solid rgba(74,127,165,0.4)',
+                        borderRadius: 6, color: '#7DB8D8', fontSize: '0.7rem',
+                        padding: '4px 10px', cursor: 'pointer',
+                        fontFamily: "'Noto Sans KR',sans-serif", fontWeight: 600,
+                      }}>
+                        {ocrSelected.size === ocrResults.length ? '전체 해제' : '전체선택'}
+                      </button>
+                    </div>
+
+                    <div style={{ display: 'flex', flexDirection: 'column', gap: 8, overflowY: 'auto', maxHeight: '40vh' }}>
+                      {ocrResults.map((item, idx) => (
+                        <div key={idx} style={{
+                          padding: '10px 12px', background: 'rgba(255,255,255,0.04)',
+                          border: '1px solid rgba(255,255,255,0.06)', borderRadius: 10,
+                          display: 'flex', gap: 10, alignItems: 'flex-start',
+                          opacity: item.confidence < 0.6 ? 0.6 : 1,
+                        }}>
+                          <input type="checkbox" checked={ocrSelected.has(idx)} onChange={e => {
+                            const ns = new Set(ocrSelected)
+                            if (e.target.checked) ns.add(idx)
+                            else ns.delete(idx)
+                            setOcrSelected(ns)
+                          }} style={{ marginTop: 4, cursor: 'pointer', accentColor: '#4A7FA5' }} />
+                          <div style={{ flex: 1, minWidth: 0 }}>
+                            <div style={{ fontSize: '0.88rem', color: 'white', fontWeight: 600 }}>{item.name}</div>
+                            <div style={{ fontSize: '0.72rem', color: 'rgba(200,216,228,0.4)', marginTop: 2 }}>
+                              {item.price.toLocaleString()}원 / {item.per}{item.unit}
+                            </div>
+                            {item.confidence < 0.7 && (
+                              <div style={{ fontSize: '0.65rem', color: 'rgba(255,150,100,0.6)', marginTop: 2 }}>
+                                ⚠ 인식도 {Math.round(item.confidence * 100)}%
+                              </div>
+                            )}
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+
+                    <div style={{ display: 'flex', gap: 8, marginTop: 8 }}>
+                      <button onClick={() => setShowOcrResults(false)} style={{ flex: 1, padding: '10px 0', background: 'rgba(255,255,255,0.07)', border: 'none', borderRadius: 10, color: 'rgba(200,216,228,0.5)', fontFamily: "'Noto Sans KR',sans-serif", fontWeight: 700, fontSize: '0.82rem', cursor: 'pointer' }}>취소</button>
+                      <button onClick={handleOcrAdd} disabled={ocrSelected.size === 0} style={{ flex: 1, padding: '10px 0', background: ocrSelected.size === 0 ? 'rgba(255,255,255,0.1)' : '#6A9FB5', border: 'none', borderRadius: 10, color: ocrSelected.size === 0 ? 'rgba(200,216,228,0.3)' : 'white', fontFamily: "'Noto Sans KR',sans-serif", fontWeight: 700, fontSize: '0.82rem', cursor: ocrSelected.size === 0 ? 'not-allowed' : 'pointer' }}>선택 추가 {ocrSelected.size}</button>
+                    </div>
+                  </>
+                )}
               </div>
             </div>
           )}
