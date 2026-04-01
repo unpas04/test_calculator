@@ -108,7 +108,7 @@ function parseTableFormat(words: Word[]): ParsedItem[] {
 
   // 단어들을 Y 좌표로 그룹화 (같은 행)
   const rows: TextRow[] = []
-  const yTolerance = 15 // 15px 이내는 같은 행
+  const yTolerance = 20 // 20px 이내는 같은 행 (tolerance 증가)
 
   for (const word of words) {
     if (!word.boundingBox?.vertices || word.boundingBox.vertices.length === 0) continue
@@ -134,19 +134,27 @@ function parseTableFormat(words: Word[]): ParsedItem[] {
   // 각 행 파싱
   for (const row of rows) {
     const lineText = row.words.join(' ')
+    if (lineText.length < 3) continue
 
-    // 한글 재료명 포함 + 숫자 포함하는 행만 처리
-    if (!/[\p{L}]/u.test(lineText) || !/\d/.test(lineText)) continue
+    // 한글 포함 확인
+    if (!/[\p{L}]/u.test(lineText)) continue
 
-    // 가격 추출 (가장 오른쪽의 큰 숫자, 천 단위 포함)
-    const priceMatches = lineText.match(/(\d{1,3}(?:[,]\d{3})*|\d{4,})/g)
-    if (!priceMatches || priceMatches.length === 0) continue
+    // 숫자 포함 확인
+    if (!/\d/.test(lineText)) continue
 
-    // 가장 오른쪽 숫자를 가격으로 (가격이 보통 가장 큼)
+    // 헤더/카테고리 행 스킵
+    if (/^[가-힣\s]+$/.test(lineText) && lineText.length > 20) continue
+    if (/할인|금액|합계|소계|부가세|총|VAT|번호|날짜|상호/i.test(lineText)) continue
+
+    // 가격 추출: 가장 오른쪽의 4~6자리 숫자
     let price = 0
-    for (let i = priceMatches.length - 1; i >= 0; i--) {
-      const num = parseInt(priceMatches[i].replace(/,/g, ''), 10)
-      if (num > 100 && num < 1000000) {
+    const allNumbers = lineText.match(/(\d{1,3}(?:[,]\d{3})*|\d+)/g) || []
+
+    // 오른쪽에서부터 확인
+    for (let i = allNumbers.length - 1; i >= 0; i--) {
+      const num = parseInt(allNumbers[i].replace(/,/g, ''), 10)
+      // 합리적인 가격 범위: 100원 ~ 1000만원
+      if (num >= 100 && num <= 10000000) {
         price = num
         break
       }
@@ -158,7 +166,7 @@ function parseTableFormat(words: Word[]): ParsedItem[] {
     let unit = '개'
     let confidence = 0.7
 
-    const qtyPattern = /(\d+(?:\.\d+)?)\s*(kg|g|L|ml|cc|개|마리|팩|병|봉|입|컵|스푼|K|G)/i
+    const qtyPattern = /(\d+(?:\.\d+)?)\s*(kg|k|g|G|L|l|ml|cc|개|마리|팩|병|봉|입|컵|스푼)/i
     const qtyMatch = lineText.match(qtyPattern)
 
     if (qtyMatch) {
@@ -171,26 +179,29 @@ function parseTableFormat(words: Word[]): ParsedItem[] {
       confidence = 0.85
     }
 
-    // 재료명: 한글만 추출 (앞쪽부터)
-    let name = lineText.match(/[\p{L}]+/gu)?.[0] || ''
-    name = name.trim()
+    // 재료명: 연속된 한글 추출 (가장 긴 것)
+    const koreanMatches = lineText.match(/[\p{L}]+/gu) || []
+    let name = ''
+    for (const match of koreanMatches) {
+      if (match.length >= 2 && match.length <= 30) {
+        if (match.length > name.length) name = match
+      }
+    }
 
-    if (name.length < 2 || name.length > 30) continue
+    if (name.length < 2) continue
 
     const nameLower = name.toLowerCase()
     if (seenNames.has(nameLower)) continue
     seenNames.add(nameLower)
 
     if (qtyMatch) confidence += 0.1
-    if (price > 500 && price < 100000) confidence += 0.05
+    if (price >= 1000 && price <= 500000) confidence += 0.1 // 가격이 합리적이면 신뢰도 UP
     confidence = Math.min(confidence, 1)
 
     items.push({ name, price, per, unit, confidence })
   }
 
-  return items
-    .filter(item => item.confidence >= 0.5)
-    .sort((a, b) => b.confidence - a.confidence)
+  return items.sort((a, b) => b.confidence - a.confidence)
 }
 
 function parseIngredients(text: string): ParsedItem[] {
@@ -203,78 +214,72 @@ function parseIngredients(text: string): ParsedItem[] {
   for (const line of lines) {
     // Skip 짧은 줄, 헤더 같은 줄
     if (line.length < 3) continue
-    if (/^[가-힣\s]+$/.test(line) && line.length > 20) continue // 카테고리/헤더 스킵
-    if (/할인|금액|합계|소계|부가세|총|VAT/i.test(line)) continue
+    if (/^[가-힣\s]+$/.test(line) && line.length > 20) continue
+    if (/할인|금액|합계|소계|부가세|총|VAT|번호|날짜|상호|결제/i.test(line)) continue
 
-    // 1. 가격 추출 (맨 뒤의 숫자+원 형태)
-    // 패턴: "달걀 30개 4,500원" → 4500
-    const priceMatch = line.match(/(\d{1,3}(?:[,]\d{3})*|\d+)원\s*$/)
+    // 1. 가격 추출 - 여러 패턴 지원
+    // 패턴1: "... 4,500원"
+    // 패턴2: "... 4500"
+    let priceMatch = line.match(/(\d{1,3}(?:[,]\d{3})*|\d+)원\s*$/)
+    if (!priceMatch) {
+      // 원 없이 끝의 숫자도 체크
+      priceMatch = line.match(/\s(\d{1,3}(?:[,]\d{3})*)\s*$/)
+    }
     if (!priceMatch) continue
 
     const priceStr = priceMatch[1].replace(/,/g, '')
     const price = parseInt(priceStr, 10)
-    if (isNaN(price) || price < 100 || price > 1000000) continue // 합리적인 가격 범위
+    if (isNaN(price) || price < 100 || price > 10000000) continue
 
-    // 2. 수량+단위 추출 (가장 오른쪽에서 찾기)
-    // 패턴: "30개", "1kg", "500ml" 등
+    // 2. 수량+단위 추출
     let per = 1
     let unit = '개'
-    let confidence = 0.7
+    let confidence = 0.65
 
-    // 오른쪽에서부터 찾기 (가격 바로 앞)
-    const qtyPattern = /(\d+(?:\.\d+)?)\s*(kg|g|L|ml|cc|개|마리|팩|병|봉|입|컵|스푼|K|G)/i
+    const qtyPattern = /(\d+(?:\.\d+)?)\s*(kg|k|g|G|L|l|ml|cc|개|마리|팩|병|봉|입|컵|스푼)/i
     const qtyMatch = line.match(qtyPattern)
 
     if (qtyMatch) {
       per = parseFloat(qtyMatch[1])
       const rawUnit = qtyMatch[2]
       unit = normalizeUnit(rawUnit)
-
-      // 단위 변환 (kg→g, L→ml)
       const converted = convertQuantity(per, rawUnit)
       per = converted.per
       unit = converted.unit
-      confidence = 0.85
+      confidence = 0.80
     }
 
-    // 3. 재료명 추출
-    // 가격과 수량 정보 제거 후 남은 텍스트
+    // 3. 재료명 추출 - 더 관대한 방식
     let name = line
-      .replace(priceMatch[0], '') // 가격 제거
-      .replace(qtyMatch ? qtyMatch[0] : '', '') // 수량+단위 제거
+      .replace(priceMatch[0], '')
+      .replace(qtyMatch ? qtyMatch[0] : '', '')
       .trim()
 
-    // 특수문자/숫자 정리
-    name = name.replace(/[^\p{L}\p{N}\s]/gu, '').trim()
+    // 한글만 추출
+    const koreanMatches = name.match(/[\p{L}]+/gu) || []
+    name = ''
+    for (const match of koreanMatches) {
+      if (match.length >= 2 && match.length <= 30) {
+        if (match.length > name.length) name = match
+      }
+    }
 
-    // 너무 짧거나 긴 이름 스킵
-    if (name.length < 2 || name.length > 30) continue
+    if (name.length < 2) continue
 
-    // 중복 제거
     const nameLower = name.toLowerCase()
     if (seenNames.has(nameLower)) continue
     seenNames.add(nameLower)
 
     // 신뢰도 조정
-    // - 수량 정보 있으면 +0.15
-    // - 가격이 합리적이면 +0.05
-    // - 재료명이 짧고 명확하면 +0.05
     if (qtyMatch) confidence += 0.1
-    if (price > 500 && price < 100000) confidence += 0.05
+    if (price >= 1000 && price <= 500000) confidence += 0.1
     if (name.length >= 2 && name.length <= 8) confidence += 0.05
 
     confidence = Math.min(confidence, 1)
 
-    items.push({
-      name,
-      price,
-      per,
-      unit,
-      confidence,
-    })
+    items.push({ name, price, per, unit, confidence })
   }
 
-  // 신뢰도 순으로 정렬 (높은 것 먼저)
   return items.sort((a, b) => b.confidence - a.confidence)
 }
 
