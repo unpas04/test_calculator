@@ -323,12 +323,23 @@ export async function POST(request: Request) {
     }
 
     // Process all images in parallel
+    let visionResponse: any = null
     const results = await Promise.all(
       files.map(async (file) => {
         try {
           const buffer = await file.arrayBuffer()
           const base64 = Buffer.from(buffer).toString('base64')
           const { fullText, words } = await callGoogleVision(base64)
+
+          // 첫 번째 이미지의 Vision 응답 저장 (디버그용)
+          if (!visionResponse) {
+            visionResponse = {
+              textExtracted: fullText.length > 0,
+              textLength: fullText.length,
+              wordsCount: words.length,
+              textPreview: fullText.substring(0, 200),
+            }
+          }
 
           // 두 가지 방식으로 파싱: 일반 텍스트 + 테이블 형식
           const lineItems = parseIngredients(fullText)
@@ -395,7 +406,8 @@ export async function POST(request: Request) {
     return NextResponse.json({
       items,
       count: items.length,
-      debug, // 디버그 정보도 반환
+      debug,
+      visionResponse, // Google Vision이 뭘 추출했는지
     })
   } catch (error) {
     console.error('OCR error:', error)
