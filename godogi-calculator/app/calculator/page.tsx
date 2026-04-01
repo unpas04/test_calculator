@@ -305,28 +305,38 @@ function CalculatorContent() {
     const files = e.currentTarget.files
     if (!files || files.length === 0) return
 
+    console.log('[OCR Upload Start]', { fileCount: files.length, fileNames: Array.from(files).map(f => f.name) })
     setOcrProcessing(true)
     try {
       const formData = new FormData()
       for (let i = 0; i < files.length; i++) {
-        formData.append('images', files[i])
+        const file = files[i]
+        console.log(`[OCR File ${i}]`, { name: file.name, size: file.size, type: file.type })
+        formData.append('images', file)
       }
 
+      console.log('[OCR Sending to API]', { endpoint: '/api/ocr' })
       const response = await fetch('/api/ocr', {
         method: 'POST',
         body: formData,
       })
 
-      if (!response.ok) throw new Error('OCR failed')
+      console.log('[OCR API Response Status]', { status: response.status, ok: response.ok })
+
+      if (!response.ok) {
+        const errorText = await response.text()
+        console.error('[OCR API Error]', { status: response.status, error: errorText })
+        throw new Error(`OCR failed: ${response.status}`)
+      }
 
       const data = await response.json()
-      console.log('[OCR Response]', data) // 디버그 로그
+      console.log('[OCR Response Data]', data)
       setOcrResults(data.items || [])
       setOcrSelected(new Set())
       setShowOcrResults(true)
     } catch (err) {
-      console.error('OCR upload error:', err)
-      alert('영수증 처리 실패. 다시 시도해주세요.')
+      console.error('[OCR Upload Error]', err)
+      alert('영수증 처리 실패: ' + (err instanceof Error ? err.message : '알 수 없는 오류'))
     } finally {
       setOcrProcessing(false)
       if (fileInputRef.current) fileInputRef.current.value = ''
