@@ -327,6 +327,11 @@ function CalculatorContent() {
         formData.append('images', file)
       }
 
+      // 사용자 ID 포함 (거래처 정보 저장용)
+      if (user) {
+        formData.append('userId', user.id)
+      }
+
       console.log('[OCR Sending to API]', { endpoint: '/api/ocr' })
       const response = await fetch('/api/ocr', {
         method: 'POST',
@@ -639,7 +644,7 @@ function CalculatorContent() {
             </div>
 
             {/* 재료 목록 */}
-            <div style={{ overflowY: 'auto', flex: 1, padding: '0 12px 8px' }}>
+            <div style={{ overflowY: 'auto', height: '350px', padding: '0 12px 8px', flexShrink: 0 }}>
               {filteredFridgeItems().length === 0 ? (
                 <div style={{ textAlign: 'center', padding: '24px 0', color: 'rgba(200,216,228,0.35)', fontSize: '0.82rem', fontFamily: "'Noto Sans KR',sans-serif" }}>
                   검색 결과가 없어요

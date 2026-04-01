@@ -1,7 +1,16 @@
 import { NextResponse } from 'next/server'
 import { createHash, randomBytes } from 'crypto'
+import { createClient } from '@supabase/supabase-js'
 
 export const runtime = 'nodejs'
+
+// Supabase 클라이언트 (런타임에만 생성)
+function getSupabaseClient() {
+  return createClient(
+    process.env.NEXT_PUBLIC_SUPABASE_URL || '',
+    process.env.SUPABASE_SERVICE_ROLE_KEY || ''
+  )
+}
 
 interface ParsedItem {
   name: string
@@ -409,6 +418,7 @@ export async function POST(request: Request) {
   try {
     const formData = await request.formData()
     const files = formData.getAll('images') as File[]
+    const userId = formData.get('userId') as string
 
     if (!files || files.length === 0) {
       return NextResponse.json({ error: 'No images provided' }, { status: 400 })
@@ -417,6 +427,7 @@ export async function POST(request: Request) {
     // Process all images in parallel
     let visionResponse: any = null
     let supplier: SupplierInfo | null = null
+    let savedSupplier: any = null
     const results = await Promise.all(
       files.map(async (file) => {
         try {
@@ -515,12 +526,43 @@ export async function POST(request: Request) {
 
     console.log('[OCR Debug]', debug)
 
+    // 거래처 정보 저장 (suppliers 테이블)
+    if (supplier && userId && (supplier as any)?.bizNo) {
+      try {
+        const s = supplier as any
+        const supabaseClient = getSupabaseClient()
+        const { data, error } = await supabaseClient
+          .from('suppliers')
+          .upsert(
+            {
+              user_id: userId,
+              name: s.name || null,
+              biz_no: s.bizNo,
+              phone: s.phone || null,
+              address: s.address || null,
+            },
+            { onConflict: 'user_id, biz_no' }
+          )
+          .select()
+
+        if (error) {
+          console.error('[Supplier Save Error]', error)
+        } else {
+          console.log('[Supplier Saved]', data)
+          savedSupplier = data?.[0] || null
+        }
+      } catch (err) {
+        console.error('[Supplier Save Exception]', err)
+      }
+    }
+
     return NextResponse.json({
       items,
       count: items.length,
       debug,
       visionResponse, // Google Vision이 뭘 추출했는지
       supplier, // 거래처 정보 (있으면)
+      savedSupplier, // DB 저장된 거래처 정보
     })
   } catch (error) {
     console.error('OCR error:', error)
