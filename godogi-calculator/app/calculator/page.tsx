@@ -93,6 +93,7 @@ function CalculatorContent() {
   const [ocrProcessing, setOcrProcessing] = useState(false)
   const [ocrResults, setOcrResults] = useState<any[]>([])
   const [ocrSelected, setOcrSelected] = useState<Set<number>>(new Set())
+  const [ocrEditIdx, setOcrEditIdx] = useState<number | null>(null)
   const supabase = createClient()
   const autoSaveTimer = useRef<any>(null)
   const loadedForUser = useRef<string | null>(null)
@@ -798,29 +799,88 @@ function CalculatorContent() {
 
                     <div style={{ display: 'flex', flexDirection: 'column', gap: 8, overflowY: 'auto', maxHeight: '40vh' }}>
                       {ocrResults.map((item, idx) => (
-                        <div key={idx} style={{
-                          padding: '10px 12px', background: 'rgba(255,255,255,0.04)',
-                          border: '1px solid rgba(255,255,255,0.06)', borderRadius: 10,
-                          display: 'flex', gap: 10, alignItems: 'flex-start',
-                          opacity: item.confidence < 0.6 ? 0.6 : 1,
-                        }}>
-                          <input type="checkbox" checked={ocrSelected.has(idx)} onChange={e => {
-                            const ns = new Set(ocrSelected)
-                            if (e.target.checked) ns.add(idx)
-                            else ns.delete(idx)
-                            setOcrSelected(ns)
-                          }} style={{ marginTop: 4, cursor: 'pointer', accentColor: '#4A7FA5' }} />
-                          <div style={{ flex: 1, minWidth: 0 }}>
-                            <div style={{ fontSize: '0.88rem', color: 'white', fontWeight: 600 }}>{item.name}</div>
-                            <div style={{ fontSize: '0.72rem', color: 'rgba(200,216,228,0.4)', marginTop: 2 }}>
-                              {item.price.toLocaleString()}원 / {item.per}{item.unit}
-                            </div>
-                            {item.confidence < 0.7 && (
-                              <div style={{ fontSize: '0.65rem', color: 'rgba(255,150,100,0.6)', marginTop: 2 }}>
-                                ⚠ 인식도 {Math.round(item.confidence * 100)}%
+                        <div key={idx}>
+                          {ocrEditIdx === idx ? (
+                            // 수정 모드
+                            <div style={{
+                              padding: '10px 12px', background: 'rgba(74,127,165,0.15)',
+                              border: '2px solid #4A7FA5', borderRadius: 10,
+                              display: 'flex', flexDirection: 'column', gap: 8,
+                            }}>
+                              <input type="text" value={item.name} onChange={e => {
+                                const updated = [...ocrResults]
+                                updated[idx].name = e.target.value
+                                setOcrResults(updated)
+                              }} style={{
+                                background: 'rgba(255,255,255,0.07)', border: '1px solid rgba(200,216,228,0.15)',
+                                borderRadius: 6, color: 'white', padding: '6px 8px', fontFamily: "'Noto Sans KR',sans-serif", fontSize: '0.85rem', outline: 'none'
+                              }} placeholder="재료명" />
+                              <div style={{ display: 'flex', gap: 8 }}>
+                                <input type="number" value={item.price} onChange={e => {
+                                  const updated = [...ocrResults]
+                                  updated[idx].price = parseInt(e.target.value) || 0
+                                  setOcrResults(updated)
+                                }} style={{
+                                  flex: 1, background: 'rgba(255,255,255,0.07)', border: '1px solid rgba(200,216,228,0.15)',
+                                  borderRadius: 6, color: 'white', padding: '6px 8px', fontFamily: "'Noto Sans KR',sans-serif", fontSize: '0.85rem', outline: 'none'
+                                }} placeholder="가격" />
+                                <input type="number" value={item.per} onChange={e => {
+                                  const updated = [...ocrResults]
+                                  updated[idx].per = parseFloat(e.target.value) || 1
+                                  setOcrResults(updated)
+                                }} style={{
+                                  width: '50px', background: 'rgba(255,255,255,0.07)', border: '1px solid rgba(200,216,228,0.15)',
+                                  borderRadius: 6, color: 'white', padding: '6px 8px', fontFamily: "'Noto Sans KR',sans-serif", fontSize: '0.85rem', outline: 'none'
+                                }} placeholder="수량" />
+                                <select value={item.unit} onChange={e => {
+                                  const updated = [...ocrResults]
+                                  updated[idx].unit = e.target.value
+                                  setOcrResults(updated)
+                                }} style={{
+                                  width: '60px', background: 'rgba(255,255,255,0.07)', border: '1px solid rgba(200,216,228,0.15)',
+                                  borderRadius: 6, color: 'white', padding: '6px 4px', fontFamily: "'Noto Sans KR',sans-serif", fontSize: '0.75rem', outline: 'none'
+                                }}>
+                                  {['개', 'g', 'ml', 'kg', 'L', '팩', '병'].map(u => <option key={u} style={{ background: '#1E2D40' }}>{u}</option>)}
+                                </select>
                               </div>
-                            )}
-                          </div>
+                              <div style={{ display: 'flex', gap: 6 }}>
+                                <button onClick={() => setOcrEditIdx(null)} style={{
+                                  flex: 1, padding: '6px 0', background: 'rgba(255,255,255,0.07)', border: 'none', borderRadius: 6, color: 'rgba(200,216,228,0.5)', fontSize: '0.75rem', cursor: 'pointer', fontFamily: "'Noto Sans KR',sans-serif", fontWeight: 600
+                                }}>취소</button>
+                                <button onClick={() => setOcrEditIdx(null)} style={{
+                                  flex: 1, padding: '6px 0', background: '#4A7FA5', border: 'none', borderRadius: 6, color: 'white', fontSize: '0.75rem', cursor: 'pointer', fontFamily: "'Noto Sans KR',sans-serif", fontWeight: 600
+                                }}>완료</button>
+                              </div>
+                            </div>
+                          ) : (
+                            // 보기 모드
+                            <div style={{
+                              padding: '10px 12px', background: 'rgba(255,255,255,0.04)',
+                              border: '1px solid rgba(255,255,255,0.06)', borderRadius: 10,
+                              display: 'flex', gap: 10, alignItems: 'flex-start',
+                              opacity: item.confidence < 0.6 ? 0.6 : 1,
+                              cursor: 'pointer',
+                            }} onClick={() => setOcrEditIdx(idx)}>
+                              <input type="checkbox" checked={ocrSelected.has(idx)} onChange={e => {
+                                e.stopPropagation()
+                                const ns = new Set(ocrSelected)
+                                if (e.target.checked) ns.add(idx)
+                                else ns.delete(idx)
+                                setOcrSelected(ns)
+                              }} style={{ marginTop: 4, cursor: 'pointer', accentColor: '#4A7FA5' }} />
+                              <div style={{ flex: 1, minWidth: 0 }}>
+                                <div style={{ fontSize: '0.88rem', color: 'white', fontWeight: 600 }}>{item.name}</div>
+                                <div style={{ fontSize: '0.72rem', color: 'rgba(200,216,228,0.4)', marginTop: 2 }}>
+                                  {item.price.toLocaleString()}원 / {item.per}{item.unit}
+                                </div>
+                                {item.confidence < 0.7 && (
+                                  <div style={{ fontSize: '0.65rem', color: 'rgba(255,150,100,0.6)', marginTop: 2 }}>
+                                    ⚠ 인식도 {Math.round(item.confidence * 100)}% (클릭해서 수정)
+                                  </div>
+                                )}
+                              </div>
+                            </div>
+                          )}
                         </div>
                       ))}
                     </div>

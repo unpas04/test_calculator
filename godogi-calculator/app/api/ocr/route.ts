@@ -1,4 +1,5 @@
 import { NextResponse } from 'next/server'
+import { createHash, randomBytes } from 'crypto'
 
 export const runtime = 'nodejs'
 
@@ -20,17 +21,65 @@ interface TextRow {
   y: number // vertical position for grouping
 }
 
-async function callGoogleVision(base64Image: string): Promise<{ fullText: string; words: Word[] }> {
-  const apiKey = process.env.GOOGLE_VISION_API_KEY
-  if (!apiKey) {
-    throw new Error('GOOGLE_VISION_API_KEY not configured')
+// JWT 토큰 생성 (서비스 계정용)
+function createJWT(): string {
+  const projectId = process.env.GOOGLE_VISION_PROJECT_ID
+  const clientEmail = process.env.GOOGLE_VISION_CLIENT_EMAIL
+  const privateKey = process.env.GOOGLE_VISION_PRIVATE_KEY
+
+  if (!projectId || !clientEmail || !privateKey) {
+    throw new Error('Google Vision service account credentials not configured')
   }
 
+  const header = Buffer.from(JSON.stringify({ alg: 'RS256', typ: 'JWT' })).toString('base64url')
+  const now = Math.floor(Date.now() / 1000)
+  const payload = {
+    iss: clientEmail,
+    scope: 'https://www.googleapis.com/auth/cloud-platform',
+    aud: 'https://oauth2.googleapis.com/token',
+    exp: now + 3600,
+    iat: now,
+  }
+  const payloadStr = Buffer.from(JSON.stringify(payload)).toString('base64url')
+
+  // Private key에서 newline 처리
+  const key = privateKey.replace(/\\n/g, '\n')
+  const { createSign } = require('crypto')
+  const sign = createSign('RSA-SHA256')
+  sign.update(`${header}.${payloadStr}`)
+  const signature = sign.sign(key, 'base64url')
+
+  return `${header}.${payloadStr}.${signature}`
+}
+
+// 액세스 토큰 획득
+async function getAccessToken(): Promise<string> {
+  const jwt = createJWT()
+  const response = await fetch('https://oauth2.googleapis.com/token', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+    body: `grant_type=urn:ietf:params:oauth:grant-type:jwt-bearer&assertion=${jwt}`,
+  })
+
+  const data: any = await response.json()
+  if (!data.access_token) {
+    throw new Error(`Failed to get access token: ${data.error}`)
+  }
+
+  return data.access_token
+}
+
+async function callGoogleVision(base64Image: string): Promise<{ fullText: string; words: Word[] }> {
+  const accessToken = await getAccessToken()
+
   const response = await fetch(
-    `https://vision.googleapis.com/v1/images:annotate?key=${apiKey}`,
+    'https://vision.googleapis.com/v1/images:annotate',
     {
       method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': `Bearer ${accessToken}`,
+      },
       body: JSON.stringify({
         requests: [
           {
@@ -261,22 +310,34 @@ function parseIngredients(text: string): ParsedItem[] {
     const price = parseInt(priceStr, 10)
     if (isNaN(price) || price < 100 || price > 10000000) continue
 
-    // 2. 수량+단위 추출
+    // 2. 수량+단위 추출 (개/EA/BOX 같은 표준 단위를 우선)
     let per = 1
     let unit = '개'
     let confidence = 0.65
 
-    const qtyPattern = /(\d+(?:\.\d+)?)\s*(kg|k|g|G|L|l|ml|cc|개|마리|팩|병|봉|입|컵|스푼)/i
-    const qtyMatch = line.match(qtyPattern)
+    // 1순위: 표준 수량 단위 (개, EA, BOX, 팩, 병 등)
+    const stdUnitPattern = /(\d+(?:\.\d+)?)\s*(개|EA|ea|e\.a\.|마리|팩|병|봉|입|박스|BOX|box)/i
+    let qtyMatch = line.match(stdUnitPattern)
 
     if (qtyMatch) {
       per = parseFloat(qtyMatch[1])
       const rawUnit = qtyMatch[2]
       unit = normalizeUnit(rawUnit)
-      const converted = convertQuantity(per, rawUnit)
-      per = converted.per
-      unit = converted.unit
-      confidence = 0.80
+      confidence = 0.85
+    } else {
+      // 2순위: 부피 단위 (ml, L 등) - 패키지 크기로 간주, 수량은 1로 처리
+      const volumePattern = /(\d+(?:\.\d+)?)\s*(kg|k|g|G|L|l|ml|cc|컵|스푼)/i
+      qtyMatch = line.match(volumePattern)
+
+      if (qtyMatch) {
+        const rawUnit = qtyMatch[2]
+        unit = normalizeUnit(rawUnit)
+        const converted = convertQuantity(parseFloat(qtyMatch[1]), rawUnit)
+        per = converted.per
+        unit = converted.unit
+        // 부피 단위는 신뢰도 낮춤 (실제 수량이 아니라 패키지 크기)
+        confidence = 0.60
+      }
     }
 
     // 3. 재료명 추출 - 더 관대한 방식
