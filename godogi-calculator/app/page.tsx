@@ -80,7 +80,7 @@ function OnboardingModal({ show, step, setStep, onClose }: {
     {
       icon: '🧩',
       title: '메뉴를 묶어 세트 구성',
-      desc: '하단 "＋ 새 메뉴 구성 만들기"를 눌러요.\n팔레트에서 메뉴 블록을 캔버스에 추가하면\n배달·홀 수수료 포함 원가율이 바로 나와요.',
+      desc: '하단 "＋ 새 원가 계산 만들기"를 눌러요.\n팔레트에서 메뉴 블록을 캔버스에 추가하면\n배달·홀 수수료 포함 원가율이 바로 나와요.',
     },
     {
       icon: '📊',
@@ -596,7 +596,7 @@ export default function HomePage() {
                 transition: '0.2s',
               }}
             >
-              {tab === 'sets' ? '📋 세트 구성' : '🍽️ 메뉴 모음'}
+              {tab === 'sets' ? '📊 수익 분석' : '🍽️ 메뉴 목록'}
             </button>
           ))}
         </div>
@@ -706,9 +706,12 @@ export default function HomePage() {
                           <div style={{ display: 'flex', alignItems: 'center', gap: 10, flexShrink: 0 }}>
                             <div style={{ textAlign: 'right' }}>
                               {set.costRate > 0 ? (
-                                <div style={{ fontSize: '1.2rem', fontWeight: 800, color: ri.color, lineHeight: 1 }}>
-                                  {Math.round(set.costRate)}%
-                                </div>
+                                <>
+                                  <div style={{ fontSize: '0.58rem', color: 'rgba(200,216,228,0.35)', marginBottom: 2 }}>원가율</div>
+                                  <div style={{ fontSize: '1.2rem', fontWeight: 800, color: ri.color, lineHeight: 1 }}>
+                                    {Math.round(set.costRate)}%
+                                  </div>
+                                </>
                               ) : (
                                 <div style={{ fontSize: '0.65rem', color: 'rgba(200,216,228,0.25)' }}>미입력</div>
                               )}
@@ -739,8 +742,8 @@ export default function HomePage() {
                                 ))}
                               </div>
 
-                              {/* 판매가 · 총원가 */}
-                              <div style={{ display: 'flex', gap: 12, marginBottom: 12, fontSize: '0.8rem' }}>
+                              {/* 판매가 · 총원가 · 순이익 */}
+                              <div style={{ display: 'flex', gap: 12, marginBottom: 14, fontSize: '0.8rem' }}>
                                 <div>
                                   <div style={{ fontSize: '0.58rem', color: 'rgba(200,216,228,0.35)', marginBottom: 2 }}>판매가</div>
                                   <div style={{ fontWeight: 600, color: 'rgba(200,216,228,0.6)' }}>
@@ -753,6 +756,19 @@ export default function HomePage() {
                                     {set.totalCost.toLocaleString()}원
                                   </div>
                                 </div>
+                                <div>
+                                  <div style={{ fontSize: '0.58rem', color: 'rgba(200,216,228,0.35)', marginBottom: 2 }}>순이익</div>
+                                  <div style={{ fontWeight: 700, color: set.sale_price > set.totalCost ? '#7EC8A0' : '#F08080' }}>
+                                    {set.sale_price > 0 ? `${(set.sale_price - set.totalCost).toLocaleString()}원` : '—'}
+                                  </div>
+                                </div>
+                              </div>
+
+                              {/* 고독이의 한마디 */}
+                              <div style={{ background: 'rgba(74,127,165,0.15)', borderRadius: 8, padding: '8px 10px', marginBottom: 12, borderLeft: `3px solid ${ri.color}` }}>
+                                <div style={{ fontSize: '0.72rem', color: ri.color, fontWeight: 600 }}>
+                                  🐟 {ri.label}
+                                </div>
                               </div>
 
                               {/* 수정 버튼 */}
@@ -761,24 +777,25 @@ export default function HomePage() {
                                   width: '100%', padding: '8px 0', background: 'rgba(74,127,165,0.2)',
                                   border: '1px solid rgba(74,127,165,0.3)', borderRadius: 8,
                                   color: '#7DB8D8', fontSize: '0.78rem', fontWeight: 600,
-                                  fontFamily: "'Noto Sans KR',sans-serif", cursor: 'pointer',
+                                  fontFamily: "'Noto Sans KR',sans-serif", cursor: 'pointer', marginBottom: 8,
                                 }}>
                                 ✏️ 수정하기
+                              </button>
+
+                              {/* 삭제 버튼 */}
+                              <button
+                                onClick={e => { e.stopPropagation(); setDeleteConfirmId(set.id) }}
+                                style={{
+                                  width: '100%', padding: '8px 0', background: 'rgba(196,74,74,0.15)',
+                                  border: '1px solid rgba(196,74,74,0.3)', borderRadius: 8,
+                                  color: '#F08080', fontSize: '0.78rem', fontWeight: 600,
+                                  fontFamily: "'Noto Sans KR',sans-serif", cursor: 'pointer',
+                                }}>
+                                🗑️ 삭제하기
                               </button>
                             </motion.div>
                           )}
                         </AnimatePresence>
-
-                        {/* 삭제 버튼 */}
-                        <button
-                          onClick={e => { e.stopPropagation(); setDeleteConfirmId(set.id) }}
-                          style={{
-                            position: 'absolute', top: 12, right: 12,
-                            background: 'transparent', border: 'none',
-                            color: 'rgba(200,216,228,0.15)', cursor: 'pointer',
-                            padding: '2px', lineHeight: 1, display: 'flex',
-                          }}
-                        ><X size={14} /></button>
                       </motion.div>
                     )
                   })}
@@ -829,7 +846,7 @@ export default function HomePage() {
                             key={menu.id}
                             initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }}
                             transition={{ delay: i * 0.03 }}
-                            onClick={() => router.push(`/calculator?menuId=${menu.id}`)}
+                            onClick={() => router.push(`/calculator?menuId=${menu.id}&returnTo=/`)}
                             style={{
                               background: 'rgba(255,255,255,0.04)',
                               border: '1px solid rgba(255,255,255,0.08)',
@@ -897,7 +914,7 @@ export default function HomePage() {
               boxShadow: '0 4px 16px rgba(58,111,165,0.35)',
               fontFamily: "'Noto Sans KR', sans-serif", fontWeight: 700, whiteSpace: 'nowrap',
             }}
-          >＋ 새 메뉴 구성</motion.button>
+          >＋ 새 원가 계산</motion.button>
         </div>
       </motion.div>
 
@@ -950,7 +967,7 @@ export default function HomePage() {
           boxShadow: '0 8px 28px rgba(58,111,165,0.4)',
           fontFamily: "'Noto Sans KR', sans-serif", fontWeight: 700,
         }}
-      >＋ 새 메뉴 구성 만들기</motion.button>
+      >＋ 새 원가 계산 만들기</motion.button>
 
       {/* 온보딩 모달 */}
       <OnboardingModal
