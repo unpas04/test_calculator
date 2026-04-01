@@ -585,7 +585,7 @@ function CalculatorContent() {
                   </div>
                 )}
               </div>
-              <input ref={fileInputRef} type="file" multiple accept="image/*" onChange={handleOcrUpload} style={{ display: 'none' }} capture="environment" />
+              <input ref={fileInputRef} type="file" multiple accept="image/*" onChange={handleOcrUpload} style={{ display: 'none' }} />
               <input
                 placeholder="재료 검색..."
                 value={fridgeSearch}
