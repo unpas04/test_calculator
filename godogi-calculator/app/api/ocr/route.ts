@@ -10,7 +10,17 @@ interface ParsedItem {
   confidence: number // 0-1, for UI feedback
 }
 
-async function callGoogleVision(base64Image: string): Promise<string> {
+interface Word {
+  text: string
+  boundingBox?: { vertices: Array<{ x: number; y: number }> }
+}
+
+interface TextRow {
+  words: string[]
+  y: number // vertical position for grouping
+}
+
+async function callGoogleVision(base64Image: string): Promise<{ fullText: string; words: Word[] }> {
   const response = await fetch(
     `https://vision.googleapis.com/v1/images:annotate?key=${process.env.GOOGLE_VISION_API_KEY}`,
     {
@@ -32,11 +42,40 @@ async function callGoogleVision(base64Image: string): Promise<string> {
   }
 
   const data: any = await response.json()
-  const annotations = data.responses?.[0]?.textAnnotations
-  if (!annotations || annotations.length === 0) return ''
+  const fullAnnotation = data.responses?.[0]?.fullTextAnnotation
+  const textAnnotations = data.responses?.[0]?.textAnnotations
 
-  // First annotation is the full text
-  return annotations[0].description || ''
+  if (!fullAnnotation && (!textAnnotations || textAnnotations.length === 0)) {
+    return { fullText: '', words: [] }
+  }
+
+  // 전체 텍스트
+  const fullText = fullAnnotation?.text || textAnnotations?.[0]?.description || ''
+
+  // 단어 단위 정보 추출 (테이블 행 재구성용)
+  let words: Word[] = []
+  if (fullAnnotation?.pages?.[0]?.blocks) {
+    const blocks = fullAnnotation.pages[0].blocks
+    for (const block of blocks) {
+      if (block.paragraphs) {
+        for (const para of block.paragraphs) {
+          if (para.words) {
+            for (const word of para.words) {
+              const text = word.symbols?.map((s: any) => s.text).join('') || ''
+              if (text) {
+                words.push({
+                  text,
+                  boundingBox: word.boundingBox,
+                })
+              }
+            }
+          }
+        }
+      }
+    }
+  }
+
+  return { fullText, words }
 }
 
 // 단위 정규화 함수
@@ -58,6 +97,100 @@ function convertQuantity(per: number, unit: string): { per: number; unit: string
   if (unit === 'kg') return { per: per * 1000, unit: 'g' }
   if (unit === 'L' || unit === 'l') return { per: per * 1000, unit: 'ml' }
   return { per, unit }
+}
+
+// 테이블 형식 파싱 (거래명세서, 구조화된 표)
+function parseTableFormat(words: Word[]): ParsedItem[] {
+  if (words.length === 0) return []
+
+  const items: ParsedItem[] = []
+  const seenNames = new Set<string>()
+
+  // 단어들을 Y 좌표로 그룹화 (같은 행)
+  const rows: TextRow[] = []
+  const yTolerance = 15 // 15px 이내는 같은 행
+
+  for (const word of words) {
+    if (!word.boundingBox?.vertices || word.boundingBox.vertices.length === 0) continue
+
+    const y = word.boundingBox.vertices[0]?.y ?? 0
+    let found = false
+
+    // 기존 행에 추가
+    for (const row of rows) {
+      if (Math.abs(row.y - y) < yTolerance) {
+        row.words.push(word.text)
+        found = true
+        break
+      }
+    }
+
+    // 새 행 생성
+    if (!found) {
+      rows.push({ words: [word.text], y })
+    }
+  }
+
+  // 각 행 파싱
+  for (const row of rows) {
+    const lineText = row.words.join(' ')
+
+    // 한글 재료명 포함 + 숫자 포함하는 행만 처리
+    if (!/[\p{L}]/u.test(lineText) || !/\d/.test(lineText)) continue
+
+    // 가격 추출 (가장 오른쪽의 큰 숫자, 천 단위 포함)
+    const priceMatches = lineText.match(/(\d{1,3}(?:[,]\d{3})*|\d{4,})/g)
+    if (!priceMatches || priceMatches.length === 0) continue
+
+    // 가장 오른쪽 숫자를 가격으로 (가격이 보통 가장 큼)
+    let price = 0
+    for (let i = priceMatches.length - 1; i >= 0; i--) {
+      const num = parseInt(priceMatches[i].replace(/,/g, ''), 10)
+      if (num > 100 && num < 1000000) {
+        price = num
+        break
+      }
+    }
+    if (price === 0) continue
+
+    // 수량+단위 추출
+    let per = 1
+    let unit = '개'
+    let confidence = 0.7
+
+    const qtyPattern = /(\d+(?:\.\d+)?)\s*(kg|g|L|ml|cc|개|마리|팩|병|봉|입|컵|스푼|K|G)/i
+    const qtyMatch = lineText.match(qtyPattern)
+
+    if (qtyMatch) {
+      per = parseFloat(qtyMatch[1])
+      const rawUnit = qtyMatch[2]
+      unit = normalizeUnit(rawUnit)
+      const converted = convertQuantity(per, rawUnit)
+      per = converted.per
+      unit = converted.unit
+      confidence = 0.85
+    }
+
+    // 재료명: 한글만 추출 (앞쪽부터)
+    let name = lineText.match(/[\p{L}]+/gu)?.[0] || ''
+    name = name.trim()
+
+    if (name.length < 2 || name.length > 30) continue
+
+    const nameLower = name.toLowerCase()
+    if (seenNames.has(nameLower)) continue
+    seenNames.add(nameLower)
+
+    if (qtyMatch) confidence += 0.1
+    if (price > 500 && price < 100000) confidence += 0.05
+    confidence = Math.min(confidence, 1)
+
+    items.push({ name, price, per, unit, confidence })
+  }
+
+  return items
+    .filter(item => item.confidence >= 0.5)
+    .sort((a, b) => b.confidence - a.confidence)
 }
 
 function parseIngredients(text: string): ParsedItem[] {
@@ -155,15 +288,28 @@ export async function POST(request: Request) {
     }
 
     // Process all images in parallel
-    const allItems: ParsedItem[] = []
-
     const results = await Promise.all(
       files.map(async (file) => {
         try {
           const buffer = await file.arrayBuffer()
           const base64 = Buffer.from(buffer).toString('base64')
-          const text = await callGoogleVision(base64)
-          return parseIngredients(text)
+          const { fullText, words } = await callGoogleVision(base64)
+
+          // 두 가지 방식으로 파싱: 일반 텍스트 + 테이블 형식
+          const lineItems = parseIngredients(fullText)
+          const tableItems = parseTableFormat(words)
+
+          // 두 결과를 병합 (신뢰도 기준)
+          const merged = new Map<string, ParsedItem>()
+          for (const item of [...lineItems, ...tableItems]) {
+            const key = item.name.toLowerCase()
+            const existing = merged.get(key)
+            if (!existing || item.confidence > existing.confidence) {
+              merged.set(key, item)
+            }
+          }
+
+          return Array.from(merged.values())
         } catch (err) {
           console.error(`Error processing image ${file.name}:`, err)
           return []
