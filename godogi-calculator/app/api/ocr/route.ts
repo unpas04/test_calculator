@@ -11,6 +11,13 @@ interface ParsedItem {
   confidence: number // 0-1, for UI feedback
 }
 
+interface SupplierInfo {
+  name?: string
+  bizNo?: string // 사업자번호
+  phone?: string
+  address?: string
+}
+
 interface Word {
   text: string
   boundingBox?: { vertices: Array<{ x: number; y: number }> }
@@ -19,6 +26,30 @@ interface Word {
 interface TextRow {
   words: string[]
   y: number // vertical position for grouping
+}
+
+// 거래처 정보 파싱
+function parseSupplier(text: string): SupplierInfo | null {
+  const lines = text.split('\n')
+  const info: SupplierInfo = {}
+
+  for (const line of lines) {
+    // 사업자번호 패턴: XXX-XX-XXXXX
+    const bizNoMatch = line.match(/(\d{3}-\d{2}-\d{5})/)
+    if (bizNoMatch) info.bizNo = bizNoMatch[1]
+
+    // 전화번호 패턴
+    const phoneMatch = line.match(/(\d{2,3}-\d{3,4}-\d{4})/)
+    if (phoneMatch) info.phone = phoneMatch[1]
+
+    // 상호/공급자명: "상호" 또는 "공급자" 패턴 뒤 텍스트
+    if (/상호|공급자|업체명|회사명/i.test(line)) {
+      const name = line.replace(/상호|공급자|업체명|회사명|:|:|\s{2,}/gi, '').trim()
+      if (name.length > 1 && !name.match(/^\d+$/)) info.name = name
+    }
+  }
+
+  return (info.name || info.bizNo || info.phone) ? info : null
 }
 
 // JWT 토큰 생성 (서비스 계정용)
@@ -385,6 +416,7 @@ export async function POST(request: Request) {
 
     // Process all images in parallel
     let visionResponse: any = null
+    let supplier: SupplierInfo | null = null
     const results = await Promise.all(
       files.map(async (file) => {
         try {
@@ -395,7 +427,7 @@ export async function POST(request: Request) {
 
           const { fullText, words } = await callGoogleVision(base64)
 
-          // 첫 번째 이미지의 Vision 응답 저장 (디버그용)
+          // 첫 번째 이미지의 Vision 응답 저장 (디버그용) + 거래처 정보 파싱
           if (!visionResponse) {
             visionResponse = {
               success: true,
@@ -405,6 +437,12 @@ export async function POST(request: Request) {
               textPreview: fullText.substring(0, 300),
             }
             console.log('[Vision Success]', visionResponse)
+
+            // 거래처 정보 파싱
+            supplier = parseSupplier(fullText)
+            if (supplier) {
+              console.log('[Supplier Info]', supplier)
+            }
           }
 
           // 두 가지 방식으로 파싱: 일반 텍스트 + 테이블 형식
@@ -482,6 +520,7 @@ export async function POST(request: Request) {
       count: items.length,
       debug,
       visionResponse, // Google Vision이 뭘 추출했는지
+      supplier, // 거래처 정보 (있으면)
     })
   } catch (error) {
     console.error('OCR error:', error)

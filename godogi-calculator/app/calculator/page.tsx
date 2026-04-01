@@ -94,6 +94,7 @@ function CalculatorContent() {
   const [ocrResults, setOcrResults] = useState<any[]>([])
   const [ocrSelected, setOcrSelected] = useState<Set<number>>(new Set())
   const [ocrEditIdx, setOcrEditIdx] = useState<number | null>(null)
+  const [ocrSupplier, setOcrSupplier] = useState<any>(null)
   const supabase = createClient()
   const autoSaveTimer = useRef<any>(null)
   const loadedForUser = useRef<string | null>(null)
@@ -302,6 +303,16 @@ function CalculatorContent() {
     loadFridgeItems()
   }
 
+  const handleFridgeDelete = async (item: any) => {
+    if (item.isDB) return
+    try {
+      await supabase.from('fridge').delete().eq('id', item.id)
+      loadFridgeItems()
+    } catch (err) {
+      console.error('[Fridge Delete Error]', err)
+    }
+  }
+
   const handleOcrUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const files = e.currentTarget.files
     if (!files || files.length === 0) return
@@ -333,6 +344,7 @@ function CalculatorContent() {
       const data = await response.json()
       console.log('[OCR Response Data]', data)
       setOcrResults(data.items || [])
+      setOcrSupplier(data.supplier || null)
       setOcrSelected(new Set())
       setShowOcrResults(true)
     } catch (err) {
@@ -362,6 +374,7 @@ function CalculatorContent() {
       setShowOcrResults(false)
       setOcrResults([])
       setOcrSelected(new Set())
+      setOcrSupplier(null)
       loadFridgeItems()
     } catch (err) {
       console.error('OCR add error:', err)
@@ -576,7 +589,7 @@ function CalculatorContent() {
             </div>
 
             {/* 헤더 */}
-            <div style={{ padding: '4px 16px 12px', borderBottom: '1px solid rgba(255,255,255,0.06)', display: 'flex', flexDirection: 'column', gap: 10 }}>
+            <div style={{ padding: '4px 16px 12px', borderBottom: '1px solid rgba(255,255,255,0.06)', display: 'flex', flexDirection: 'column', gap: 10, flexShrink: 0 }}>
               <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
                 <span style={{ fontSize: '0.88rem', fontFamily: "'Noto Sans KR',sans-serif", fontWeight: 700, color: 'white' }}>🧊 냉장고</span>
                 {user && (
@@ -606,14 +619,14 @@ function CalculatorContent() {
                   width: '100%', padding: '8px 12px', boxSizing: 'border-box',
                   background: 'rgba(255,255,255,0.07)', border: '1px solid rgba(200,216,228,0.15)',
                   borderRadius: 10, color: 'white',
-                  fontFamily: "'Noto Sans KR',sans-serif", fontWeight: 400, fontSize: '0.85rem',
+                  fontFamily: "'Noto Sans KR',sans-serif", fontWeight: 400, fontSize: '16px',
                   outline: 'none',
                 }}
               />
             </div>
 
             {/* 카테고리 */}
-            <div style={{ display: 'flex', gap: 6, overflowX: 'auto', padding: '10px 16px', flexShrink: 0, scrollbarWidth: 'none' }}>
+            <div style={{ display: 'flex', gap: 6, overflowX: 'auto', padding: '10px 16px', flexShrink: 0, scrollbarWidth: 'none', msOverflowStyle: 'none' }}>
               {FRIDGE_CATEGORIES.map(cat => (
                 <button key={cat} onClick={() => setFridgeCategory(cat)} style={{
                   padding: '5px 12px', borderRadius: 20, border: 'none', cursor: 'pointer',
@@ -642,7 +655,7 @@ function CalculatorContent() {
                     <div style={{ minWidth: 0 }}>
                       <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
                         <span style={{ fontSize: '0.88rem', color: 'white', fontWeight: 700 }}>{item.name}</span>
-                        {item.isDB && <span style={{ fontSize: '0.62rem', color: 'rgba(200,216,228,0.3)', fontWeight: 400 }}>기본</span>}
+                        {item.isDB && <span style={{ fontSize: '0.6rem', background: 'rgba(200,216,228,0.12)', padding: '1px 6px', borderRadius: 4, color: 'rgba(200,216,228,0.45)', fontWeight: 400 }}>기본</span>}
                       </div>
                       <div style={{ fontSize: '0.72rem', color: 'rgba(200,216,228,0.4)', marginTop: 2 }}>
                         {(item.price || 0).toLocaleString()}원 / {item.per}{item.unit}
@@ -650,12 +663,22 @@ function CalculatorContent() {
                       </div>
                     </div>
                   </div>
-                  <button onClick={e => { e.stopPropagation(); openFridgeEdit(item) }} style={{
-                    background: 'rgba(255,255,255,0.06)', border: 'none', borderRadius: 6,
-                    color: 'rgba(200,216,228,0.5)', fontSize: '0.72rem',
-                    padding: '4px 10px', cursor: 'pointer',
-                    fontFamily: "'Noto Sans KR',sans-serif", fontWeight: 700, flexShrink: 0,
-                  }}>수정</button>
+                  <div style={{ display: 'flex', gap: 6, flexShrink: 0 }}>
+                    <button onClick={e => { e.stopPropagation(); openFridgeEdit(item) }} style={{
+                      background: 'rgba(255,255,255,0.06)', border: 'none', borderRadius: 6,
+                      color: 'rgba(200,216,228,0.5)', fontSize: '0.72rem',
+                      padding: '4px 10px', cursor: 'pointer',
+                      fontFamily: "'Noto Sans KR',sans-serif", fontWeight: 700, flexShrink: 0,
+                    }}>수정</button>
+                    {!item.isDB && (
+                      <button onClick={e => { e.stopPropagation(); handleFridgeDelete(item) }} style={{
+                        background: 'rgba(255,255,255,0.06)', border: 'none', borderRadius: 6,
+                        color: 'rgba(200,216,228,0.5)', fontSize: '0.72rem',
+                        padding: '4px 10px', cursor: 'pointer',
+                        fontFamily: "'Noto Sans KR',sans-serif", fontWeight: 700, flexShrink: 0,
+                      }}>삭제</button>
+                    )}
+                  </div>
                 </div>
               ))}
             </div>
@@ -776,6 +799,22 @@ function CalculatorContent() {
                   <button onClick={() => setShowOcrResults(false)} style={{ background: 'none', border: 'none', color: 'rgba(200,216,228,0.5)', cursor: 'pointer', fontSize: '1.2rem' }}>×</button>
                 </div>
 
+                {ocrSupplier && (
+                  <div style={{
+                    padding: '10px 12px', background: 'rgba(74,127,165,0.1)',
+                    border: '1px solid rgba(74,127,165,0.3)', borderRadius: 10,
+                  }}>
+                    <div style={{ fontSize: '0.7rem', color: 'rgba(200,216,228,0.5)', fontWeight: 600, textTransform: 'uppercase', marginBottom: 6 }}>거래처 정보</div>
+                    {ocrSupplier.name && (
+                      <div style={{ fontSize: '0.8rem', color: 'white', fontWeight: 600, marginBottom: 3 }}>{ocrSupplier.name}</div>
+                    )}
+                    <div style={{ fontSize: '0.7rem', color: 'rgba(200,216,228,0.4)' }}>
+                      {ocrSupplier.bizNo && <div>사업자: {ocrSupplier.bizNo}</div>}
+                      {ocrSupplier.phone && <div>연락처: {ocrSupplier.phone}</div>}
+                    </div>
+                  </div>
+                )}
+
                 {ocrProcessing ? (
                   <div style={{ textAlign: 'center', padding: '24px 0', color: 'rgba(200,216,228,0.5)', fontSize: '0.85rem' }}>
                     분석 중...
@@ -805,7 +844,7 @@ function CalculatorContent() {
                             <div style={{
                               padding: '10px 12px', background: 'rgba(74,127,165,0.15)',
                               border: '2px solid #4A7FA5', borderRadius: 10,
-                              display: 'flex', flexDirection: 'column', gap: 8,
+                              display: 'flex', flexDirection: 'column', gap: 10,
                             }}>
                               <input type="text" value={item.name} onChange={e => {
                                 const updated = [...ocrResults]
@@ -813,42 +852,57 @@ function CalculatorContent() {
                                 setOcrResults(updated)
                               }} style={{
                                 background: 'rgba(255,255,255,0.07)', border: '1px solid rgba(200,216,228,0.15)',
-                                borderRadius: 6, color: 'white', padding: '6px 8px', fontFamily: "'Noto Sans KR',sans-serif", fontSize: '0.85rem', outline: 'none'
+                                borderRadius: 6, color: 'white', padding: '8px 10px', fontFamily: "'Noto Sans KR',sans-serif", fontSize: '0.85rem', outline: 'none', width: '100%', boxSizing: 'border-box'
                               }} placeholder="재료명" />
-                              <div style={{ display: 'flex', gap: 8 }}>
-                                <input type="number" value={item.price} onChange={e => {
+
+                              <div style={{ display: 'flex', flexDirection: 'column', gap: 6 }}>
+                                <label style={{ fontSize: '0.65rem', color: 'rgba(200,216,228,0.5)', fontWeight: 600, textTransform: 'uppercase' }}>매입가 (원)</label>
+                                <input type="text" value={(item.priceDisplay || item.price.toLocaleString())} onChange={e => {
                                   const updated = [...ocrResults]
-                                  updated[idx].price = parseInt(e.target.value) || 0
+                                  const raw = e.target.value.replace(/,/g, '')
+                                  updated[idx].price = parseInt(raw) || 0
+                                  updated[idx].priceDisplay = raw.replace(/\B(?=(\d{3})+(?!\d))/g, ',')
                                   setOcrResults(updated)
                                 }} style={{
-                                  flex: 1, background: 'rgba(255,255,255,0.07)', border: '1px solid rgba(200,216,228,0.15)',
-                                  borderRadius: 6, color: 'white', padding: '6px 8px', fontFamily: "'Noto Sans KR',sans-serif", fontSize: '0.85rem', outline: 'none'
-                                }} placeholder="가격" />
-                                <input type="number" value={item.per} onChange={e => {
-                                  const updated = [...ocrResults]
-                                  updated[idx].per = parseFloat(e.target.value) || 1
-                                  setOcrResults(updated)
-                                }} style={{
-                                  width: '50px', background: 'rgba(255,255,255,0.07)', border: '1px solid rgba(200,216,228,0.15)',
-                                  borderRadius: 6, color: 'white', padding: '6px 8px', fontFamily: "'Noto Sans KR',sans-serif", fontSize: '0.85rem', outline: 'none'
-                                }} placeholder="수량" />
-                                <select value={item.unit} onChange={e => {
-                                  const updated = [...ocrResults]
-                                  updated[idx].unit = e.target.value
-                                  setOcrResults(updated)
-                                }} style={{
-                                  width: '60px', background: 'rgba(255,255,255,0.07)', border: '1px solid rgba(200,216,228,0.15)',
-                                  borderRadius: 6, color: 'white', padding: '6px 4px', fontFamily: "'Noto Sans KR',sans-serif", fontSize: '0.75rem', outline: 'none'
-                                }}>
-                                  {['개', 'g', 'ml', 'kg', 'L', '팩', '병'].map(u => <option key={u} style={{ background: '#1E2D40' }}>{u}</option>)}
-                                </select>
+                                  background: 'rgba(255,255,255,0.07)', border: '1px solid rgba(200,216,228,0.15)',
+                                  borderRadius: 6, color: 'white', padding: '8px 10px', fontFamily: "'Noto Sans KR',sans-serif", fontSize: '0.85rem', outline: 'none', width: '100%', boxSizing: 'border-box',
+                                  WebkitAppearance: 'none',
+                                }} placeholder="0" />
                               </div>
+
+                              <div style={{ display: 'flex', gap: 8 }}>
+                                <div style={{ flex: 1, display: 'flex', flexDirection: 'column', gap: 6 }}>
+                                  <label style={{ fontSize: '0.65rem', color: 'rgba(200,216,228,0.5)', fontWeight: 600, textTransform: 'uppercase' }}>매입중량</label>
+                                  <input type="text" value={item.per} onChange={e => {
+                                    const updated = [...ocrResults]
+                                    updated[idx].per = parseFloat(e.target.value) || 1
+                                    setOcrResults(updated)
+                                  }} style={{
+                                    background: 'rgba(255,255,255,0.07)', border: '1px solid rgba(200,216,228,0.15)',
+                                    borderRadius: 6, color: 'white', padding: '8px 10px', fontFamily: "'Noto Sans KR',sans-serif", fontSize: '0.85rem', outline: 'none', width: '100%', boxSizing: 'border-box'
+                                  }} placeholder="1" />
+                                </div>
+                                <div style={{ width: '80px', display: 'flex', flexDirection: 'column', gap: 6 }}>
+                                  <label style={{ fontSize: '0.65rem', color: 'rgba(200,216,228,0.5)', fontWeight: 600, textTransform: 'uppercase' }}>단위</label>
+                                  <select value={item.unit} onChange={e => {
+                                    const updated = [...ocrResults]
+                                    updated[idx].unit = e.target.value
+                                    setOcrResults(updated)
+                                  }} style={{
+                                    background: 'rgba(255,255,255,0.07)', border: '1px solid rgba(200,216,228,0.15)',
+                                    borderRadius: 6, color: 'white', padding: '8px 6px', fontFamily: "'Noto Sans KR',sans-serif", fontSize: '0.75rem', outline: 'none', width: '100%', boxSizing: 'border-box'
+                                  }}>
+                                    {['개', 'g', 'ml', 'kg', 'L', '팩', '병'].map(u => <option key={u} style={{ background: '#1E2D40' }}>{u}</option>)}
+                                  </select>
+                                </div>
+                              </div>
+
                               <div style={{ display: 'flex', gap: 6 }}>
                                 <button onClick={() => setOcrEditIdx(null)} style={{
-                                  flex: 1, padding: '6px 0', background: 'rgba(255,255,255,0.07)', border: 'none', borderRadius: 6, color: 'rgba(200,216,228,0.5)', fontSize: '0.75rem', cursor: 'pointer', fontFamily: "'Noto Sans KR',sans-serif", fontWeight: 600
+                                  flex: 1, padding: '8px 0', background: 'rgba(255,255,255,0.07)', border: 'none', borderRadius: 6, color: 'rgba(200,216,228,0.5)', fontSize: '0.75rem', cursor: 'pointer', fontFamily: "'Noto Sans KR',sans-serif", fontWeight: 600
                                 }}>취소</button>
                                 <button onClick={() => setOcrEditIdx(null)} style={{
-                                  flex: 1, padding: '6px 0', background: '#4A7FA5', border: 'none', borderRadius: 6, color: 'white', fontSize: '0.75rem', cursor: 'pointer', fontFamily: "'Noto Sans KR',sans-serif", fontWeight: 600
+                                  flex: 1, padding: '8px 0', background: '#4A7FA5', border: 'none', borderRadius: 6, color: 'white', fontSize: '0.75rem', cursor: 'pointer', fontFamily: "'Noto Sans KR',sans-serif", fontWeight: 600
                                 }}>완료</button>
                               </div>
                             </div>
