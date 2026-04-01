@@ -329,16 +329,21 @@ export async function POST(request: Request) {
         try {
           const buffer = await file.arrayBuffer()
           const base64 = Buffer.from(buffer).toString('base64')
+
+          console.log(`[Processing] File: ${file.name}, Size: ${base64.length}`)
+
           const { fullText, words } = await callGoogleVision(base64)
 
           // 첫 번째 이미지의 Vision 응답 저장 (디버그용)
           if (!visionResponse) {
             visionResponse = {
+              success: true,
               textExtracted: fullText.length > 0,
               textLength: fullText.length,
               wordsCount: words.length,
-              textPreview: fullText.substring(0, 200),
+              textPreview: fullText.substring(0, 300),
             }
+            console.log('[Vision Success]', visionResponse)
           }
 
           // 두 가지 방식으로 파싱: 일반 텍스트 + 테이블 형식
@@ -357,7 +362,15 @@ export async function POST(request: Request) {
 
           return Array.from(merged.values())
         } catch (err) {
-          console.error(`Error processing image ${file.name}:`, err)
+          const errorMsg = err instanceof Error ? err.message : String(err)
+          console.error(`[Error processing image ${file.name}]:`, errorMsg)
+
+          if (!visionResponse) {
+            visionResponse = {
+              success: false,
+              error: errorMsg,
+            }
+          }
           return []
         }
       })
