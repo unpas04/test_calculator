@@ -21,8 +21,13 @@ interface TextRow {
 }
 
 async function callGoogleVision(base64Image: string): Promise<{ fullText: string; words: Word[] }> {
+  const apiKey = process.env.GOOGLE_VISION_API_KEY
+  if (!apiKey) {
+    throw new Error('GOOGLE_VISION_API_KEY not configured')
+  }
+
   const response = await fetch(
-    `https://vision.googleapis.com/v1/images:annotate?key=${process.env.GOOGLE_VISION_API_KEY}`,
+    `https://vision.googleapis.com/v1/images:annotate?key=${apiKey}`,
     {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
@@ -37,15 +42,29 @@ async function callGoogleVision(base64Image: string): Promise<{ fullText: string
     }
   )
 
+  const data: any = await response.json()
+
   if (!response.ok) {
-    throw new Error(`Google Vision API failed: ${response.statusText}`)
+    console.error('[Google Vision Error]', {
+      status: response.status,
+      statusText: response.statusText,
+      error: data.error,
+    })
+    throw new Error(`Google Vision API failed: ${data.error?.message || response.statusText}`)
   }
 
-  const data: any = await response.json()
   const fullAnnotation = data.responses?.[0]?.fullTextAnnotation
   const textAnnotations = data.responses?.[0]?.textAnnotations
 
+  // 디버그 로그
+  console.log('[Google Vision Response]', {
+    hasFullAnnotation: !!fullAnnotation,
+    hasTextAnnotations: !!textAnnotations && textAnnotations.length > 0,
+    textLength: textAnnotations?.[0]?.description?.length || 0,
+  })
+
   if (!fullAnnotation && (!textAnnotations || textAnnotations.length === 0)) {
+    console.warn('[Google Vision] No text detected in image')
     return { fullText: '', words: [] }
   }
 
