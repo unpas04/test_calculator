@@ -371,6 +371,7 @@ export default function HomePage() {
             emoji: block.emoji,
             category: block.category,
             cost: block.cost,
+            ingredients: block.ingredients || [], // 재료 정보 포함
           })
         }
       }
@@ -1130,9 +1131,9 @@ export default function HomePage() {
           </>
         ) : (
           <>
-            {/* 메뉴 탭: 카테고리 필터 */}
+            {/* 레시피 탭: 카테고리 필터 */}
             <div style={{ display: 'flex', gap: 6, padding: '8px 0', overflowX: 'auto', flexShrink: 0, marginBottom: 14, scrollbarWidth: 'none' }}>
-              {['all', 'main', 'side', 'banchan', 'drink', 'extra'].map(cat => (
+              {['all', 'main', 'side', 'banchan', 'drink', 'dessert', 'extra'].map(cat => (
                 <button key={cat} onClick={() => setMenuCategory(cat)}
                   style={{
                     padding: '6px 12px', borderRadius: 20, border: 'none', cursor: 'pointer',
@@ -1141,66 +1142,62 @@ export default function HomePage() {
                     fontSize: '0.72rem', fontWeight: 700, fontFamily: "'Noto Sans KR',sans-serif", whiteSpace: 'nowrap', flexShrink: 0,
                   }}
                 >
-                  {cat === 'all' ? '전체' : cat === 'main' ? '메인' : cat === 'side' ? '사이드' : cat === 'banchan' ? '반찬' : cat === 'drink' ? '음료' : '기타'}
+                  {cat === 'all' ? '전체' : cat === 'main' ? '메인' : cat === 'side' ? '사이드' : cat === 'banchan' ? '반찬' : cat === 'drink' ? '음료' : cat === 'dessert' ? '디저트' : '기타'}
                 </button>
               ))}
             </div>
 
-            {/* 메뉴 목록: 카테고리별 섹션 */}
+            {/* 레시피 목록: 큰 카드 형태 */}
             {filteredMenus.length === 0 ? (
               <motion.div initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.1 }}
                 style={{ textAlign: 'center', paddingTop: 80, color: 'rgba(200,216,228,0.3)' }}>
                 <div style={{ fontSize: '3.5rem', marginBottom: 16 }}>🐟</div>
-                <p style={{ fontSize: '0.95rem', marginBottom: 6 }}>검색 결과가 없어요</p>
-                <p style={{ fontSize: '0.78rem', opacity: 0.6 }}>다른 검색어를 시도해봐요</p>
+                <p style={{ fontSize: '0.95rem', marginBottom: 6 }}>레시피가 없어요</p>
+                <p style={{ fontSize: '0.78rem', opacity: 0.6 }}>레시피 추가 버튼으로 첫 레시피를 만들어봐요</p>
               </motion.div>
             ) : (
-              <div style={{ display: 'flex', flexDirection: 'column', gap: 20 }}>
-                {['main', 'side', 'banchan', 'drink', 'extra'].map(cat => {
-                  const items = filteredMenus.filter(m => m.category === cat)
-                  if (items.length === 0) return null
-                  const catLabel = { main: '메인', side: '사이드', banchan: '반찬', drink: '음료', extra: '기타' }[cat] || cat
-                  return (
-                    <div key={cat}>
-                      <h3 style={{ fontSize: '0.85rem', fontWeight: 700, color: 'rgba(200,216,228,0.5)', marginBottom: 10, margin: '0 0 10px 0' }}>
-                        {catLabel}
-                      </h3>
-                      <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 8 }}>
-                        {items.map((menu, i) => (
-                          <motion.div
-                            key={menu.id}
-                            initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }}
-                            transition={{ delay: i * 0.03 }}
-                            onClick={() => router.push(`/calculator?menuId=${menu.id}&returnTo=/`)}
-                            style={{
-                              background: 'rgba(255,255,255,0.04)',
-                              border: '1px solid rgba(255,255,255,0.08)',
-                              borderRadius: 12, padding: '12px 14px',
-                              cursor: 'pointer', transition: '0.2s',
-                            }}
-                            whileHover={{ background: 'rgba(255,255,255,0.07)' }}
-                            whileTap={{ scale: 0.96 }}
-                          >
-                            <div style={{ fontSize: '1.4rem', marginBottom: 6 }}>{menu.emoji}</div>
-                            <div style={{ fontSize: '0.82rem', fontWeight: 700, color: 'white', marginBottom: 3 }}>{menu.name}</div>
-                            {menu.cost > 0 && (
-                              <div style={{ fontSize: '0.65rem', color: 'rgba(200,216,228,0.4)' }}>
-                                원가 {menu.cost.toLocaleString()}원
-                              </div>
-                            )}
-                          </motion.div>
-                        ))}
+              <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
+                {filteredMenus.map((menu, i) => (
+                  <motion.div
+                    key={menu.id}
+                    initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }}
+                    transition={{ delay: i * 0.04 }}
+                    onClick={() => router.push(`/calculator?menuId=${menu.id}&returnTo=/`)}
+                    style={{
+                      background: 'linear-gradient(135deg, #162030, #1C2D40)',
+                      border: '1px solid rgba(74,127,165,0.18)',
+                      borderRadius: 16, padding: '14px 16px',
+                      cursor: 'pointer', transition: '0.2s',
+                    }}
+                    whileHover={{ background: 'linear-gradient(135deg, #1a2a3a, #202e40)' }}
+                    whileTap={{ scale: 0.98 }}
+                  >
+                    <div style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', gap: 10 }}>
+                      <div style={{ minWidth: 0, flex: 1 }}>
+                        <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 6 }}>
+                          <span style={{ fontSize: '1.2rem' }}>{menu.emoji}</span>
+                          <span style={{ fontSize: '0.95rem', fontWeight: 700, color: 'white', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{menu.name}</span>
+                        </div>
+                        <div style={{ fontSize: '0.72rem', color: 'rgba(200,216,228,0.6)', lineHeight: 1.5 }}>
+                          {menu.ingredients && menu.ingredients.length > 0
+                            ? menu.ingredients.map((ing: any) => ing.name || ing).join(', ')
+                            : '재료 정보 없음'}
+                        </div>
                       </div>
+                      <button onClick={(e) => { e.stopPropagation(); router.push(`/calculator?menuId=${menu.id}&returnTo=/`) }}
+                        style={{ background: 'none', border: 'none', cursor: 'pointer', color: 'rgba(200,216,228,0.35)', fontSize: '0.9rem', fontWeight: 700, flexShrink: 0 }}>
+                        ✏️
+                      </button>
                     </div>
-                  )
-                })}
+                  </motion.div>
+                ))}
               </div>
             )}
           </>
         )}
       </main>
 
-      {/* ── 모바일: +상품 추가 버튼 (메뉴판 탭에서만) ── */}
+      {/* ── 모바일: 탭별 하단 버튼 ── */}
       {homeTab === 'sets' && (
         <motion.div
           className="home-bottom-mobile"
@@ -1231,6 +1228,48 @@ export default function HomePage() {
         </motion.div>
       )}
 
+      {/* ── 모바일: 레시피관리 탭 하단 버튼 ── */}
+      {homeTab === 'menus' && (
+        <motion.div
+          className="home-bottom-mobile"
+          initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }}
+          transition={{ delay: 0.15 }}
+          style={{
+            position: 'fixed', bottom: 0, left: 0, right: 0, zIndex: 20,
+            background: 'rgba(10,18,28,0.96)', backdropFilter: 'blur(16px)',
+            borderTop: '1px solid rgba(74,127,165,0.12)',
+            padding: '14px 20px',
+            paddingBottom: 'calc(env(safe-area-inset-bottom, 0px) + 14px)',
+          }}
+        >
+          <div style={{ maxWidth: 680, margin: '0 auto', display: 'flex', gap: 10 }}>
+            <motion.button
+              whileHover={{ scale: 1.03 }} whileTap={{ scale: 0.96 }}
+              onClick={() => router.push('/fridge')}
+              style={{
+                flex: 1,
+                background: 'rgba(74,127,165,0.2)',
+                border: '1px solid rgba(74,127,165,0.3)', borderRadius: 14, color: '#7DB8D8', fontSize: '0.82rem',
+                padding: '12px 18px', cursor: 'pointer',
+                fontFamily: "'Noto Sans KR', sans-serif", fontWeight: 700,
+              }}
+            >🧊 냉장고</motion.button>
+            <motion.button
+              whileHover={{ scale: 1.03 }} whileTap={{ scale: 0.96 }}
+              onClick={() => router.push('/proto')}
+              style={{
+                flex: 1.2,
+                background: 'linear-gradient(135deg, #3A6FA5, #2A5080)',
+                border: 'none', borderRadius: 14, color: 'white', fontSize: '0.82rem',
+                padding: '12px 18px', cursor: 'pointer',
+                boxShadow: '0 4px 16px rgba(58,111,165,0.35)',
+                fontFamily: "'Noto Sans KR', sans-serif", fontWeight: 700,
+              }}
+            >➕ 레시피 추가</motion.button>
+          </div>
+        </motion.div>
+      )}
+
       {/* ── PC: FAB (floating, 메뉴판 탭에서만) ── */}
       {homeTab === 'sets' && (
         <motion.button
@@ -1246,6 +1285,33 @@ export default function HomePage() {
             fontFamily: "'Noto Sans KR', sans-serif", fontWeight: 700,
           }}
         >＋ 상품 추가</motion.button>
+      )}
+
+      {/* ── PC: 레시피관리 탭 버튼 ── */}
+      {homeTab === 'menus' && (
+        <div className="home-bottom-pc" style={{ position: 'fixed', bottom: 28, right: 24, zIndex: 20, display: 'flex', gap: 10 }}>
+          <motion.button
+            whileHover={{ scale: 1.04 }} whileTap={{ scale: 0.96 }}
+            onClick={() => router.push('/fridge')}
+            style={{
+              background: 'rgba(74,127,165,0.2)',
+              border: '1px solid rgba(74,127,165,0.3)', borderRadius: 18, color: '#7DB8D8', fontSize: '0.9rem',
+              padding: '14px 22px', cursor: 'pointer',
+              fontFamily: "'Noto Sans KR', sans-serif", fontWeight: 700,
+            }}
+          >🧊 냉장고</motion.button>
+          <motion.button
+            whileHover={{ scale: 1.04 }} whileTap={{ scale: 0.96 }}
+            onClick={() => router.push('/proto')}
+            style={{
+              background: 'linear-gradient(135deg, #3A6FA5, #2A5080)',
+              border: 'none', borderRadius: 18, color: 'white', fontSize: '0.9rem',
+              padding: '14px 22px', cursor: 'pointer',
+              boxShadow: '0 8px 28px rgba(58,111,165,0.4)',
+              fontFamily: "'Noto Sans KR', sans-serif", fontWeight: 700,
+            }}
+          >➕ 레시피 추가</motion.button>
+        </div>
       )}
 
       {/* 온보딩 모달 */}
