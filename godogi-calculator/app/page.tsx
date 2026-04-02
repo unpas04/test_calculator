@@ -550,18 +550,12 @@ export default function HomePage() {
               utm_medium="social"
               utm_campaign="home_header"
             />
-            <button onClick={() => router.push('/calculator')} className="home-editor-btn" style={{
-              background: 'rgba(255,255,255,0.05)', border: '1px solid rgba(255,255,255,0.09)',
-              color: 'rgba(200,216,228,0.45)', borderRadius: 8, padding: '7px 12px',
-              fontSize: '0.72rem', cursor: 'pointer', fontFamily: "'Noto Sans KR', sans-serif", whiteSpace: 'nowrap',
-            }}>원가 편집기 →</button>
           </div>
         </div>
       </header>
       <style>{`
         @media (max-width: 480px) {
           .home-subtitle { display: none !important; }
-          .home-editor-btn { display: none !important; }
         }
         /* 모바일: 통합 바 표시, PC floating 숨김 */
         .home-bottom-mobile { display: flex !important; }
