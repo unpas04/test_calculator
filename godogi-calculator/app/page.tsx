@@ -13,6 +13,19 @@ const DEFAULT_FEES = { delivery_platform: 6.8, delivery_card: 1.5, hall_card: 1.
 
 type BlockCategory = 'main' | 'side' | 'banchan' | 'drink' | 'extra'
 
+// 기본 카테고리 목록
+const DEFAULT_PRODUCT_CATEGORIES = [
+  { name: '탕/찌개류', emoji: '🍲' },
+  { name: '볶음류', emoji: '🥘' },
+  { name: '구이류', emoji: '🍖' },
+  { name: '밥류', emoji: '🍚' },
+  { name: '면류', emoji: '🍜' },
+  { name: '반찬류', emoji: '🥢' },
+  { name: '음료', emoji: '🥤' },
+  { name: '디저트', emoji: '🍰' },
+  { name: '기타', emoji: '🔔' },
+]
+
 interface DisplaySet {
   id: string
   name: string
@@ -563,14 +576,31 @@ export default function HomePage() {
 
       {/* 필터링 로직 */}
       {(() => {
-        const filteredSets = sets
-          .filter(s => setFilter === 'all' || s.channel === setFilter)
+        // 카테고리 필터: 'all' 선택 시 전체, 아니면 setFilter 카테고리명 매칭
+        const setsWithCategory = sets.map((s, idx) => ({
+          ...s,
+          product_category: s.product_category || DEFAULT_PRODUCT_CATEGORIES[idx % DEFAULT_PRODUCT_CATEGORIES.length].name
+        }))
+
+        const filteredSets = setsWithCategory
+          .filter(s => setFilter === '전체' || s.product_category === setFilter)
           .filter(s => s.name.includes(setSearch) || s.blocks.some(b => b.name.includes(setSearch)))
           .sort((a, b) =>
             sortBy === 'newest'
               ? new Date(b.created_at).getTime() - new Date(a.created_at).getTime()
               : a.costRate - b.costRate
           )
+
+        // 카테고리별 그룹화
+        const groupedBySets: Record<string, typeof filteredSets> = {}
+        filteredSets.forEach(set => {
+          const cat = set.product_category || '기타'
+          if (!groupedBySets[cat]) groupedBySets[cat] = []
+          groupedBySets[cat].push(set)
+        })
+
+        // 카테고리 순서대로 정렬
+        const orderedCategories = DEFAULT_PRODUCT_CATEGORIES.map(c => c.name).filter(c => groupedBySets[c])
 
         const filteredMenus = allMenus
           .filter(m => menuCategory === 'all' || m.category === menuCategory)
@@ -722,18 +752,18 @@ export default function HomePage() {
 
         {homeTab === 'sets' ? (
           <>
-            {/* 세트 탭: 필터 + 정렬 */}
+            {/* 세트 탭: 카테고리 필터 + 정렬 */}
             <div style={{ display: 'flex', gap: 6, padding: '8px 0', overflowX: 'auto', flexShrink: 0, marginBottom: 14, scrollbarWidth: 'none' }}>
-              {['all', 'delivery', 'hall'].map(f => (
-                <button key={f} onClick={() => setSetFilter(f as any)}
+              {['전체', ...DEFAULT_PRODUCT_CATEGORIES.map(c => c.name)].map((cat) => (
+                <button key={cat} onClick={() => setSetFilter(cat as any)}
                   style={{
                     padding: '6px 12px', borderRadius: 20, border: 'none', cursor: 'pointer',
-                    background: setFilter === f ? '#4A7FA5' : 'rgba(255,255,255,0.06)',
-                    color: setFilter === f ? 'white' : 'rgba(200,216,228,0.5)',
+                    background: setFilter === cat ? '#4A7FA5' : 'rgba(255,255,255,0.06)',
+                    color: setFilter === cat ? 'white' : 'rgba(200,216,228,0.5)',
                     fontSize: '0.72rem', fontWeight: 700, fontFamily: "'Noto Sans KR',sans-serif", whiteSpace: 'nowrap', flexShrink: 0,
                   }}
                 >
-                  {f === 'all' ? '전체' : f === 'delivery' ? '🛵 배달' : '🏠 홀'}
+                  {DEFAULT_PRODUCT_CATEGORIES.find(c => c.name === cat)?.emoji} {cat}
                 </button>
               ))}
               <div style={{ width: 1, background: 'rgba(255,255,255,0.1)', margin: '0 4px', flexShrink: 0 }} />
@@ -751,7 +781,7 @@ export default function HomePage() {
               ))}
             </div>
 
-            {/* 세트 목록 */}
+            {/* 세트 목록 - 카테고리별 그룹화 */}
             {setsLoading ? (
               <div style={{ display: 'flex', flexDirection: 'column', gap: 10, paddingTop: 8 }}>
                 {[1, 2, 3].map(i => (
@@ -771,140 +801,157 @@ export default function HomePage() {
                 <p style={{ fontSize: '0.78rem', opacity: 0.6 }}>아래 버튼을 눌러 첫 메뉴 구성을 만들어봐요</p>
               </motion.div>
             ) : (
-              <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
-                <AnimatePresence>
-                  {filteredSets.map((set, i) => {
-                    const ri = rateInfo(set.costRate)
-                    const isExpanded = expandedSetId === set.id
-                    return (
-                      <motion.div
-                        key={set.id}
-                        initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }}
-                        exit={{ opacity: 0, scale: 0.96 }}
-                        transition={{ delay: i * 0.04 }}
-                        style={{
-                          background: 'linear-gradient(135deg, #162030, #1C2D40)',
-                          border: '1px solid rgba(74,127,165,0.18)',
-                          borderRadius: 16, padding: '14px 16px',
-                          cursor: 'pointer', position: 'relative',
-                          transition: '0.2s',
-                        }}
-                      >
-                        {/* 헤더: 채널뱃지 + 이름 + 원가율% + 펼치기 버튼 */}
-                        <div
-                          onClick={() => setExpandedSetId(isExpanded ? null : set.id)}
-                          style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 10 }}
-                        >
-                          <div style={{ display: 'flex', alignItems: 'center', gap: 7, flex: 1, minWidth: 0 }}>
-                            <span style={{
-                              fontSize: '0.6rem', padding: '2px 7px', borderRadius: 20, flexShrink: 0,
-                              background: set.channel === 'delivery' ? 'rgba(74,127,165,0.25)' : 'rgba(74,140,111,0.25)',
-                              color: set.channel === 'delivery' ? '#5B9EC9' : '#5AAD82',
-                              border: `1px solid ${set.channel === 'delivery' ? 'rgba(74,127,165,0.4)' : 'rgba(74,140,111,0.4)'}`,
-                              fontWeight: 700,
-                            }}>
-                              {set.channel === 'delivery' ? '🛵 배달' : '🏠 홀'}
-                            </span>
-                            <span style={{ fontSize: '0.95rem', fontWeight: 700, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{set.name}</span>
-                          </div>
-                          <div style={{ display: 'flex', alignItems: 'center', gap: 10, flexShrink: 0 }}>
-                            <div style={{ textAlign: 'right' }}>
-                              {set.costRate > 0 ? (
-                                <>
-                                  <div style={{ fontSize: '0.58rem', color: 'rgba(200,216,228,0.35)', marginBottom: 2 }}>원가율</div>
-                                  <div style={{ fontSize: '1.2rem', fontWeight: 800, color: ri.color, lineHeight: 1 }}>
-                                    {Math.round(set.costRate)}%
-                                  </div>
-                                </>
-                              ) : (
-                                <div style={{ fontSize: '0.65rem', color: 'rgba(200,216,228,0.25)' }}>미입력</div>
-                              )}
-                            </div>
-                            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" style={{ flexShrink: 0, transform: isExpanded ? 'rotate(180deg)' : 'none', transition: '0.2s' }}>
-                              <polyline points="6 9 12 15 18 9"></polyline>
-                            </svg>
-                          </div>
-                        </div>
-
-                        {/* 펼친 상태: 상세 정보 */}
-                        <AnimatePresence>
-                          {isExpanded && (
-                            <motion.div initial={{ opacity: 0, height: 0 }} animate={{ opacity: 1, height: 'auto' }} exit={{ opacity: 0, height: 0 }} transition={{ duration: 0.2 }}
-                              style={{ borderTop: '1px solid rgba(255,255,255,0.06)', paddingTop: 12, marginTop: 12, overflow: 'hidden' }}>
-                              {/* 메뉴 칩 */}
-                              <div style={{ display: 'flex', gap: 5, flexWrap: 'wrap', marginBottom: 12 }}>
-                                {set.blocks.map(b => (
-                                  <span key={b.id} style={{
-                                    fontSize: '0.72rem',
-                                    background: 'rgba(255,255,255,0.06)',
-                                    border: '1px solid rgba(255,255,255,0.09)',
-                                    borderRadius: 6, padding: '3px 7px',
-                                    color: 'rgba(200,216,228,0.75)',
+              <div>
+                {orderedCategories.map((categoryName, catIdx) => (
+                  <section key={categoryName} style={{ marginBottom: 24 }}>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: 6, marginBottom: 10, paddingLeft: 4 }}>
+                      <span style={{ fontSize: '1.2rem' }}>
+                        {DEFAULT_PRODUCT_CATEGORIES.find(c => c.name === categoryName)?.emoji}
+                      </span>
+                      <h3 style={{ margin: 0, fontSize: '0.92rem', fontWeight: 700, color: 'rgba(200,216,228,0.8)' }}>
+                        {categoryName}
+                      </h3>
+                      <span style={{ fontSize: '0.68rem', color: 'rgba(200,216,228,0.3)', fontWeight: 600 }}>
+                        {groupedBySets[categoryName]?.length || 0}개
+                      </span>
+                    </div>
+                    <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
+                      <AnimatePresence>
+                        {(groupedBySets[categoryName] || []).map((set, i) => {
+                          const ri = rateInfo(set.costRate)
+                          const isExpanded = expandedSetId === set.id
+                          return (
+                            <motion.div
+                              key={set.id}
+                              initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }}
+                              exit={{ opacity: 0, scale: 0.96 }}
+                              transition={{ delay: (catIdx * 5 + i) * 0.04 }}
+                              style={{
+                                background: 'linear-gradient(135deg, #162030, #1C2D40)',
+                                border: '1px solid rgba(74,127,165,0.18)',
+                                borderRadius: 16, padding: '14px 16px',
+                                cursor: 'pointer', position: 'relative',
+                                transition: '0.2s',
+                              }}
+                            >
+                              {/* 헤더: 채널뱃지 + 이름 + 원가율% + 펼치기 버튼 */}
+                              <div
+                                onClick={() => setExpandedSetId(isExpanded ? null : set.id)}
+                                style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 10 }}
+                              >
+                                <div style={{ display: 'flex', alignItems: 'center', gap: 7, flex: 1, minWidth: 0 }}>
+                                  <span style={{
+                                    fontSize: '0.6rem', padding: '2px 7px', borderRadius: 20, flexShrink: 0,
+                                    background: set.channel === 'delivery' ? 'rgba(74,127,165,0.25)' : 'rgba(74,140,111,0.25)',
+                                    color: set.channel === 'delivery' ? '#5B9EC9' : '#5AAD82',
+                                    border: `1px solid ${set.channel === 'delivery' ? 'rgba(74,127,165,0.4)' : 'rgba(74,140,111,0.4)'}`,
+                                    fontWeight: 700,
                                   }}>
-                                    {b.emoji} {b.name}
+                                    {set.channel === 'delivery' ? '🛵 배달' : '🏠 홀'}
                                   </span>
-                                ))}
-                              </div>
-
-                              {/* 판매가 · 총원가 · 순이익 */}
-                              <div style={{ display: 'flex', gap: 12, marginBottom: 14, fontSize: '0.8rem' }}>
-                                <div>
-                                  <div style={{ fontSize: '0.58rem', color: 'rgba(200,216,228,0.35)', marginBottom: 2 }}>판매가</div>
-                                  <div style={{ fontWeight: 600, color: 'rgba(200,216,228,0.6)' }}>
-                                    {set.sale_price > 0 ? `${set.sale_price.toLocaleString()}원` : '—'}
-                                  </div>
+                                  <span style={{ fontSize: '0.95rem', fontWeight: 700, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{set.name}</span>
                                 </div>
-                                <div>
-                                  <div style={{ fontSize: '0.58rem', color: 'rgba(200,216,228,0.35)', marginBottom: 2 }}>총원가</div>
-                                  <div style={{ fontWeight: 700, color: 'rgba(200,216,228,0.7)' }}>
-                                    {set.totalCost.toLocaleString()}원
+                                <div style={{ display: 'flex', alignItems: 'center', gap: 10, flexShrink: 0 }}>
+                                  <div style={{ textAlign: 'right' }}>
+                                    {set.costRate > 0 ? (
+                                      <>
+                                        <div style={{ fontSize: '0.58rem', color: 'rgba(200,216,228,0.35)', marginBottom: 2 }}>원가율</div>
+                                        <div style={{ fontSize: '1.2rem', fontWeight: 800, color: ri.color, lineHeight: 1 }}>
+                                          {Math.round(set.costRate)}%
+                                        </div>
+                                      </>
+                                    ) : (
+                                      <div style={{ fontSize: '0.65rem', color: 'rgba(200,216,228,0.25)' }}>미입력</div>
+                                    )}
                                   </div>
-                                </div>
-                                <div>
-                                  <div style={{ fontSize: '0.58rem', color: 'rgba(200,216,228,0.35)', marginBottom: 2 }}>순이익</div>
-                                  <div style={{ fontWeight: 700, color: set.sale_price > set.totalCost ? '#7EC8A0' : '#F08080' }}>
-                                    {set.sale_price > 0 ? `${(set.sale_price - set.totalCost).toLocaleString()}원` : '—'}
-                                  </div>
+                                  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" style={{ flexShrink: 0, transform: isExpanded ? 'rotate(180deg)' : 'none', transition: '0.2s' }}>
+                                    <polyline points="6 9 12 15 18 9"></polyline>
+                                  </svg>
                                 </div>
                               </div>
 
-                              {/* 고독이의 한마디 */}
-                              <div style={{ background: 'rgba(74,127,165,0.15)', borderRadius: 8, padding: '8px 10px', marginBottom: 12, borderLeft: `3px solid ${ri.color}` }}>
-                                <div style={{ fontSize: '0.72rem', color: ri.color, fontWeight: 600 }}>
-                                  🐟 {ri.label}
-                                </div>
-                              </div>
+                              {/* 펼친 상태: 상세 정보 */}
+                              <AnimatePresence>
+                                {isExpanded && (
+                                  <motion.div initial={{ opacity: 0, height: 0 }} animate={{ opacity: 1, height: 'auto' }} exit={{ opacity: 0, height: 0 }} transition={{ duration: 0.2 }}
+                                    style={{ borderTop: '1px solid rgba(255,255,255,0.06)', paddingTop: 12, marginTop: 12, overflow: 'hidden' }}>
+                                    {/* 메뉴 칩 */}
+                                    <div style={{ display: 'flex', gap: 5, flexWrap: 'wrap', marginBottom: 12 }}>
+                                      {set.blocks.map(b => (
+                                        <span key={b.id} style={{
+                                          fontSize: '0.72rem',
+                                          background: 'rgba(255,255,255,0.06)',
+                                          border: '1px solid rgba(255,255,255,0.09)',
+                                          borderRadius: 6, padding: '3px 7px',
+                                          color: 'rgba(200,216,228,0.75)',
+                                        }}>
+                                          {b.emoji} {b.name}
+                                        </span>
+                                      ))}
+                                    </div>
 
-                              {/* 수정 버튼 */}
-                              <button onClick={e => { e.stopPropagation(); router.push(`/proto?id=${set.id}`) }}
-                                style={{
-                                  width: '100%', padding: '8px 0', background: 'rgba(74,127,165,0.2)',
-                                  border: '1px solid rgba(74,127,165,0.3)', borderRadius: 8,
-                                  color: '#7DB8D8', fontSize: '0.78rem', fontWeight: 600,
-                                  fontFamily: "'Noto Sans KR',sans-serif", cursor: 'pointer', marginBottom: 8,
-                                }}>
-                                ✏️ 수정하기
-                              </button>
+                                    {/* 판매가 · 총원가 · 순이익 */}
+                                    <div style={{ display: 'flex', gap: 12, marginBottom: 14, fontSize: '0.8rem' }}>
+                                      <div>
+                                        <div style={{ fontSize: '0.58rem', color: 'rgba(200,216,228,0.35)', marginBottom: 2 }}>판매가</div>
+                                        <div style={{ fontWeight: 600, color: 'rgba(200,216,228,0.6)' }}>
+                                          {set.sale_price > 0 ? `${set.sale_price.toLocaleString()}원` : '—'}
+                                        </div>
+                                      </div>
+                                      <div>
+                                        <div style={{ fontSize: '0.58rem', color: 'rgba(200,216,228,0.35)', marginBottom: 2 }}>총원가</div>
+                                        <div style={{ fontWeight: 700, color: 'rgba(200,216,228,0.7)' }}>
+                                          {set.totalCost.toLocaleString()}원
+                                        </div>
+                                      </div>
+                                      <div>
+                                        <div style={{ fontSize: '0.58rem', color: 'rgba(200,216,228,0.35)', marginBottom: 2 }}>순이익</div>
+                                        <div style={{ fontWeight: 700, color: set.sale_price > set.totalCost ? '#7EC8A0' : '#F08080' }}>
+                                          {set.sale_price > 0 ? `${(set.sale_price - set.totalCost).toLocaleString()}원` : '—'}
+                                        </div>
+                                      </div>
+                                    </div>
 
-                              {/* 삭제 버튼 */}
-                              <button
-                                onClick={e => { e.stopPropagation(); setDeleteConfirmId(set.id) }}
-                                style={{
-                                  width: '100%', padding: '8px 0', background: 'rgba(196,74,74,0.15)',
-                                  border: '1px solid rgba(196,74,74,0.3)', borderRadius: 8,
-                                  color: '#F08080', fontSize: '0.78rem', fontWeight: 600,
-                                  fontFamily: "'Noto Sans KR',sans-serif", cursor: 'pointer',
-                                }}>
-                                🗑️ 삭제하기
-                              </button>
+                                    {/* 고독이의 한마디 */}
+                                    <div style={{ background: 'rgba(74,127,165,0.15)', borderRadius: 8, padding: '8px 10px', marginBottom: 12, borderLeft: `3px solid ${ri.color}` }}>
+                                      <div style={{ fontSize: '0.72rem', color: ri.color, fontWeight: 600 }}>
+                                        🐟 {ri.label}
+                                      </div>
+                                    </div>
+
+                                    {/* 수정 버튼 */}
+                                    <button onClick={e => { e.stopPropagation(); router.push(`/proto?id=${set.id}`) }}
+                                      style={{
+                                        width: '100%', padding: '8px 0', background: 'rgba(74,127,165,0.2)',
+                                        border: '1px solid rgba(74,127,165,0.3)', borderRadius: 8,
+                                        color: '#7DB8D8', fontSize: '0.78rem', fontWeight: 600,
+                                        fontFamily: "'Noto Sans KR',sans-serif", cursor: 'pointer', marginBottom: 8,
+                                      }}>
+                                      ✏️ 수정하기
+                                    </button>
+
+                                    {/* 삭제 버튼 */}
+                                    <button
+                                      onClick={e => { e.stopPropagation(); setDeleteConfirmId(set.id) }}
+                                      style={{
+                                        width: '100%', padding: '8px 0', background: 'rgba(196,74,74,0.15)',
+                                        border: '1px solid rgba(196,74,74,0.3)', borderRadius: 8,
+                                        color: '#F08080', fontSize: '0.78rem', fontWeight: 600,
+                                        fontFamily: "'Noto Sans KR',sans-serif", cursor: 'pointer',
+                                      }}>
+                                      🗑️ 삭제하기
+                                    </button>
+                                  </motion.div>
+                                )}
+                              </AnimatePresence>
                             </motion.div>
-                          )}
-                        </AnimatePresence>
-                      </motion.div>
-                    )
-                  })}
-              </AnimatePresence>
-            </div>
+                          )
+                        })}
+                      </AnimatePresence>
+                    </div>
+                  </section>
+                ))}
+              </div>
             )}
           </>
         ) : (
