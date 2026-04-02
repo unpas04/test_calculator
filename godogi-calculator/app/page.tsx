@@ -592,6 +592,60 @@ export default function HomePage() {
         {/* 대시보드 통계 - 메뉴판 탭에서만 표시 */}
         {homeTab === 'sets' && (
           <>
+            {/* 상단 핵심 통계 카드 */}
+            <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.05 }}
+              style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: 10, marginBottom: 16 }}>
+              {/* 상품 개수 */}
+              <div style={{
+                background: 'linear-gradient(135deg, rgba(74,127,165,0.15), rgba(91,158,201,0.1))',
+                border: '1px solid rgba(74,127,165,0.2)',
+                borderRadius: 12,
+                padding: '14px 12px',
+                textAlign: 'center'
+              }}>
+                <div style={{ fontSize: '0.6rem', color: 'rgba(200,216,228,0.4)', marginBottom: 4, fontWeight: 600 }}>📋 상품</div>
+                <div style={{ fontSize: '1.3rem', fontWeight: 800, color: '#4A7FA5' }}>
+                  {filteredSets.length}개
+                </div>
+              </div>
+
+              {/* 평균 원가율 */}
+              {menuStats && (
+                <div style={{
+                  background: 'linear-gradient(135deg, rgba(126,200,160,0.15), rgba(139,201,169,0.1))',
+                  border: '1px solid rgba(126,200,160,0.2)',
+                  borderRadius: 12,
+                  padding: '14px 12px',
+                  textAlign: 'center'
+                }}>
+                  <div style={{ fontSize: '0.6rem', color: 'rgba(200,216,228,0.4)', marginBottom: 4, fontWeight: 600 }}>평균 원가율</div>
+                  <div style={{
+                    fontSize: '1.3rem',
+                    fontWeight: 800,
+                    color: menuStats.avgRate === null ? 'rgba(200,216,228,0.3)' : menuStats.avgRate < 40 ? '#7EC8A0' : menuStats.avgRate < 60 ? '#F4A460' : '#F08080'
+                  }}>
+                    {menuStats.avgRate === null ? '—' : `${menuStats.avgRate.toFixed(1)}%`}
+                  </div>
+                </div>
+              )}
+
+              {/* 주의 필요 */}
+              {menuStats && (
+                <div style={{
+                  background: 'linear-gradient(135deg, rgba(240,128,128,0.15), rgba(240,128,128,0.1))',
+                  border: '1px solid rgba(240,128,128,0.2)',
+                  borderRadius: 12,
+                  padding: '14px 12px',
+                  textAlign: 'center'
+                }}>
+                  <div style={{ fontSize: '0.6rem', color: 'rgba(200,216,228,0.4)', marginBottom: 4, fontWeight: 600 }}>⚠️ 주의 필요</div>
+                  <div style={{ fontSize: '1.3rem', fontWeight: 800, color: menuStats.warnCount > 0 ? '#F08080' : 'rgba(200,216,228,0.3)' }}>
+                    {menuStats.warnCount}개
+                  </div>
+                </div>
+              )}
+            </motion.div>
+
             {/* TOP 5 수익성 좋은 상품 */}
             {top5Sets.length > 0 && (
               <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.1 }}
