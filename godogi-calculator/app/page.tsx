@@ -904,7 +904,7 @@ export default function HomePage() {
                 transition: '0.2s',
               }}
             >
-              {tab === 'sets' ? '🍽️ 내 메뉴판' : '📖 메뉴관리'}
+              {tab === 'sets' ? '🍽️ 내 메뉴판' : '📖 레시피관리'}
             </button>
           ))}
         </div>
@@ -913,7 +913,7 @@ export default function HomePage() {
         <div style={{ padding: '0 0 10px 0', flexShrink: 0 }}>
           <input
             type="text"
-            placeholder={homeTab === 'sets' ? '세트 검색...' : '메뉴 검색...'}
+            placeholder={homeTab === 'sets' ? '상품 검색...' : '레시피 검색...'}
             value={homeTab === 'sets' ? setSearch : menuSearch}
             onChange={(e) => homeTab === 'sets' ? setSetSearch(e.target.value) : setMenuSearch(e.target.value)}
             style={{
