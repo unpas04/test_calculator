@@ -108,6 +108,7 @@ function computeSetDisplay(dbSet: any, feeSettings: typeof DEFAULT_FEES): Displa
       emoji: item.menus?.emoji || '🍽️',
       cost: Math.round(calcMenuTotalCost(item.menus || {})),
       category: (item.menus?.category || 'main') as BlockCategory,
+      ingredients: item.menus?.ingredients || [],
     }))
   const baseCost = blocks.reduce((s: number, b: any) => s + b.cost, 0)
   const feeRate = dbSet.channel === 'delivery'
@@ -365,13 +366,17 @@ export default function HomePage() {
     for (const set of sets) {
       for (const block of set.blocks) {
         if (!menuMap.has(block.menu_id)) {
+          // 재료명 배열로 변환
+          const ingredientNames = block.ingredients && Array.isArray(block.ingredients)
+            ? block.ingredients.map((ing: any) => ing.name || ing).filter(Boolean)
+            : []
           menuMap.set(block.menu_id, {
             id: block.menu_id,
             name: block.name,
             emoji: block.emoji,
             category: block.category,
             cost: block.cost,
-            ingredients: block.ingredients || [], // 재료 정보 포함
+            ingredients: ingredientNames,
           })
         }
       }
@@ -1186,7 +1191,7 @@ export default function HomePage() {
                             <div style={{ fontSize: '0.82rem', fontWeight: 700, color: 'white', marginBottom: 3 }}>{menu.name}</div>
                             {menu.ingredients && menu.ingredients.length > 0 && (
                               <div style={{ fontSize: '0.65rem', color: 'rgba(200,216,228,0.5)', lineHeight: 1.4 }}>
-                                {menu.ingredients.map((ing: any) => ing.name || ing).join(', ')}
+                                {Array.isArray(menu.ingredients) ? menu.ingredients.join(', ') : ''}
                               </div>
                             )}
                           </motion.div>
