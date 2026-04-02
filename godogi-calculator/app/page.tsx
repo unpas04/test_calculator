@@ -752,9 +752,9 @@ export default function HomePage() {
 
         {homeTab === 'sets' ? (
           <>
-            {/* 세트 탭: 카테고리 필터 + 정렬 */}
+            {/* 세트 탭: 카테고리 필터 + 정렬 (사용 중인 카테고리만 표시) */}
             <div style={{ display: 'flex', gap: 6, padding: '8px 0', overflowX: 'auto', flexShrink: 0, marginBottom: 14, scrollbarWidth: 'none' }}>
-              {['전체', ...DEFAULT_PRODUCT_CATEGORIES.map(c => c.name)].map((cat) => (
+              {['전체', ...orderedCategories].map((cat) => (
                 <button key={cat} onClick={() => setSetFilter(cat as any)}
                   style={{
                     padding: '6px 12px', borderRadius: 20, border: 'none', cursor: 'pointer',
@@ -1026,99 +1026,53 @@ export default function HomePage() {
         )}
       </main>
 
-      {/* ── 모바일: 통계 + FAB 통합 바 ── */}
-      <motion.div
-        className="home-bottom-mobile"
-        initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }}
-        transition={{ delay: 0.15 }}
-        style={{
-          position: 'fixed', bottom: 0, left: 0, right: 0, zIndex: 20,
-          background: 'rgba(10,18,28,0.96)', backdropFilter: 'blur(16px)',
-          borderTop: '1px solid rgba(74,127,165,0.12)',
-          padding: '14px 20px',
-          paddingBottom: 'calc(env(safe-area-inset-bottom, 0px) + 14px)',
-        }}
-      >
-        <div style={{ maxWidth: 680, margin: '0 auto', display: 'flex', alignItems: 'center', gap: 10 }}>
-          {menuStats && (
-            <div style={{ display: 'flex', alignItems: 'center', flex: 1, minWidth: 0, overflow: 'hidden' }}>
-              {[
-                { label: '구성', value: `${menuStats.total}개` },
-                { label: '평균 원가율', value: menuStats.avgRate !== null ? `${menuStats.avgRate.toFixed(1)}%` : '—', color: menuStats.avgRate === null ? undefined : menuStats.avgRate < 40 ? '#7EC8A0' : menuStats.avgRate < 60 ? '#F4A460' : '#F08080' },
-                { label: '주의', value: `${menuStats.warnCount}개`, color: menuStats.warnCount > 0 ? '#F08080' : 'rgba(200,216,228,0.35)' },
-              ].map(({ label, value, color }, i) => (
-                <div key={label} style={{ display: 'flex', alignItems: 'baseline', gap: 3, ...(i > 0 ? { borderLeft: '1px solid rgba(255,255,255,0.07)', paddingLeft: 9, marginLeft: 9 } : {}) }}>
-                  <span style={{ fontSize: '0.58rem', color: 'rgba(200,216,228,0.3)', whiteSpace: 'nowrap' }}>{label}</span>
-                  <span style={{ fontSize: '0.85rem', fontWeight: 700, color: color || 'white', whiteSpace: 'nowrap' }}>{value}</span>
-                </div>
-              ))}
-            </div>
-          )}
-          <motion.button
-            whileHover={{ scale: 1.03 }} whileTap={{ scale: 0.96 }}
-            onClick={() => router.push('/proto')}
-            style={{
-              flexShrink: 0,
-              background: 'linear-gradient(135deg, #3A6FA5, #2A5080)',
-              border: 'none', borderRadius: 14, color: 'white', fontSize: '0.82rem',
-              padding: '10px 18px', cursor: 'pointer',
-              boxShadow: '0 4px 16px rgba(58,111,165,0.35)',
-              fontFamily: "'Noto Sans KR', sans-serif", fontWeight: 700, whiteSpace: 'nowrap',
-            }}
-          >＋ 새 원가 계산</motion.button>
-        </div>
-      </motion.div>
-
-      {/* ── PC: 통계 바 (floating) ── */}
-      {menuStats && (
+      {/* ── 모바일: +상품 추가 버튼 (메뉴판 탭에서만) ── */}
+      {homeTab === 'sets' && (
         <motion.div
-          className="home-bottom-pc"
+          className="home-bottom-mobile"
           initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }}
-          transition={{ delay: 0.2 }}
-          style={{ position: 'fixed', bottom: 88, left: 0, right: 0, zIndex: 20, padding: '0 16px', pointerEvents: 'none' }}
+          transition={{ delay: 0.15 }}
+          style={{
+            position: 'fixed', bottom: 0, left: 0, right: 0, zIndex: 20,
+            background: 'rgba(10,18,28,0.96)', backdropFilter: 'blur(16px)',
+            borderTop: '1px solid rgba(74,127,165,0.12)',
+            padding: '14px 20px',
+            paddingBottom: 'calc(env(safe-area-inset-bottom, 0px) + 14px)',
+          }}
         >
-          <div style={{ maxWidth: 680, margin: '0 auto', pointerEvents: 'auto' }}>
-            <div style={{
-              display: 'flex', alignItems: 'center', gap: 10,
-              background: 'rgba(15,25,35,0.94)', backdropFilter: 'blur(14px)',
-              borderRadius: 16, padding: '10px 14px',
-              border: '1px solid rgba(74,127,165,0.15)',
-            }}>
-              {[
-                { label: '구성', value: `${menuStats.total}개` },
-                { label: '평균 원가율', value: menuStats.avgRate !== null ? `${menuStats.avgRate.toFixed(1)}%` : '—', color: menuStats.avgRate === null ? undefined : menuStats.avgRate < 40 ? '#7EC8A0' : menuStats.avgRate < 60 ? '#F4A460' : '#F08080' },
-                { label: '주의', value: `${menuStats.warnCount}개`, color: menuStats.warnCount > 0 ? '#F08080' : 'rgba(200,216,228,0.5)' },
-              ].map(({ label, value, color }, i) => (
-                <div key={label} style={{ display: 'flex', alignItems: 'baseline', gap: 4, ...(i > 0 ? { borderLeft: '1px solid rgba(255,255,255,0.07)', paddingLeft: 10 } : {}) }}>
-                  <span style={{ fontSize: '0.62rem', color: 'rgba(200,216,228,0.35)' }}>{label}</span>
-                  <span style={{ fontSize: '0.9rem', fontWeight: 700, color: color || 'white' }}>{value}</span>
-                </div>
-              ))}
-              <div style={{ flex: 1 }} />
-              <span style={{ fontSize: '0.72rem', color: 'rgba(200,216,228,0.35)' }}>
-                🐟 {menuStats.avgRate === null ? '판매가 미입력'
-                  : menuStats.warnCount > 0 ? `${menuStats.warnCount}개 점검 필요`
-                  : menuStats.avgRate < 40 ? '흐뭇해요 🎉' : '조금 더 줄여봐요'}
-              </span>
-            </div>
+          <div style={{ maxWidth: 680, margin: '0 auto' }}>
+            <motion.button
+              whileHover={{ scale: 1.03 }} whileTap={{ scale: 0.96 }}
+              onClick={() => router.push('/proto')}
+              style={{
+                width: '100%',
+                background: 'linear-gradient(135deg, #3A6FA5, #2A5080)',
+                border: 'none', borderRadius: 14, color: 'white', fontSize: '0.82rem',
+                padding: '12px 18px', cursor: 'pointer',
+                boxShadow: '0 4px 16px rgba(58,111,165,0.35)',
+                fontFamily: "'Noto Sans KR', sans-serif", fontWeight: 700,
+              }}
+            >＋ 상품 추가</motion.button>
           </div>
         </motion.div>
       )}
 
-      {/* ── PC: FAB (floating) ── */}
-      <motion.button
-        className="home-bottom-pc"
-        whileHover={{ scale: 1.04 }} whileTap={{ scale: 0.96 }}
-        onClick={() => router.push('/proto')}
-        style={{
-          position: 'fixed', bottom: 28, right: 24,
-          background: 'linear-gradient(135deg, #3A6FA5, #2A5080)',
-          border: 'none', borderRadius: 18, color: 'white', fontSize: '0.9rem',
-          padding: '14px 22px', cursor: 'pointer',
-          boxShadow: '0 8px 28px rgba(58,111,165,0.4)',
-          fontFamily: "'Noto Sans KR', sans-serif", fontWeight: 700,
-        }}
-      >＋ 새 원가 계산 만들기</motion.button>
+      {/* ── PC: FAB (floating, 메뉴판 탭에서만) ── */}
+      {homeTab === 'sets' && (
+        <motion.button
+          className="home-bottom-pc"
+          whileHover={{ scale: 1.04 }} whileTap={{ scale: 0.96 }}
+          onClick={() => router.push('/proto')}
+          style={{
+            position: 'fixed', bottom: 28, right: 24,
+            background: 'linear-gradient(135deg, #3A6FA5, #2A5080)',
+            border: 'none', borderRadius: 18, color: 'white', fontSize: '0.9rem',
+            padding: '14px 22px', cursor: 'pointer',
+            boxShadow: '0 8px 28px rgba(58,111,165,0.4)',
+            fontFamily: "'Noto Sans KR', sans-serif", fontWeight: 700,
+          }}
+        >＋ 상품 추가</motion.button>
+      )}
 
       {/* 온보딩 모달 */}
       <OnboardingModal
