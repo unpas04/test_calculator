@@ -26,6 +26,54 @@ const DEFAULT_PRODUCT_CATEGORIES = [
   { name: '기타', emoji: '🔔' },
 ]
 
+// 업종 목록
+const INDUSTRY_LIST = [
+  { name: '한식', emoji: '🍱' },
+  { name: '카페/디저트', emoji: '☕' },
+  { name: '술집/이자카야', emoji: '🍺' },
+  { name: '양식', emoji: '🍝' },
+  { name: '일식', emoji: '🍣' },
+  { name: '치킨/패스트푸드', emoji: '🍗' },
+  { name: '분식', emoji: '🥙' },
+  { name: '기타', emoji: '🏪' },
+]
+
+// 업종별 카테고리 매핑
+const INDUSTRY_CATEGORIES: Record<string, { name: string; emoji: string }[]> = {
+  '한식': [
+    { name: '탕/찌개류', emoji: '🍲' }, { name: '볶음류', emoji: '🥘' },
+    { name: '구이류', emoji: '🍖' }, { name: '밥류', emoji: '🍚' },
+    { name: '반찬류', emoji: '🥢' }, { name: '음료', emoji: '🥤' }, { name: '기타', emoji: '🔔' },
+  ],
+  '카페/디저트': [
+    { name: '커피/음료', emoji: '☕' }, { name: '베이커리', emoji: '🥐' },
+    { name: '케이크', emoji: '🎂' }, { name: '스무디/쉐이크', emoji: '🥤' }, { name: '기타', emoji: '🔔' },
+  ],
+  '술집/이자카야': [
+    { name: '안주류', emoji: '🍢' }, { name: '구이류', emoji: '🍖' },
+    { name: '찜/조림', emoji: '🥘' }, { name: '사이드', emoji: '🥗' },
+    { name: '술/음료', emoji: '🍻' }, { name: '기타', emoji: '🔔' },
+  ],
+  '양식': [
+    { name: '메인', emoji: '🍽️' }, { name: '파스타/피자', emoji: '🍝' },
+    { name: '스프/샐러드', emoji: '🥗' }, { name: '음료/디저트', emoji: '🥤' }, { name: '기타', emoji: '🔔' },
+  ],
+  '일식': [
+    { name: '초밥/롤', emoji: '🍱' }, { name: '라멘/면류', emoji: '🍜' },
+    { name: '덮밥류', emoji: '🍚' }, { name: '사이드', emoji: '🥗' },
+    { name: '음료', emoji: '🥤' }, { name: '기타', emoji: '🔔' },
+  ],
+  '치킨/패스트푸드': [
+    { name: '치킨류', emoji: '🍗' }, { name: '세트', emoji: '🍱' },
+    { name: '사이드', emoji: '🍟' }, { name: '음료', emoji: '🥤' }, { name: '기타', emoji: '🔔' },
+  ],
+  '분식': [
+    { name: '떡볶이류', emoji: '🌶️' }, { name: '튀김류', emoji: '🍢' },
+    { name: '면/만두', emoji: '🍜' }, { name: '밥류', emoji: '🍚' },
+    { name: '음료', emoji: '🥤' }, { name: '기타', emoji: '🔔' },
+  ],
+}
+
 interface DisplaySet {
   id: string
   name: string
@@ -77,6 +125,13 @@ function rateInfo(rate: number) {
   if (rate < 50)  return { label: '👍 잘 관리 중', color: '#F4A460' }
   if (rate < 80)  return { label: '😬 위험해요', color: '#F08080' }
   return { label: '🚨 적자 위험', color: '#D95F52' }
+}
+
+// 목표 원가율 기준 색상 (목표 원가율에 따라 동적 판정)
+function getRateColor(avg: number, target: number) {
+  if (avg < target * 0.9) return '#7EC8A0'      // 초록: 목표 대비 90% 이하
+  if (avg < target * 1.2) return '#F4A460'      // 주황: 목표 대비 120% 이하
+  return '#F08080'                               // 빨강: 초과
 }
 
 function OnboardingModal({ show, step, setStep, onClose }: {
@@ -192,6 +247,18 @@ export default function HomePage() {
   const [menuCategory, setMenuCategory] = useState('all')
   const [menuSearch, setMenuSearch] = useState('')
   const [allMenus, setAllMenus] = useState<any[]>([])
+
+  // 매장 정보 상태
+  interface ShopInfo {
+    name: string
+    industry: string
+    targetRate: number
+  }
+  const SHOP_INFO_KEY = 'godogi_shop_info'
+  const [shopInfo, setShopInfo] = useState<ShopInfo>({ name: '', industry: '', targetRate: 35 })
+  const [editingShop, setEditingShop] = useState(false)
+  const [shopDraft, setShopDraft] = useState<ShopInfo>({ name: '', industry: '', targetRate: 35 })
+
   const router = useRouter()
   const supabase = createClient()
   const loadedForUser = useRef<string | null>(null)
@@ -214,6 +281,14 @@ export default function HomePage() {
       } else {
         const guest = typeof window !== 'undefined' && !!sessionStorage.getItem('godogi_guest')
         setIsGuest(guest)
+      }
+      // 매장 정보 localStorage 로드
+      const savedShop = typeof window !== 'undefined' ? localStorage.getItem(SHOP_INFO_KEY) : null
+      if (savedShop) {
+        try {
+          setShopInfo(JSON.parse(savedShop))
+          setShopDraft(JSON.parse(savedShop))
+        } catch { }
       }
       setLoading(false) // auth 확인 즉시 로딩 해제 (DB 대기 없음)
     })
@@ -302,6 +377,11 @@ export default function HomePage() {
     }
     setAllMenus(Array.from(menuMap.values()).sort((a, b) => a.name.localeCompare(b.name)))
   }, [sets])
+
+  const saveShopInfo = (info: ShopInfo) => {
+    setShopInfo(info)
+    localStorage.setItem(SHOP_INFO_KEY, JSON.stringify(info))
+  }
 
   const loadSets = async () => {
     const feeSettings = JSON.parse(localStorage.getItem(FEES_KEY) || JSON.stringify(DEFAULT_FEES))
@@ -570,10 +650,15 @@ export default function HomePage() {
 
       {/* 필터링 로직 */}
       {(() => {
+        // 업종 기반 카테고리 동적 선택
+        const activeCategories = shopInfo.industry && INDUSTRY_CATEGORIES[shopInfo.industry]
+          ? INDUSTRY_CATEGORIES[shopInfo.industry]
+          : DEFAULT_PRODUCT_CATEGORIES
+
         // 카테고리 필터: 'all' 선택 시 전체, 아니면 setFilter 카테고리명 매칭
         const setsWithCategory = sets.map((s, idx) => ({
           ...s,
-          product_category: s.product_category || DEFAULT_PRODUCT_CATEGORIES[idx % DEFAULT_PRODUCT_CATEGORIES.length].name
+          product_category: s.product_category || activeCategories[idx % activeCategories.length].name
         }))
 
         const filteredSets = setsWithCategory
@@ -594,7 +679,7 @@ export default function HomePage() {
         })
 
         // 카테고리 순서대로 정렬
-        const orderedCategories = DEFAULT_PRODUCT_CATEGORIES.map(c => c.name).filter(c => groupedBySets[c])
+        const orderedCategories = activeCategories.map(c => c.name).filter(c => groupedBySets[c])
 
         const filteredMenus = allMenus
           .filter(m => menuCategory === 'all' || m.category === menuCategory)
@@ -616,6 +701,101 @@ export default function HomePage() {
         {/* 대시보드 통계 - 메뉴판 탭에서만 표시 */}
         {homeTab === 'sets' && (
           <>
+            {/* 매장 정보 카드 */}
+            <motion.div initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.02 }}
+              style={{
+                background: 'linear-gradient(135deg, rgba(74,127,165,0.12), rgba(91,158,201,0.07))',
+                border: '1px solid rgba(74,127,165,0.2)',
+                borderRadius: 16, padding: '14px 16px',
+                marginBottom: 14,
+              }}>
+              {!editingShop ? (
+                /* 보기 모드 */
+                <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+                  <div style={{ minWidth: 0, flex: 1 }}>
+                    <div style={{ fontSize: '1rem', fontWeight: 800, color: 'white', marginBottom: 4 }}>
+                      {shopInfo.name || '🏪 매장 이름을 입력하세요'}
+                    </div>
+                    {(shopInfo.industry || shopInfo.targetRate > 0) && (
+                      <div style={{ display: 'flex', gap: 8, alignItems: 'center', flexWrap: 'wrap' }}>
+                        {shopInfo.industry && (
+                          <span style={{ fontSize: '0.72rem', color: '#7DB8D8', background: 'rgba(74,127,165,0.2)', padding: '2px 8px', borderRadius: 10, whiteSpace: 'nowrap' }}>
+                            {INDUSTRY_LIST.find(i => i.name === shopInfo.industry)?.emoji} {shopInfo.industry}
+                          </span>
+                        )}
+                        {shopInfo.targetRate > 0 && (
+                          <span style={{ fontSize: '0.72rem', color: 'rgba(200,216,228,0.5)', whiteSpace: 'nowrap' }}>
+                            목표 원가율 {shopInfo.targetRate}%
+                          </span>
+                        )}
+                      </div>
+                    )}
+                  </div>
+                  <button onClick={() => { setShopDraft(shopInfo); setEditingShop(true) }}
+                    style={{ background: 'none', border: 'none', cursor: 'pointer', color: 'rgba(200,216,228,0.35)', fontSize: '0.9rem', fontWeight: 700, flexShrink: 0, marginLeft: 10 }}>
+                    ✏️
+                  </button>
+                </div>
+              ) : (
+                /* 수정 모드 */
+                <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
+                  <input placeholder="매장 이름"
+                    value={shopDraft.name}
+                    onChange={e => setShopDraft(d => ({ ...d, name: e.target.value }))}
+                    style={{
+                      width: '100%', padding: '10px 12px', fontSize: '14px', boxSizing: 'border-box',
+                      background: 'rgba(255,255,255,0.07)', border: '1px solid rgba(200,216,228,0.15)',
+                      borderRadius: 10, color: 'white', fontFamily: "'Noto Sans KR',sans-serif", outline: 'none'
+                    }} />
+
+                  {/* 업종 선택 칩 */}
+                  <div style={{ display: 'flex', gap: 6, flexWrap: 'wrap' }}>
+                    {INDUSTRY_LIST.map(ind => (
+                      <button key={ind.name}
+                        onClick={() => setShopDraft(d => ({ ...d, industry: ind.name }))}
+                        style={{
+                          padding: '5px 10px', borderRadius: 16, border: 'none', cursor: 'pointer',
+                          background: shopDraft.industry === ind.name ? '#4A7FA5' : 'rgba(255,255,255,0.07)',
+                          color: shopDraft.industry === ind.name ? 'white' : 'rgba(200,216,228,0.5)',
+                          fontSize: '0.72rem', fontWeight: 700, fontFamily: "'Noto Sans KR',sans-serif",
+                        }}>
+                        {ind.emoji} {ind.name}
+                      </button>
+                    ))}
+                  </div>
+
+                  {/* 목표 원가율 */}
+                  <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
+                    <span style={{ fontSize: '0.72rem', color: 'rgba(200,216,228,0.5)', whiteSpace: 'nowrap' }}>목표 원가율</span>
+                    <input type="range" min={10} max={80} value={shopDraft.targetRate}
+                      onChange={e => setShopDraft(d => ({ ...d, targetRate: +e.target.value }))}
+                      style={{ flex: 1, height: 5, cursor: 'pointer' }} />
+                    <span style={{ fontSize: '0.85rem', fontWeight: 700, color: shopDraft.targetRate < 40 ? '#7EC8A0' : shopDraft.targetRate < 60 ? '#F4A460' : '#F08080', minWidth: 36, textAlign: 'right' }}>
+                      {shopDraft.targetRate}%
+                    </span>
+                  </div>
+
+                  {/* 업종 변경 시 카테고리 안내 */}
+                  {shopDraft.industry && shopDraft.industry !== shopInfo.industry && (
+                    <div style={{ fontSize: '0.7rem', color: 'rgba(200,216,228,0.4)', background: 'rgba(255,255,255,0.04)', borderRadius: 8, padding: '6px 10px' }}>
+                      💡 {shopDraft.industry}로 전환: {INDUSTRY_CATEGORIES[shopDraft.industry]?.map(c => c.emoji + c.name).join(' · ')}
+                    </div>
+                  )}
+
+                  <div style={{ display: 'flex', gap: 8 }}>
+                    <button onClick={() => setEditingShop(false)}
+                      style={{ flex: 1, padding: '8px', background: 'rgba(255,255,255,0.06)', border: 'none', borderRadius: 8, color: 'rgba(200,216,228,0.5)', cursor: 'pointer', fontFamily: "'Noto Sans KR',sans-serif", fontWeight: 700 }}>
+                      취소
+                    </button>
+                    <button onClick={() => { saveShopInfo(shopDraft); setEditingShop(false) }}
+                      style={{ flex: 2, padding: '8px', background: '#4A7FA5', border: 'none', borderRadius: 8, color: 'white', fontWeight: 700, cursor: 'pointer', fontFamily: "'Noto Sans KR',sans-serif" }}>
+                      저장
+                    </button>
+                  </div>
+                </div>
+              )}
+            </motion.div>
+
             {/* 상단 핵심 통계 카드 */}
             <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.05 }}
               style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: 10, marginBottom: 16 }}>
@@ -646,7 +826,7 @@ export default function HomePage() {
                   <div style={{
                     fontSize: '1.3rem',
                     fontWeight: 800,
-                    color: menuStats.avgRate === null ? 'rgba(200,216,228,0.3)' : menuStats.avgRate < 40 ? '#7EC8A0' : menuStats.avgRate < 60 ? '#F4A460' : '#F08080'
+                    color: menuStats.avgRate === null ? 'rgba(200,216,228,0.3)' : getRateColor(menuStats.avgRate, shopInfo.targetRate)
                   }}>
                     {menuStats.avgRate === null ? '—' : `${menuStats.avgRate.toFixed(1)}%`}
                   </div>
@@ -757,7 +937,7 @@ export default function HomePage() {
                     fontSize: '0.72rem', fontWeight: 700, fontFamily: "'Noto Sans KR',sans-serif", whiteSpace: 'nowrap', flexShrink: 0,
                   }}
                 >
-                  {DEFAULT_PRODUCT_CATEGORIES.find(c => c.name === cat)?.emoji} {cat}
+                  {activeCategories.find(c => c.name === cat)?.emoji} {cat}
                 </button>
               ))}
               <div style={{ width: 1, background: 'rgba(255,255,255,0.1)', margin: '0 4px', flexShrink: 0 }} />
@@ -800,7 +980,7 @@ export default function HomePage() {
                   <section key={categoryName} style={{ marginBottom: 24 }}>
                     <div style={{ display: 'flex', alignItems: 'center', gap: 6, marginBottom: 10, paddingLeft: 4 }}>
                       <span style={{ fontSize: '1.2rem' }}>
-                        {DEFAULT_PRODUCT_CATEGORIES.find(c => c.name === categoryName)?.emoji}
+                        {activeCategories.find(c => c.name === categoryName)?.emoji}
                       </span>
                       <h3 style={{ margin: 0, fontSize: '0.92rem', fontWeight: 700, color: 'rgba(200,216,228,0.8)' }}>
                         {categoryName}
