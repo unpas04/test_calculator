@@ -22,6 +22,7 @@ interface DisplaySet {
   costRate: number
   blocks: { id: string; menu_id: string; name: string; emoji: string; cost: number; category: BlockCategory }[]
   created_at: string
+  product_category?: string
 }
 
 function calcMenuTotalCost(menu: any): number {
@@ -579,9 +580,58 @@ export default function HomePage() {
           main: '메인', side: '사이드', banchan: '반찬', drink: '음료', extra: '기타'
         }
 
+        // TOP 5 수익성 좋은 상품 (costRate 낮은 순)
+        const top5Sets = [...filteredSets].sort((a, b) => a.costRate - b.costRate).slice(0, 5)
+
+        // 원가율 높은 상품 (60% 이상, 경고)
+        const highCostSets = filteredSets.filter(s => s.costRate >= 60).sort((a, b) => b.costRate - a.costRate)
+
         return (
       <>
       <main className="home-main" style={{ maxWidth: 680, margin: '0 auto', padding: '0 24px 100px', display: 'flex', flexDirection: 'column' }}>
+        {/* 대시보드 통계 - 메뉴판 탭에서만 표시 */}
+        {homeTab === 'sets' && (
+          <>
+            {/* TOP 5 수익성 좋은 상품 */}
+            {top5Sets.length > 0 && (
+              <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.1 }}
+                style={{ marginBottom: 14 }}>
+                <div style={{ fontSize: '0.85rem', fontWeight: 700, color: 'rgba(200,216,228,0.5)', marginBottom: 8 }}>
+                  📊 TOP 5 수익성 좋은 상품
+                </div>
+                <div style={{ background: 'rgba(126,200,160,0.08)', border: '1px solid rgba(126,200,160,0.2)', borderRadius: 12, padding: '10px 12px' }}>
+                  <div style={{ fontSize: '0.75rem', color: 'rgba(200,216,228,0.6)', lineHeight: 1.6 }}>
+                    {top5Sets.map((s, i) => (
+                      <div key={s.id} style={{ marginBottom: i < top5Sets.length - 1 ? 4 : 0 }}>
+                        {i + 1}️⃣ {s.name} · <span style={{ color: '#7EC8A0', fontWeight: 600 }}>{Math.round(s.costRate)}%</span>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              </motion.div>
+            )}
+
+            {/* 경고: 원가율 높은 상품 */}
+            {highCostSets.length > 0 && (
+              <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.15 }}
+                style={{ marginBottom: 14 }}>
+                <div style={{ fontSize: '0.85rem', fontWeight: 700, color: 'rgba(200,216,228,0.5)', marginBottom: 8 }}>
+                  ⚠️ 원가율 높은 상품 (60% 이상)
+                </div>
+                <div style={{ background: 'rgba(240,128,128,0.08)', border: '1px solid rgba(240,128,128,0.2)', borderRadius: 12, padding: '10px 12px' }}>
+                  <div style={{ fontSize: '0.75rem', color: 'rgba(200,216,228,0.6)', lineHeight: 1.6 }}>
+                    {highCostSets.map((s, i) => (
+                      <div key={s.id} style={{ marginBottom: i < highCostSets.length - 1 ? 4 : 0 }}>
+                        {s.name} · <span style={{ color: '#F08080', fontWeight: 600 }}>{Math.round(s.costRate)}%</span>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              </motion.div>
+            )}
+          </>
+        )}
+
         {/* 탭 바 */}
         <div style={{ display: 'flex', borderBottom: '1px solid rgba(255,255,255,0.06)', flexShrink: 0, marginBottom: 14 }}>
           {['sets', 'menus'].map((tab) => (
@@ -596,7 +646,7 @@ export default function HomePage() {
                 transition: '0.2s',
               }}
             >
-              {tab === 'sets' ? '📊 수익 분석' : '🍽️ 메뉴 목록'}
+              {tab === 'sets' ? '🍽️ 내 메뉴판' : '📖 메뉴관리'}
             </button>
           ))}
         </div>
