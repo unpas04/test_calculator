@@ -38,6 +38,13 @@ const INDUSTRY_CATEGORIES: Record<string, string[]> = {
   '기타': ['파스타', '고기요리', '밥요리', '음료'],
 }
 
+// getAllCategoriesForIndustry 함수 제거 (사용하지 않음)
+
+// 모든 카테고리 합치기 (직접 입력한 카테고리도 처리)
+const getAllCategoriesForIndustry = (industry: string): string[] => {
+  return INDUSTRY_CATEGORIES[industry] || []
+}
+
 interface DisplaySet {
   id: string
   name: string
@@ -1119,12 +1126,8 @@ export default function HomePage() {
           groupedBySets[cat].push(set)
         })
 
-        // 카테고리 순서대로 정렬 (activeCategories + 직접 입력한 카테고리)
-        const allCategoryInSets = Object.keys(groupedBySets)
-        const orderedCategories = [
-          ...activeCategories.filter(c => groupedBySets[c]),
-          ...allCategoryInSets.filter(c => !activeCategories.includes(c))
-        ]
+        // 카테고리 순서대로 정렬 (activeCategories만 사용)
+        const orderedCategories = activeCategories.filter(c => groupedBySets[c])
 
         const filteredMenus = allMenus
           .filter(m => menuCategory === 'all' || m.category === menuCategory)
