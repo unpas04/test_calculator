@@ -1275,64 +1275,66 @@ export default function HomePage() {
             </motion.div>
 
             {/* TOP 5 수익성 좋은 상품 + 원가율 높은 상품 (2열 레이아웃) */}
-            {(top5Sets.length > 0 || highCostSets.length > 0) && (
-              <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.1 }}>
-                {/* 제목들: 카드 위 */}
-                <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 12, marginBottom: 8 }}>
-                  {top5Sets.length > 0 && (
-                    <div style={{ fontSize: '0.78rem', fontWeight: 700, color: 'white' }}>
-                      TOP 5 수익성 좋은 상품
-                    </div>
-                  )}
-                  {highCostSets.length > 0 && (
-                    <div style={{ fontSize: '0.78rem', fontWeight: 700, color: 'white' }}>
-                      원가율 높은 상품
-                    </div>
-                  )}
+            <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.1 }}>
+              {/* 제목들: 카드 위 */}
+              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 12, marginBottom: 8 }}>
+                <div style={{ fontSize: '0.78rem', fontWeight: 700, color: 'white' }}>
+                  TOP 5 수익성 좋은 상품
                 </div>
+                <div style={{ fontSize: '0.78rem', fontWeight: 700, color: 'white' }}>
+                  원가율 높은 상품
+                </div>
+              </div>
 
-                {/* 카드들 */}
-                <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 12, marginBottom: 14 }}>
+              {/* 카드들 */}
+              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 12, marginBottom: 14 }}>
 
-                  {/* 왼쪽: TOP 5 수익성 좋은 상품 */}
-                  {top5Sets.length > 0 && (
-                    <div style={{ background: 'rgba(126,200,160,0.08)', border: '1px solid rgba(126,200,160,0.2)', borderRadius: 12, padding: '12px 10px' }}>
-                      <div style={{ fontSize: '0.7rem', color: 'rgba(200,216,228,0.65)' }}>
-                        {top5Sets.map((s, i) => {
-                          const medals = ['🥇', '🥈', '🥉']
-                          return (
-                            <div key={s.id} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', paddingBottom: 8, marginBottom: 8, borderBottom: i < top5Sets.length - 1 ? '1px solid rgba(126,200,160,0.15)' : 'none' }}>
-                              <span style={{ flex: 1, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
-                                <span style={{ marginRight: 4 }}>{medals[i] || `${i + 1}`}</span>
-                                {s.name}
-                              </span>
-                              <span style={{ color: '#7EC8A0', fontWeight: 700, flexShrink: 0, marginLeft: 6 }}>{Math.round(s.costRate)}%</span>
-                            </div>
-                          )
-                        })}
-                      </div>
-                    </div>
-                  )}
-
-                  {/* 오른쪽: 원가율 높은 상품 */}
-                  {highCostSets.length > 0 && (
-                    <div style={{ background: 'rgba(240,128,128,0.08)', border: '1px solid rgba(240,128,128,0.2)', borderRadius: 12, padding: '12px 10px' }}>
-                      <div style={{ fontSize: '0.7rem', color: 'rgba(200,216,228,0.65)' }}>
-                        {highCostSets.slice(0, 5).map((s, i) => (
-                          <div key={s.id} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', paddingBottom: 8, marginBottom: 8, borderBottom: i < 4 ? '1px solid rgba(240,128,128,0.15)' : 'none' }}>
+                {/* 왼쪽: TOP 5 수익성 좋은 상품 */}
+                <div style={{ background: 'rgba(126,200,160,0.08)', border: '1px solid rgba(126,200,160,0.2)', borderRadius: 12, padding: '12px 10px', minHeight: 120 }}>
+                  <div style={{ fontSize: '0.7rem', color: 'rgba(200,216,228,0.65)' }}>
+                    {top5Sets.length > 0 ? (
+                      top5Sets.map((s, i) => {
+                        const medals = ['🥇', '🥈', '🥉']
+                        return (
+                          <div key={s.id} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', paddingBottom: 8, marginBottom: 8, borderBottom: i < top5Sets.length - 1 ? '1px solid rgba(126,200,160,0.15)' : 'none' }}>
                             <span style={{ flex: 1, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
-                              <span style={{ marginRight: 4 }}>⚠️</span>
+                              <span style={{ marginRight: 4 }}>{medals[i] || `${i + 1}`}</span>
                               {s.name}
                             </span>
-                            <span style={{ color: '#F08080', fontWeight: 700, flexShrink: 0, marginLeft: 6 }}>{Math.round(s.costRate)}%</span>
+                            <span style={{ color: '#7EC8A0', fontWeight: 700, flexShrink: 0, marginLeft: 6 }}>{Math.round(s.costRate)}%</span>
                           </div>
-                        ))}
+                        )
+                      })
+                    ) : (
+                      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', height: '100%', color: 'rgba(200,216,228,0.4)', fontSize: '0.8rem' }}>
+                        상품이 없어요
                       </div>
-                    </div>
-                  )}
+                    )}
+                  </div>
                 </div>
-              </motion.div>
-            )}
+
+                {/* 오른쪽: 원가율 높은 상품 */}
+                <div style={{ background: 'rgba(240,128,128,0.08)', border: '1px solid rgba(240,128,128,0.2)', borderRadius: 12, padding: '12px 10px', minHeight: 120 }}>
+                  <div style={{ fontSize: '0.7rem', color: 'rgba(200,216,228,0.65)' }}>
+                    {highCostSets.length > 0 ? (
+                      highCostSets.slice(0, 5).map((s, i) => (
+                        <div key={s.id} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', paddingBottom: 8, marginBottom: 8, borderBottom: i < 4 ? '1px solid rgba(240,128,128,0.15)' : 'none' }}>
+                          <span style={{ flex: 1, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+                            <span style={{ marginRight: 4 }}>⚠️</span>
+                            {s.name}
+                          </span>
+                          <span style={{ color: '#F08080', fontWeight: 700, flexShrink: 0, marginLeft: 6 }}>{Math.round(s.costRate)}%</span>
+                        </div>
+                      ))
+                    ) : (
+                      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', height: '100%', color: 'rgba(200,216,228,0.4)', fontSize: '0.8rem' }}>
+                        상품이 없어요
+                      </div>
+                    )}
+                  </div>
+                </div>
+              </div>
+            </motion.div>
           </>
         )}
 
@@ -1619,28 +1621,43 @@ export default function HomePage() {
                                       )
                                     })()}
 
-                                    {/* 수정 버튼 */}
-                                    <button onClick={e => { e.stopPropagation(); router.push(`/proto?id=${set.id}`) }}
-                                      style={{
-                                        width: '100%', padding: '8px 0', background: 'rgba(74,127,165,0.2)',
-                                        border: '1px solid rgba(74,127,165,0.3)', borderRadius: 8,
-                                        color: '#7DB8D8', fontSize: '0.78rem', fontWeight: 600,
-                                        fontFamily: "'Noto Sans KR',sans-serif", cursor: 'pointer', marginBottom: 8,
-                                      }}>
-                                      ✏️ 수정하기
-                                    </button>
+                                    {/* 수정/삭제 버튼 (한 줄) */}
+                                    <div style={{ display: 'flex', gap: 8 }}>
+                                      {/* 수정 버튼 */}
+                                      <button onClick={e => { e.stopPropagation(); router.push(`/proto?id=${set.id}`) }}
+                                        style={{
+                                          flex: 1, padding: '8px 0', background: 'rgba(74,127,165,0.2)',
+                                          border: '1px solid rgba(74,127,165,0.3)', borderRadius: 8,
+                                          color: '#7DB8D8', fontSize: '0.78rem', fontWeight: 600,
+                                          fontFamily: "'Noto Sans KR',sans-serif", cursor: 'pointer',
+                                          display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 6,
+                                        }}>
+                                        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                                          <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/>
+                                          <path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/>
+                                        </svg>
+                                        수정하기
+                                      </button>
 
-                                    {/* 삭제 버튼 */}
-                                    <button
-                                      onClick={e => { e.stopPropagation(); setDeleteConfirmId(set.id) }}
-                                      style={{
-                                        width: '100%', padding: '8px 0', background: 'rgba(196,74,74,0.15)',
-                                        border: '1px solid rgba(196,74,74,0.3)', borderRadius: 8,
-                                        color: '#F08080', fontSize: '0.78rem', fontWeight: 600,
-                                        fontFamily: "'Noto Sans KR',sans-serif", cursor: 'pointer',
-                                      }}>
-                                      🗑️ 삭제하기
-                                    </button>
+                                      {/* 삭제 버튼 */}
+                                      <button
+                                        onClick={e => { e.stopPropagation(); setDeleteConfirmId(set.id) }}
+                                        style={{
+                                          flex: 1, padding: '8px 0', background: 'rgba(196,74,74,0.15)',
+                                          border: '1px solid rgba(196,74,74,0.3)', borderRadius: 8,
+                                          color: '#F08080', fontSize: '0.78rem', fontWeight: 600,
+                                          fontFamily: "'Noto Sans KR',sans-serif", cursor: 'pointer',
+                                          display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 6,
+                                        }}>
+                                        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                                          <polyline points="3 6 5 6 21 6"/>
+                                          <path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6"/>
+                                          <path d="M10 11v6M14 11v6"/>
+                                          <path d="M9 6V4a1 1 0 0 1 1-1h4a1 1 0 0 1 1 1v2"/>
+                                        </svg>
+                                        삭제하기
+                                      </button>
+                                    </div>
                                   </motion.div>
                                 )}
                               </AnimatePresence>
