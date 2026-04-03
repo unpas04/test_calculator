@@ -816,8 +816,8 @@ export default function SetBuilderProto() {
               </div>
             )}
 
-            {/* 메뉴판 경로: 2열 레이아웃 (editId가 있으면 메뉴판에서 온 것) */}
-            {editId ? (
+            {/* 메뉴판 경로: 2열 레이아웃 */}
+            {editId && (
               <>
                 {/* 왼쪽 열: 뒤로가기 */}
                 <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
@@ -830,7 +830,7 @@ export default function SetBuilderProto() {
                       fontFamily: "'Noto Sans KR',sans-serif", fontSize: '0.72rem', cursor: 'pointer',
                       flexShrink: 0, fontWeight: 500,
                     }}
-                  >← 메뉴판</motion.button>
+                  >← 메뉴구성</motion.button>
                 </div>
 
                 {/* 오른쪽 열: 메뉴명 + 카테고리 + 저장 */}
@@ -924,7 +924,7 @@ export default function SetBuilderProto() {
                   >{saved ? '✓' : '저장'}<span className="sb-save-text">{saved ? ' 저장됨' : ''}</span></motion.button>
                 </div>
               </>
-            ) : null}
+            )}
           </div>
 
           {/* 블록 캔버스 */}

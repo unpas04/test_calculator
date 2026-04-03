@@ -322,53 +322,7 @@ export default function Calculator({ menu, onChange, onOpenFridge, onSave }: Pro
 
   return (
     <div>
-      {/* 메뉴판 경로: 헤더 2열 레이아웃 */}
-      {isFromMenu && (
-        <div style={{ display: 'flex', flexDirection: 'column', gap: 12, marginBottom: 24 }}>
-          {/* 왼쪽 열: 뒤로가기 */}
-          <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
-            <button
-              onClick={() => {
-                const returnTo = searchParams.get('returnTo') || '/proto'
-                router.push(returnTo)
-              }}
-              style={{
-                background: 'rgba(255,255,255,0.06)', border: '1px solid rgba(255,255,255,0.1)',
-                color: 'rgba(200,216,228,0.55)', borderRadius: 10, padding: '8px 10px',
-                fontFamily: "'Noto Sans KR',sans-serif", fontSize: '0.78rem', cursor: 'pointer',
-              }}
-            >← 메뉴구성</button>
-          </div>
-          {/* 오른쪽 열: 탭바 (홈 | 메뉴구성 | 레시피수정) */}
-          <div style={{ display: 'flex', alignItems: 'center', gap: 4 }}>
-            <button
-              onClick={() => router.push('/')}
-              style={{
-                padding: '8px 12px', border: 'none', background: 'transparent',
-                color: 'rgba(200,216,228,0.6)', fontFamily: "'Noto Sans KR',sans-serif",
-                fontSize: '0.78rem', cursor: 'pointer',
-              }}
-            >홈</button>
-            <div style={{ width: 1, height: 16, background: 'rgba(255,255,255,0.1)' }} />
-            <button
-              onClick={() => router.push('/proto')}
-              style={{
-                padding: '8px 12px', border: 'none', background: 'transparent',
-                color: 'rgba(200,216,228,0.6)', fontFamily: "'Noto Sans KR',sans-serif",
-                fontSize: '0.78rem', cursor: 'pointer',
-              }}
-            >메뉴구성</button>
-            <div style={{ width: 1, height: 16, background: 'rgba(255,255,255,0.1)' }} />
-            <button
-              style={{
-                padding: '8px 12px', border: 'none', background: 'transparent',
-                color: '#7DB8D8', fontFamily: "'Noto Sans KR',sans-serif",
-                fontSize: '0.78rem', cursor: 'default', fontWeight: 600,
-              }}
-            >레시피수정</button>
-          </div>
-        </div>
-      )}
+      {/* 메뉴판 경로: 헤더 없음 - SetBuilderProto에서만 처리 */}
 
       {/* 상단 바 */}
       <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 24 }}>
