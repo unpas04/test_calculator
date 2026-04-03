@@ -1,6 +1,7 @@
 'use client'
 
 import { useState, useEffect, useRef } from 'react'
+import { useRouter, useSearchParams } from 'next/navigation'
 import { createClient } from '@/lib/supabase'
 import { INGREDIENT_DB } from '@/lib/ingredientDB'
 import { toPng } from 'html-to-image'
@@ -89,7 +90,10 @@ interface Props {
 
 export default function Calculator({ menu, onChange, onOpenFridge, onSave }: Props) {
   const supabase = createClient()
+  const router = useRouter()
+  const searchParams = useSearchParams()
   const exportRef = useRef<HTMLDivElement>(null)
+  const isFromMenu = searchParams.get('source') === 'menu'
 
   const handleExport = async () => {
     if (!exportRef.current) return
@@ -318,6 +322,54 @@ export default function Calculator({ menu, onChange, onOpenFridge, onSave }: Pro
 
   return (
     <div>
+      {/* 메뉴판 경로: 헤더 2열 레이아웃 */}
+      {isFromMenu && (
+        <div style={{ display: 'flex', flexDirection: 'column', gap: 12, marginBottom: 24 }}>
+          {/* 왼쪽 열: 뒤로가기 */}
+          <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+            <button
+              onClick={() => {
+                const returnTo = searchParams.get('returnTo') || '/proto'
+                router.push(returnTo)
+              }}
+              style={{
+                background: 'rgba(255,255,255,0.06)', border: '1px solid rgba(255,255,255,0.1)',
+                color: 'rgba(200,216,228,0.55)', borderRadius: 10, padding: '8px 10px',
+                fontFamily: "'Noto Sans KR',sans-serif", fontSize: '0.78rem', cursor: 'pointer',
+              }}
+            >← 메뉴구성</button>
+          </div>
+          {/* 오른쪽 열: 탭바 (홈 | 메뉴구성 | 레시피수정) */}
+          <div style={{ display: 'flex', alignItems: 'center', gap: 4 }}>
+            <button
+              onClick={() => router.push('/')}
+              style={{
+                padding: '8px 12px', border: 'none', background: 'transparent',
+                color: 'rgba(200,216,228,0.6)', fontFamily: "'Noto Sans KR',sans-serif",
+                fontSize: '0.78rem', cursor: 'pointer',
+              }}
+            >홈</button>
+            <div style={{ width: 1, height: 16, background: 'rgba(255,255,255,0.1)' }} />
+            <button
+              onClick={() => router.push('/proto')}
+              style={{
+                padding: '8px 12px', border: 'none', background: 'transparent',
+                color: 'rgba(200,216,228,0.6)', fontFamily: "'Noto Sans KR',sans-serif",
+                fontSize: '0.78rem', cursor: 'pointer',
+              }}
+            >메뉴구성</button>
+            <div style={{ width: 1, height: 16, background: 'rgba(255,255,255,0.1)' }} />
+            <button
+              style={{
+                padding: '8px 12px', border: 'none', background: 'transparent',
+                color: '#7DB8D8', fontFamily: "'Noto Sans KR',sans-serif",
+                fontSize: '0.78rem', cursor: 'default', fontWeight: 600,
+              }}
+            >레시피수정</button>
+          </div>
+        </div>
+      )}
+
       {/* 상단 바 */}
       <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 24 }}>
         <input
@@ -383,8 +435,8 @@ export default function Calculator({ menu, onChange, onOpenFridge, onSave }: Pro
           { value: 'main',    label: '메인',   color: '#4A7FA5' },
           { value: 'side',    label: '사이드',  color: '#4A8C6F' },
           { value: 'banchan', label: '반찬',   color: '#C44A4A' },
-          { value: 'drink',   label: '음료',   color: '#9B6B9B' },
           { value: 'dessert', label: '디저트', color: '#D4A5A5' },
+          { value: 'drink',   label: '음료',   color: '#9B6B9B' },
           { value: 'extra',   label: '기타',   color: '#C8843A' },
         ] as const).map(({ value, label, color }) => {
           const selected = (menu.category || 'main') === value
