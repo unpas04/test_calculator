@@ -315,6 +315,7 @@ export default function SetBuilderProto() {
   const [showCategoryDropdown, setShowCategoryDropdown] = useState(false)
   const [showCategoryModal, setShowCategoryModal] = useState(false)
   const [customCategoryInput, setCustomCategoryInput] = useState('')
+  const [categorySearch, setCategorySearch] = useState('')
 
   useEffect(() => {
     const stored = localStorage.getItem(FEES_KEY)
@@ -894,17 +895,32 @@ export default function SetBuilderProto() {
                         style={{
                           position: 'fixed', zIndex: 100,
                           background: '#0F1923', border: '1px solid rgba(74,127,165,0.3)', borderRadius: 10,
-                          overflow: 'hidden', width: 180, boxShadow: '0 4px 12px rgba(0,0,0,0.4)',
+                          overflow: 'hidden', width: 200, boxShadow: '0 4px 12px rgba(0,0,0,0.4)',
                           bottom: 'auto', top: '50px', right: 20,
+                          display: 'flex', flexDirection: 'column',
                         }}
                       >
-                        <div style={{ maxHeight: 220, overflowY: 'auto' }}>
-                          {['탕/찌개류', '볶음류', '구이류', '밥류', '반찬류', '음료', '디저트', '면류', '분식', '기타'].map(cat => (
+                        {/* 검색 입력 */}
+                        <input
+                          type="text"
+                          placeholder="검색..."
+                          value={categorySearch}
+                          onChange={e => setCategorySearch(e.target.value)}
+                          onClick={e => e.stopPropagation()}
+                          style={{
+                            padding: '8px 10px', border: 'none', background: 'rgba(74,127,165,0.1)',
+                            color: 'white', fontSize: '0.72rem', fontFamily: "'Noto Sans KR',sans-serif",
+                            outline: 'none', borderBottom: '1px solid rgba(74,127,165,0.2)',
+                          }}
+                        />
+                        {/* 카테고리 목록 */}
+                        <div style={{ maxHeight: 250, overflowY: 'auto', flex: 1 }}>
+                          {['탕/찌개류', '볶음류', '구이류', '밥류', '반찬류', '음료', '디저트', '면류', '분식', '기타', '파스타류', '피자류', '스테이크/고기류', '샐러드/사이드', '마라류', '튀김/구이류', '안주류', '초밥/롤', '라멘/우동', '덮밥', '치킨류', '사이드', '핫 스낵', '쌀 요리', '국/스프', '음료류', '베이커리', '파스타', '고기요리', '밥요리'].filter(cat => cat.toLowerCase().includes(categorySearch.toLowerCase())).map(cat => (
                             <motion.button
                               key={cat}
                               whileHover={{ background: 'rgba(74,127,165,0.2)' }}
                               whileTap={{ background: 'rgba(74,127,165,0.3)' }}
-                              onClick={() => { setSetCategory(cat); setShowCategoryDropdown(false); setIsDirty(true) }}
+                              onClick={() => { setSetCategory(cat); setShowCategoryDropdown(false); setCategorySearch(''); setIsDirty(true) }}
                               style={{
                                 width: '100%', padding: '8px 10px', border: 'none', background: setCategory === cat ? 'rgba(74,127,165,0.3)' : 'transparent',
                                 color: setCategory === cat ? '#7DB8D8' : 'rgba(200,216,228,0.7)', fontSize: '0.73rem',
@@ -915,11 +931,12 @@ export default function SetBuilderProto() {
                             </motion.button>
                           ))}
                         </div>
+                        {/* 직접 입력 */}
                         <div style={{ borderTop: '1px solid rgba(74,127,165,0.2)', padding: '2px' }}>
                           <motion.button
                             whileHover={{ background: 'rgba(200,216,228,0.08)' }}
                             whileTap={{ background: 'rgba(200,216,228,0.12)' }}
-                            onClick={() => { setShowCategoryDropdown(false); setShowCategoryModal(true) }}
+                            onClick={() => { setShowCategoryDropdown(false); setShowCategoryModal(true); setCategorySearch('') }}
                             style={{
                               width: '100%', padding: '6px 10px', border: 'none', background: 'transparent',
                               color: 'rgba(200,216,228,0.6)', fontSize: '0.7rem', fontFamily: "'Noto Sans KR',sans-serif",

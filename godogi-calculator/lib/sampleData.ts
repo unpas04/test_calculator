@@ -23,6 +23,14 @@ export interface SampleMenu {
   ingredients: SampleIngredient[]
 }
 
+export interface SampleSet {
+  name: string
+  category: string  // 세트 카테고리 (예: "파스타류", "음료류")
+  channel: 'delivery' | 'hall'
+  sale_price: number
+  menuNames: string[]
+}
+
 // 공통 패키징 아이템
 const SHARED_EXTRAS: SampleMenu[] = [
   {
@@ -175,25 +183,36 @@ const KOREAN_MENUS: SampleMenu[] = [
 
 const KOREAN_SETS = [
   {
-    name: '제육볶음 정식',
+    name: '불고기 볶음밥 A세트',
+    category: '볶음류',
     channel: 'hall' as const,
     sale_price: 9000,
     menuNames: ['제육볶음', '공깃밥', '김치'],
   },
   {
-    name: '된장찌개 정식',
+    name: '계란볶음밥 점심세트',
+    category: '볶음류',
+    channel: 'hall' as const,
+    sale_price: 8000,
+    menuNames: ['계란볶음밥', '공깃밥', '김치'],
+  },
+  {
+    name: '된장찌개 기본세트',
+    category: '찌개류',
     channel: 'hall' as const,
     sale_price: 8000,
     menuNames: ['된장찌개', '공깋밥', '콩나물무침', '김치'],
   },
   {
-    name: '불고기 정식',
+    name: '순두부찌개 정식',
+    category: '찌개류',
     channel: 'hall' as const,
-    sale_price: 12000,
-    menuNames: ['불고기', '공깃밥', '계란말이', '김치'],
+    sale_price: 9000,
+    menuNames: ['순두부찌개', '공깃밥', '계란말이', '김치'],
   },
   {
-    name: '순두부찌개 배달 세트',
+    name: '순두부찌개 배달세트',
+    category: '찌개류',
     channel: 'delivery' as const,
     sale_price: 10000,
     menuNames: ['순두부찌개', '공깃밥', '김치', '포장용기', '비닐봉투', '냅킨·수저'],
@@ -298,28 +317,67 @@ const CAFE_MENUS: SampleMenu[] = [
 
 const CAFE_SETS = [
   {
-    name: '아메리카노 세트',
+    name: '아메리카노 싱글',
+    category: '음료류',
+    channel: 'hall' as const,
+    sale_price: 3500,
+    menuNames: ['아메리카노'],
+  },
+  {
+    name: '카페라떼 싱글',
+    category: '음료류',
+    channel: 'hall' as const,
+    sale_price: 4500,
+    menuNames: ['카페라떼'],
+  },
+  {
+    name: '핸드드립 프리미엄',
+    category: '음료류',
+    channel: 'hall' as const,
+    sale_price: 6500,
+    menuNames: ['핸드드립 커피'],
+  },
+  {
+    name: '버터머핀 세트',
+    category: '베이커리',
     channel: 'hall' as const,
     sale_price: 6000,
-    menuNames: ['아메리카노', '머핀'],
+    menuNames: ['머핀'],
   },
   {
-    name: '라떼 세트',
+    name: '버터크로아상',
+    category: '베이커리',
     channel: 'hall' as const,
-    sale_price: 7500,
-    menuNames: ['카페라떼', '크로아상'],
+    sale_price: 5500,
+    menuNames: ['크로아상'],
   },
   {
-    name: '모카 배달 세트',
+    name: '브라우니 플레이트',
+    category: '베이커리',
+    channel: 'hall' as const,
+    sale_price: 6500,
+    menuNames: ['초콜릿 브라우니'],
+  },
+  {
+    name: '뉴욕 치즈케이크 슬라이스',
+    category: '디저트',
+    channel: 'hall' as const,
+    sale_price: 7000,
+    menuNames: ['치즈케이크'],
+  },
+  {
+    name: '바닐라 아이스크림',
+    category: '디저트',
+    channel: 'hall' as const,
+    sale_price: 5500,
+    menuNames: ['아이스크림 (바닐라)'],
+  },
+  {
+    name: '시나몬롤 플러스',
+    category: '디저트',
     channel: 'delivery' as const,
-    sale_price: 8000,
-    menuNames: ['카페모카', '머핀', '포장용기', '비닐봉투'],
-  },
-  {
-    name: '디저트 세트',
-    channel: 'hall' as const,
-    sale_price: 9000,
-    menuNames: ['아이스아메리카노', '치즈케이크', '시나몬롤'],
+    sale_price: 7000,
+    menuNames: ['시나몬롤', '포장용기', '비닐봉투', '냅킨·수저'],
   },
 ]
 
@@ -394,25 +452,43 @@ const CHINESE_MENUS: SampleMenu[] = [
 
 const CHINESE_SETS = [
   {
-    name: '마라탕 세트',
+    name: '마라탕 특선',
+    category: '마라류',
     channel: 'hall' as const,
     sale_price: 10000,
     menuNames: ['마라탕', '볶음밥'],
   },
   {
+    name: '마라샹궈 프리미엄',
+    category: '마라류',
+    channel: 'hall' as const,
+    sale_price: 12000,
+    menuNames: ['마라탕', '계란볶음밥'],
+  },
+  {
     name: '짜장면 정식',
+    category: '면류',
     channel: 'hall' as const,
     sale_price: 8500,
     menuNames: ['짜장면', '볶음밥'],
   },
   {
     name: '짬뽕 정식',
+    category: '면류',
     channel: 'hall' as const,
     sale_price: 9000,
     menuNames: ['짬뽕', '볶음밥', '춘권'],
   },
   {
+    name: '톤코츠 라면',
+    category: '면류',
+    channel: 'hall' as const,
+    sale_price: 9500,
+    menuNames: ['톤코츠 라면', '교자'],
+  },
+  {
     name: '마라탕 배달',
+    category: '마라류',
     channel: 'delivery' as const,
     sale_price: 9000,
     menuNames: ['마라탕', '포장용기', '비닐봉투', '냅킨·수저'],
@@ -493,25 +569,43 @@ const PUB_MENUS: SampleMenu[] = [
 
 const PUB_SETS = [
   {
-    name: '닭발 세트',
+    name: '닭발 매운맛 세트',
+    category: '안주류',
     channel: 'hall' as const,
     sale_price: 18000,
     menuNames: ['닭발', '생맥주'],
   },
   {
-    name: '모듬전 세트',
+    name: '모듬전 플래터',
+    category: '튀김/구이류',
     channel: 'hall' as const,
     sale_price: 22000,
     menuNames: ['모듬전', '생맥주'],
   },
   {
-    name: '소시지 세트',
+    name: '소시지 구이 세트',
+    category: '튀김/구이류',
     channel: 'hall' as const,
     sale_price: 16000,
     menuNames: ['소시지구이', '막걸리'],
   },
   {
+    name: '새우튀김 대량',
+    category: '튀김/구이류',
+    channel: 'hall' as const,
+    sale_price: 20000,
+    menuNames: ['새우튀김', '생맥주'],
+  },
+  {
+    name: '버터새우 프리미엄',
+    category: '튀김/구이류',
+    channel: 'hall' as const,
+    sale_price: 24000,
+    menuNames: ['버터새우', '하이볼'],
+  },
+  {
     name: '닭발 배달',
+    category: '안주류',
     channel: 'delivery' as const,
     sale_price: 20000,
     menuNames: ['닭발', '포장용기', '비닐봉투', '냅킨·수저'],
@@ -591,25 +685,57 @@ const WESTERN_MENUS: SampleMenu[] = [
 
 const WESTERN_SETS = [
   {
-    name: '스파게티 점심',
+    name: '미트볼 스파게티 점심',
+    category: '파스타류',
     channel: 'hall' as const,
     sale_price: 13000,
     menuNames: ['스파게티', '감자수프'],
   },
   {
-    name: '피자 홀 세트',
+    name: '크림 알프레도 스파게티',
+    category: '파스타류',
+    channel: 'hall' as const,
+    sale_price: 14000,
+    menuNames: ['스파게티', '시저샐러드'],
+  },
+  {
+    name: '페퍼로니 피자 A세트',
+    category: '피자류',
     channel: 'hall' as const,
     sale_price: 22000,
     menuNames: ['피자', '감자수프'],
   },
   {
-    name: '스테이크 정식',
+    name: '마르게리타 피자 세트',
+    category: '피자류',
+    channel: 'hall' as const,
+    sale_price: 20000,
+    menuNames: ['피자', '시저샐러드'],
+  },
+  {
+    name: '프라임 립 스테이크 점심',
+    category: '스테이크/고기류',
     channel: 'hall' as const,
     sale_price: 26000,
     menuNames: ['스테이크', '시저샐러드', '가릭브레드'],
   },
   {
+    name: '립아이 스테이크 디너',
+    category: '스테이크/고기류',
+    channel: 'hall' as const,
+    sale_price: 32000,
+    menuNames: ['스테이크', '감자수프', '가릭브레드'],
+  },
+  {
+    name: '시저샐러드 점심',
+    category: '샐러드/사이드',
+    channel: 'hall' as const,
+    sale_price: 10000,
+    menuNames: ['시저샐러드', '가릭브레드'],
+  },
+  {
     name: '스파게티 배달',
+    category: '파스타류',
     channel: 'delivery' as const,
     sale_price: 15000,
     menuNames: ['스파게티', '포장용기', '비닐봉투', '냅킨·수저'],
@@ -707,25 +833,57 @@ const JAPANESE_MENUS: SampleMenu[] = [
 
 const JAPANESE_SETS = [
   {
-    name: '연어초밥 세트',
+    name: '연어 특상 세트',
+    category: '초밥/롤',
     channel: 'hall' as const,
     sale_price: 18000,
     menuNames: ['연어초밥', '미소국'],
   },
   {
-    name: '라멘 정식',
+    name: '성게알 프리미엄',
+    category: '초밥/롤',
+    channel: 'hall' as const,
+    sale_price: 22000,
+    menuNames: ['유니', '미소국'],
+  },
+  {
+    name: '연어롤 세트',
+    category: '초밥/롤',
+    channel: 'hall' as const,
+    sale_price: 16000,
+    menuNames: ['연어/아보카도 롤', '오니기리'],
+  },
+  {
+    name: '돈코츠 라멘 기본',
+    category: '라멘/우동',
     channel: 'hall' as const,
     sale_price: 13000,
     menuNames: ['라멘', '오니기리'],
   },
   {
-    name: '돈카츠 정식',
+    name: '우동 정식',
+    category: '라멘/우동',
+    channel: 'hall' as const,
+    sale_price: 12000,
+    menuNames: ['우동', '오니기리'],
+  },
+  {
+    name: '돈카츠 커틀릿 정식',
+    category: '덮밥',
     channel: 'hall' as const,
     sale_price: 15000,
     menuNames: ['돈카츠', '미소국', '오니기리'],
   },
   {
+    name: '소고기 규동 세트',
+    category: '덮밥',
+    channel: 'hall' as const,
+    sale_price: 14000,
+    menuNames: ['규동', '미소국'],
+  },
+  {
     name: '돈카츠 배달',
+    category: '덮밥',
     channel: 'delivery' as const,
     sale_price: 15000,
     menuNames: ['돈카츠', '포장용기', '비닐봉투', '냅킨·수저'],
@@ -808,25 +966,50 @@ const CHICKEN_MENUS: SampleMenu[] = [
 
 const CHICKEN_SETS = [
   {
-    name: '후라이드 세트',
+    name: '크리스피 후라이드 박스',
+    category: '치킨류',
     channel: 'hall' as const,
     sale_price: 21000,
-    menuNames: ['후라이드치킨', '감자튀김', '음료'],
+    menuNames: ['후라이드치킨', '감자튀김', '콜라'],
   },
   {
-    name: '양념치킨 세트',
+    name: '매콤 양념 치킨',
+    category: '치킨류',
     channel: 'hall' as const,
     sale_price: 23000,
     menuNames: ['양념치킨', '감자튀김'],
   },
   {
-    name: '핫윙 세트',
+    name: '간장 불닭 스페셜',
+    category: '치킨류',
+    channel: 'hall' as const,
+    sale_price: 24000,
+    menuNames: ['간장 불닭', '감자튀김'],
+  },
+  {
+    name: '핫윙 플레이트',
+    category: '치킨류',
     channel: 'hall' as const,
     sale_price: 19000,
-    menuNames: ['핫윙', '양파링', '감자튀김'],
+    menuNames: ['핫윙', '양파튀김', '감자튀김'],
+  },
+  {
+    name: '치즈볼 세트',
+    category: '사이드',
+    channel: 'hall' as const,
+    sale_price: 7000,
+    menuNames: ['치즈볼', '콜라'],
+  },
+  {
+    name: '옥수수 무침',
+    category: '사이드',
+    channel: 'hall' as const,
+    sale_price: 6000,
+    menuNames: ['옥수수 무침'],
   },
   {
     name: '치킨 배달 세트',
+    category: '치킨류',
     channel: 'delivery' as const,
     sale_price: 22000,
     menuNames: ['후라이드치킨', '감자튀김', '포장용기', '비닐봉투', '냅킨·수저'],
@@ -903,25 +1086,50 @@ const SNACK_MENUS: SampleMenu[] = [
 
 const SNACK_SETS = [
   {
-    name: '분식 세트',
+    name: '떡볶이 스페셜',
+    category: '핫 스낵',
     channel: 'hall' as const,
-    sale_price: 8000,
+    sale_price: 7000,
     menuNames: ['떡볶이', '순대'],
   },
   {
-    name: '김밥 세트',
+    name: '떡튀순 콤보',
+    category: '핫 스낵',
+    channel: 'hall' as const,
+    sale_price: 8500,
+    menuNames: ['떡볶이', '야채튀김', '순대'],
+  },
+  {
+    name: '김밥 정식',
+    category: '쌀 요리',
     channel: 'hall' as const,
     sale_price: 7000,
     menuNames: ['김밥', '떡볶이'],
   },
   {
+    name: '주먹밥 도시락',
+    category: '쌀 요리',
+    channel: 'hall' as const,
+    sale_price: 6000,
+    menuNames: ['주먹밥'],
+  },
+  {
     name: '야채튀김 세트',
+    category: '핫 스낵',
     channel: 'hall' as const,
     sale_price: 7500,
     menuNames: ['야채튀김', '주먹밥', '오뎅탕'],
   },
   {
+    name: '오뎅탕 따뜻함',
+    category: '국/스프',
+    channel: 'hall' as const,
+    sale_price: 5000,
+    menuNames: ['오뎅탕'],
+  },
+  {
     name: '분식 배달',
+    category: '핫 스낵',
     channel: 'delivery' as const,
     sale_price: 10000,
     menuNames: ['떡볶이', '김밥', '포장용기', '비닐봉투', '냅킨·수저'],
@@ -998,25 +1206,50 @@ const OTHER_MENUS: SampleMenu[] = [
 
 const OTHER_SETS = [
   {
-    name: '토마토파스타 세트',
+    name: '토마토파스타 점심',
+    category: '파스타',
     channel: 'hall' as const,
     sale_price: 14000,
     menuNames: ['토마토파스타', '에이드'],
   },
   {
-    name: '버터구이 세트',
+    name: '버터구이 스테이크',
+    category: '고기요리',
     channel: 'hall' as const,
     sale_price: 12000,
     menuNames: ['버터구이', '아이스초콜릿'],
   },
   {
-    name: '스튜 정식',
+    name: '현지식 스튜 정식',
+    category: '고기요리',
     channel: 'hall' as const,
     sale_price: 13000,
     menuNames: ['현지식스튜', '시즈닝라이스'],
   },
   {
+    name: '시즈닝 라이스',
+    category: '밥요리',
+    channel: 'hall' as const,
+    sale_price: 8000,
+    menuNames: ['시즈닝라이스'],
+  },
+  {
+    name: '아이스 초콜릿',
+    category: '음료',
+    channel: 'hall' as const,
+    sale_price: 5000,
+    menuNames: ['아이스초콜릿'],
+  },
+  {
+    name: '상큼한 에이드',
+    category: '음료',
+    channel: 'hall' as const,
+    sale_price: 4500,
+    menuNames: ['에이드'],
+  },
+  {
     name: '기타 배달 세트',
+    category: '파스타',
     channel: 'delivery' as const,
     sale_price: 13000,
     menuNames: ['토마토파스타', '포장용기', '비닐봉투', '냅킨·수저'],

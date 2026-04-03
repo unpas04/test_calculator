@@ -27,14 +27,15 @@ const INDUSTRY_LIST = [
 
 // 업종별 카테고리 매핑
 const INDUSTRY_CATEGORIES: Record<string, string[]> = {
-  '한식': ['탕/찌개류', '볶음류', '구이류', '밥류', '반찬류', '음료', '기타'],
-  '카페/디저트': ['커피/음료', '베이커리', '케이크', '스무디/쉐이크', '기타'],
-  '중식': ['면류', '볶음류', '찜/조림', '밥류', '탕/국', '음료', '기타'],
-  '술집/이자카야': ['안주류', '구이류', '찜/조림', '사이드', '술/음료', '기타'],
-  '양식': ['메인', '파스타/피자', '스프/샐러드', '음료/디저트', '기타'],
-  '일식': ['초밥/롤', '라멘/면류', '덮밥류', '사이드', '음료', '기타'],
-  '치킨/패스트푸드': ['치킨류', '세트', '사이드', '음료', '기타'],
-  '분식': ['떡볶이류', '튀김류', '면/만두', '밥류', '음료', '기타'],
+  '한식': ['볶음류', '찌개류'],
+  '카페/디저트': ['음료류', '베이커리', '디저트'],
+  '중식': ['마라류', '면류'],
+  '술집/이자카야': ['안주류', '튀김/구이류'],
+  '양식': ['파스타류', '피자류', '스테이크/고기류', '샐러드/사이드'],
+  '일식': ['초밥/롤', '라멘/우동', '덮밥'],
+  '치킨/패스트푸드': ['치킨류', '사이드'],
+  '분식': ['핫 스낵', '쌀 요리', '국/스프'],
+  '기타': ['파스타', '고기요리', '밥요리', '음료'],
 }
 
 interface DisplaySet {
@@ -659,11 +660,11 @@ export default function HomePage() {
 
     // 4. 대시보드 데이터 로드
     if (user) {
-      loadSets()
+      loadSets(setupIndustry)
     }
   }
 
-  const loadSets = async () => {
+  const loadSets = async (industry?: string) => {
     const feeSettings = JSON.parse(localStorage.getItem(FEES_KEY) || JSON.stringify(DEFAULT_FEES))
 
     // 캐시 있으면 즉시 표시
@@ -696,7 +697,7 @@ export default function HomePage() {
     if (error) { console.error(error); setSetsLoading(false); return }
 
     if (!data || data.length === 0) {
-      await insertSampleData(user.id)
+      await insertSampleData(user.id, industry)
       // 삽입 후 재로드
       const { data: data2 } = await supabase
         .from('sets')
@@ -1374,18 +1375,22 @@ export default function HomePage() {
 
         {homeTab === 'sets' ? (
           <>
-            {/* 카테고리 칩 - 좌상단 */}
-            <div style={{
-              padding: '4px 10px', borderRadius: 16, display: 'inline-block', marginBottom: 12,
-              background: 'rgba(74,127,165,0.2)', border: '1px solid rgba(74,127,165,0.3)',
-              color: '#7DB8D8', fontSize: '0.7rem', fontWeight: 600,
-              fontFamily: "'Noto Sans KR',sans-serif",
-            }}>
-              {setFilter || '전체'}
-            </div>
-
-            {/* 세트 탭: 홀/배달 토글 (토글 고정) */}
-            <div style={{ display: 'flex', gap: 0, marginBottom: 14, alignItems: 'center', justifyContent: 'flex-end' }}>
+            {/* 세트 탭: 카테고리 필터 + 홀/배달 토글 (토글 고정) */}
+            <div style={{ display: 'flex', gap: 0, marginBottom: 14, alignItems: 'center', justifyContent: 'space-between' }}>
+              <div style={{ display: 'flex', gap: 6, padding: '8px 0', overflowX: 'auto', flexShrink: 1, scrollbarWidth: 'none', minWidth: 0, paddingRight: 8 }}>
+                {['전체', ...orderedCategories].map((cat) => (
+                  <button key={cat} onClick={() => setSetFilter(cat as any)}
+                    style={{
+                      padding: '6px 12px', borderRadius: 20, border: 'none', cursor: 'pointer',
+                      background: setFilter === cat ? '#4A7FA5' : 'rgba(255,255,255,0.06)',
+                      color: setFilter === cat ? 'white' : 'rgba(200,216,228,0.5)',
+                      fontSize: '0.72rem', fontWeight: 700, fontFamily: "'Noto Sans KR',sans-serif", whiteSpace: 'nowrap', flexShrink: 0,
+                    }}
+                  >
+                    {cat}
+                  </button>
+                ))}
+              </div>
               <div style={{
                 display: 'flex', gap: 1, padding: '3px', borderRadius: 16,
                 background: 'rgba(255,255,255,0.06)', border: '1px solid rgba(74,127,165,0.2)',
