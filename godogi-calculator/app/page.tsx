@@ -1,12 +1,13 @@
 'use client'
 
 import { useState, useEffect, useRef } from 'react'
-import { useRouter } from 'next/navigation'
+import { useRouter, useSearchParams } from 'next/navigation'
 import { motion, AnimatePresence } from 'framer-motion'
 import { X } from 'lucide-react'
 import { createClient } from '../lib/supabase'
 import { FIRST_LOGIN_MENU_SAMPLES, SAMPLE_SET_DEFINITIONS, SampleMenu } from '../lib/sampleData'
 import ShareButton from '../components/ShareButton'
+import Fridge from '../components/Fridge'
 
 const FEES_KEY = 'godogi_fees'
 const DEFAULT_FEES = { delivery_platform: 6.8, delivery_card: 1.5, hall_card: 1.5 }
@@ -15,63 +16,23 @@ type BlockCategory = 'main' | 'side' | 'banchan' | 'drink' | 'extra'
 
 // 기본 카테고리 목록
 const DEFAULT_PRODUCT_CATEGORIES = [
-  { name: '탕/찌개류', emoji: '🍲' },
-  { name: '볶음류', emoji: '🥘' },
-  { name: '구이류', emoji: '🍖' },
-  { name: '밥류', emoji: '🍚' },
-  { name: '면류', emoji: '🍜' },
-  { name: '반찬류', emoji: '🥢' },
-  { name: '음료', emoji: '🥤' },
-  { name: '디저트', emoji: '🍰' },
-  { name: '기타', emoji: '🔔' },
+  '탕/찌개류', '볶음류', '구이류', '밥류', '면류', '반찬류', '음료', '디저트', '기타'
 ]
 
 // 업종 목록
 const INDUSTRY_LIST = [
-  { name: '한식', emoji: '🍱' },
-  { name: '카페/디저트', emoji: '☕' },
-  { name: '술집/이자카야', emoji: '🍺' },
-  { name: '양식', emoji: '🍝' },
-  { name: '일식', emoji: '🍣' },
-  { name: '치킨/패스트푸드', emoji: '🍗' },
-  { name: '분식', emoji: '🥙' },
-  { name: '기타', emoji: '🏪' },
+  '한식', '카페/디저트', '술집/이자카야', '양식', '일식', '치킨/패스트푸드', '분식', '기타'
 ]
 
 // 업종별 카테고리 매핑
-const INDUSTRY_CATEGORIES: Record<string, { name: string; emoji: string }[]> = {
-  '한식': [
-    { name: '탕/찌개류', emoji: '🍲' }, { name: '볶음류', emoji: '🥘' },
-    { name: '구이류', emoji: '🍖' }, { name: '밥류', emoji: '🍚' },
-    { name: '반찬류', emoji: '🥢' }, { name: '음료', emoji: '🥤' }, { name: '기타', emoji: '🔔' },
-  ],
-  '카페/디저트': [
-    { name: '커피/음료', emoji: '☕' }, { name: '베이커리', emoji: '🥐' },
-    { name: '케이크', emoji: '🎂' }, { name: '스무디/쉐이크', emoji: '🥤' }, { name: '기타', emoji: '🔔' },
-  ],
-  '술집/이자카야': [
-    { name: '안주류', emoji: '🍢' }, { name: '구이류', emoji: '🍖' },
-    { name: '찜/조림', emoji: '🥘' }, { name: '사이드', emoji: '🥗' },
-    { name: '술/음료', emoji: '🍻' }, { name: '기타', emoji: '🔔' },
-  ],
-  '양식': [
-    { name: '메인', emoji: '🍽️' }, { name: '파스타/피자', emoji: '🍝' },
-    { name: '스프/샐러드', emoji: '🥗' }, { name: '음료/디저트', emoji: '🥤' }, { name: '기타', emoji: '🔔' },
-  ],
-  '일식': [
-    { name: '초밥/롤', emoji: '🍱' }, { name: '라멘/면류', emoji: '🍜' },
-    { name: '덮밥류', emoji: '🍚' }, { name: '사이드', emoji: '🥗' },
-    { name: '음료', emoji: '🥤' }, { name: '기타', emoji: '🔔' },
-  ],
-  '치킨/패스트푸드': [
-    { name: '치킨류', emoji: '🍗' }, { name: '세트', emoji: '🍱' },
-    { name: '사이드', emoji: '🍟' }, { name: '음료', emoji: '🥤' }, { name: '기타', emoji: '🔔' },
-  ],
-  '분식': [
-    { name: '떡볶이류', emoji: '🌶️' }, { name: '튀김류', emoji: '🍢' },
-    { name: '면/만두', emoji: '🍜' }, { name: '밥류', emoji: '🍚' },
-    { name: '음료', emoji: '🥤' }, { name: '기타', emoji: '🔔' },
-  ],
+const INDUSTRY_CATEGORIES: Record<string, string[]> = {
+  '한식': ['탕/찌개류', '볶음류', '구이류', '밥류', '반찬류', '음료', '기타'],
+  '카페/디저트': ['커피/음료', '베이커리', '케이크', '스무디/쉐이크', '기타'],
+  '술집/이자카야': ['안주류', '구이류', '찜/조림', '사이드', '술/음료', '기타'],
+  '양식': ['메인', '파스타/피자', '스프/샐러드', '음료/디저트', '기타'],
+  '일식': ['초밥/롤', '라멘/면류', '덮밥류', '사이드', '음료', '기타'],
+  '치킨/패스트푸드': ['치킨류', '세트', '사이드', '음료', '기타'],
+  '분식': ['떡볶이류', '튀김류', '면/만두', '밥류', '음료', '기타'],
 }
 
 interface DisplaySet {
@@ -81,7 +42,7 @@ interface DisplaySet {
   sale_price: number
   totalCost: number
   costRate: number
-  blocks: { id: string; menu_id: string; name: string; emoji: string; cost: number; category: BlockCategory }[]
+  blocks: { id: string; menu_id: string; name: string; emoji: string; cost: number; category: BlockCategory; ingredients?: any[] }[]
   created_at: string
   product_category?: string
 }
@@ -116,7 +77,7 @@ function computeSetDisplay(dbSet: any, feeSettings: typeof DEFAULT_FEES): Displa
     : feeSettings.hall_card / 100
   const totalCost = Math.round(baseCost * (1 + feeRate))
   const costRate = dbSet.sale_price > 0 ? (totalCost / dbSet.sale_price) * 100 : 0
-  return { ...dbSet, blocks, totalCost, costRate }
+  return { ...dbSet, blocks, totalCost, costRate, product_category: dbSet.category || '기타' }
 }
 
 function rateInfo(rate: number) {
@@ -231,6 +192,7 @@ const SETS_CACHE_KEY = 'godogi_sets_cache'
 export default function HomePage() {
   const [user, setUser] = useState<any>(null)
   const [loading, setLoading] = useState(true)
+  const [showFridge, setShowFridge] = useState(false)
   const [setsLoading, setSetsLoading] = useState(false)
   const [isGuest, setIsGuest] = useState(false)
   const [sets, setSets] = useState<DisplaySet[]>([])
@@ -242,8 +204,9 @@ export default function HomePage() {
   // 홈화면 탭 UI 상태
   const [homeTab, setHomeTab] = useState<'sets' | 'menus'>('sets')
   const [setSearch, setSetSearch] = useState('')
-  const [setFilter, setSetFilter] = useState<'all' | 'delivery' | 'hall'>('all')
+  const [setFilter, setSetFilter] = useState<string>('전체')
   const [sortBy, setSortBy] = useState<'newest' | 'costRate'>('newest')
+  const [channelFilter, setChannelFilter] = useState<'all' | 'hall' | 'delivery'>('all')
   const [expandedSetId, setExpandedSetId] = useState<string | null>(null)
   const [menuCategory, setMenuCategory] = useState('all')
   const [menuSearch, setMenuSearch] = useState('')
@@ -261,6 +224,10 @@ export default function HomePage() {
   const [shopDraft, setShopDraft] = useState<ShopInfo>({ name: '', industry: '', targetRate: 35 })
 
   const router = useRouter()
+  const searchParams = useSearchParams()
+  useEffect(() => {
+    if (searchParams.get('tab') === 'menus') setHomeTab('menus')
+  }, [searchParams])
   const supabase = createClient()
   const loadedForUser = useRef<string | null>(null)
 
@@ -368,7 +335,7 @@ export default function HomePage() {
         if (!menuMap.has(block.menu_id)) {
           // 재료명 배열로 변환
           const ingredientNames = block.ingredients && Array.isArray(block.ingredients)
-            ? block.ingredients.map((ing: any) => ing.name || ing).filter(Boolean)
+            ? block.ingredients.map((ing: any) => typeof ing === 'string' ? ing : ing.name).filter(Boolean)
             : []
           menuMap.set(block.menu_id, {
             id: block.menu_id,
@@ -408,11 +375,11 @@ export default function HomePage() {
     const { data, error } = await supabase
       .from('sets')
       .select(`
-        id, name, sale_price, channel, created_at,
+        id, name, sale_price, channel, category, created_at,
         set_items(
           id, sort_order, menu_id,
           menus(id, name, category, emoji, labor, overhead, batch_yield, serving_size,
-            ingredients(id, price, qty, unit, yield_, use_amount)
+            ingredients(id, name, price, qty, unit, yield_, use_amount)
           )
         )
       `)
@@ -426,7 +393,7 @@ export default function HomePage() {
       // 삽입 후 재로드
       const { data: data2 } = await supabase
         .from('sets')
-        .select(`id, name, sale_price, channel, created_at, set_items(id, sort_order, menu_id, menus(id, name, category, emoji, labor, overhead, batch_yield, serving_size, ingredients(id, price, qty, unit, yield_, use_amount)))`)
+        .select(`id, name, sale_price, channel, category, created_at, set_items(id, sort_order, menu_id, menus(id, name, category, emoji, labor, overhead, batch_yield, serving_size, ingredients(id, price, qty, unit, yield_, use_amount)))`)
         .eq('user_id', user.id).order('created_at', { ascending: false })
       const computed2 = (data2 || []).map(s => computeSetDisplay(s, feeSettings))
       setSets(computed2)
@@ -662,13 +629,12 @@ export default function HomePage() {
           : DEFAULT_PRODUCT_CATEGORIES
 
         // 카테고리 필터: 'all' 선택 시 전체, 아니면 setFilter 카테고리명 매칭
-        const setsWithCategory = sets.map((s, idx) => ({
-          ...s,
-          product_category: s.product_category || activeCategories[idx % activeCategories.length].name
-        }))
+        // product_category는 이미 computeSetDisplay에서 설정됨 (dbSet.category)
+        const setsWithCategory = sets
 
         const filteredSets = setsWithCategory
           .filter(s => setFilter === '전체' || s.product_category === setFilter)
+          .filter(s => channelFilter === 'all' || s.channel === channelFilter)
           .filter(s => s.name.includes(setSearch) || s.blocks.some(b => b.name.includes(setSearch)))
           .sort((a, b) =>
             sortBy === 'newest'
@@ -684,16 +650,16 @@ export default function HomePage() {
           groupedBySets[cat].push(set)
         })
 
-        // 카테고리 순서대로 정렬
-        const orderedCategories = activeCategories.map(c => c.name).filter(c => groupedBySets[c])
+        // 카테고리 순서대로 정렬 (activeCategories + 직접 입력한 카테고리)
+        const allCategoryInSets = Object.keys(groupedBySets)
+        const orderedCategories = [
+          ...activeCategories.filter(c => groupedBySets[c]),
+          ...allCategoryInSets.filter(c => !activeCategories.includes(c))
+        ]
 
         const filteredMenus = allMenus
           .filter(m => menuCategory === 'all' || m.category === menuCategory)
           .filter(m => m.name.toLowerCase().includes(menuSearch.toLowerCase()))
-
-        const CATEGORY_LABELS: Record<string, string> = {
-          main: '메인', side: '사이드', banchan: '반찬', drink: '음료', extra: '기타'
-        }
 
         // TOP 5 수익성 좋은 상품 (costRate 낮은 순)
         const top5Sets = [...filteredSets].sort((a, b) => a.costRate - b.costRate).slice(0, 5)
@@ -726,7 +692,7 @@ export default function HomePage() {
                       <div style={{ display: 'flex', gap: 8, alignItems: 'center', flexWrap: 'wrap' }}>
                         {shopInfo.industry && (
                           <span style={{ fontSize: '0.72rem', color: '#7DB8D8', background: 'rgba(74,127,165,0.2)', padding: '2px 8px', borderRadius: 10, whiteSpace: 'nowrap' }}>
-                            {INDUSTRY_LIST.find(i => i.name === shopInfo.industry)?.emoji} {shopInfo.industry}
+                            {shopInfo.industry}
                           </span>
                         )}
                         {shopInfo.targetRate > 0 && (
@@ -757,15 +723,15 @@ export default function HomePage() {
                   {/* 업종 선택 칩 */}
                   <div style={{ display: 'flex', gap: 6, flexWrap: 'wrap' }}>
                     {INDUSTRY_LIST.map(ind => (
-                      <button key={ind.name}
-                        onClick={() => setShopDraft(d => ({ ...d, industry: ind.name }))}
+                      <button key={ind}
+                        onClick={() => setShopDraft(d => ({ ...d, industry: ind }))}
                         style={{
                           padding: '5px 10px', borderRadius: 16, border: 'none', cursor: 'pointer',
-                          background: shopDraft.industry === ind.name ? '#4A7FA5' : 'rgba(255,255,255,0.07)',
-                          color: shopDraft.industry === ind.name ? 'white' : 'rgba(200,216,228,0.5)',
+                          background: shopDraft.industry === ind ? '#4A7FA5' : 'rgba(255,255,255,0.07)',
+                          color: shopDraft.industry === ind ? 'white' : 'rgba(200,216,228,0.5)',
                           fontSize: '0.72rem', fontWeight: 700, fontFamily: "'Noto Sans KR',sans-serif",
                         }}>
-                        {ind.emoji} {ind.name}
+                        {ind}
                       </button>
                     ))}
                   </div>
@@ -784,7 +750,7 @@ export default function HomePage() {
                   {/* 업종 변경 시 카테고리 안내 */}
                   {shopDraft.industry && shopDraft.industry !== shopInfo.industry && (
                     <div style={{ fontSize: '0.7rem', color: 'rgba(200,216,228,0.4)', background: 'rgba(255,255,255,0.04)', borderRadius: 8, padding: '6px 10px' }}>
-                      💡 {shopDraft.industry}로 전환: {INDUSTRY_CATEGORIES[shopDraft.industry]?.map(c => c.emoji + c.name).join(' · ')}
+                      💡 {shopDraft.industry}로 전환: {INDUSTRY_CATEGORIES[shopDraft.industry]?.join(' · ')}
                     </div>
                   )}
 
@@ -809,88 +775,81 @@ export default function HomePage() {
               <div style={{
                 background: 'linear-gradient(135deg, rgba(74,127,165,0.15), rgba(91,158,201,0.1))',
                 border: '1px solid rgba(74,127,165,0.2)',
-                borderRadius: 12,
-                padding: '14px 12px',
-                textAlign: 'center'
+                borderRadius: 12, padding: '14px 12px', textAlign: 'center'
               }}>
                 <div style={{ fontSize: '0.6rem', color: 'rgba(200,216,228,0.4)', marginBottom: 4, fontWeight: 600 }}>📋 상품</div>
-                <div style={{ fontSize: '1.3rem', fontWeight: 800, color: '#4A7FA5' }}>
-                  {filteredSets.length}개
+                <div style={{ fontSize: '1.3rem', fontWeight: 800, color: '#4A7FA5' }}>{filteredSets.length}개</div>
+              </div>
+              {/* 평균 원가율 */}
+              <div style={{
+                background: menuStats?.avgRate != null && menuStats.avgRate > 60
+                  ? 'linear-gradient(135deg, rgba(240,128,128,0.12), rgba(196,74,74,0.08))'
+                  : 'linear-gradient(135deg, rgba(126,200,160,0.12), rgba(100,180,130,0.08))',
+                border: `1px solid ${menuStats?.avgRate != null && menuStats.avgRate > 60 ? 'rgba(240,128,128,0.25)' : 'rgba(126,200,160,0.25)'}`,
+                borderRadius: 12, padding: '14px 12px', textAlign: 'center'
+              }}>
+                <div style={{ fontSize: '0.6rem', color: 'rgba(200,216,228,0.4)', marginBottom: 4, fontWeight: 600 }}>📊 평균원가율</div>
+                <div style={{ fontSize: '1.3rem', fontWeight: 800, color: menuStats?.avgRate != null && menuStats.avgRate > 60 ? '#F08080' : '#7EC8A0' }}>
+                  {menuStats?.avgRate != null ? `${Math.round(menuStats.avgRate)}%` : '—'}
                 </div>
               </div>
-
-              {/* 평균 원가율 */}
-              {menuStats && (
-                <div style={{
-                  background: 'linear-gradient(135deg, rgba(126,200,160,0.15), rgba(139,201,169,0.1))',
-                  border: '1px solid rgba(126,200,160,0.2)',
-                  borderRadius: 12,
-                  padding: '14px 12px',
-                  textAlign: 'center'
-                }}>
-                  <div style={{ fontSize: '0.6rem', color: 'rgba(200,216,228,0.4)', marginBottom: 4, fontWeight: 600 }}>평균 원가율</div>
-                  <div style={{
-                    fontSize: '1.3rem',
-                    fontWeight: 800,
-                    color: menuStats.avgRate === null ? 'rgba(200,216,228,0.3)' : getRateColor(menuStats.avgRate, shopInfo.targetRate)
-                  }}>
-                    {menuStats.avgRate === null ? '—' : `${menuStats.avgRate.toFixed(1)}%`}
-                  </div>
+              {/* 주의 상품 */}
+              <div style={{
+                background: 'linear-gradient(135deg, rgba(240,128,128,0.1), rgba(196,74,74,0.06))',
+                border: '1px solid rgba(240,128,128,0.2)',
+                borderRadius: 12, padding: '14px 12px', textAlign: 'center'
+              }}>
+                <div style={{ fontSize: '0.6rem', color: 'rgba(200,216,228,0.4)', marginBottom: 4, fontWeight: 600 }}>⚠️ 주의</div>
+                <div style={{ fontSize: '1.3rem', fontWeight: 800, color: menuStats?.warnCount ? '#F08080' : 'rgba(200,216,228,0.3)' }}>
+                  {menuStats?.warnCount ?? 0}개
                 </div>
-              )}
-
-              {/* 주의 필요 */}
-              {menuStats && (
-                <div style={{
-                  background: 'linear-gradient(135deg, rgba(240,128,128,0.15), rgba(240,128,128,0.1))',
-                  border: '1px solid rgba(240,128,128,0.2)',
-                  borderRadius: 12,
-                  padding: '14px 12px',
-                  textAlign: 'center'
-                }}>
-                  <div style={{ fontSize: '0.6rem', color: 'rgba(200,216,228,0.4)', marginBottom: 4, fontWeight: 600 }}>⚠️ 주의 필요</div>
-                  <div style={{ fontSize: '1.3rem', fontWeight: 800, color: menuStats.warnCount > 0 ? '#F08080' : 'rgba(200,216,228,0.3)' }}>
-                    {menuStats.warnCount}개
-                  </div>
-                </div>
-              )}
+              </div>
             </motion.div>
 
-            {/* TOP 5 수익성 좋은 상품 */}
-            {top5Sets.length > 0 && (
+            {/* TOP 5 수익성 좋은 상품 + 원가율 높은 상품 (2열 레이아웃) */}
+            {(top5Sets.length > 0 || highCostSets.length > 0) && (
               <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.1 }}
-                style={{ marginBottom: 14 }}>
-                <div style={{ fontSize: '0.85rem', fontWeight: 700, color: 'rgba(200,216,228,0.5)', marginBottom: 8 }}>
-                  📊 TOP 5 수익성 좋은 상품
-                </div>
-                <div style={{ background: 'rgba(126,200,160,0.08)', border: '1px solid rgba(126,200,160,0.2)', borderRadius: 12, padding: '10px 12px' }}>
-                  <div style={{ fontSize: '0.75rem', color: 'rgba(200,216,228,0.6)', lineHeight: 1.6 }}>
-                    {top5Sets.map((s, i) => (
-                      <div key={s.id} style={{ marginBottom: i < top5Sets.length - 1 ? 4 : 0 }}>
-                        {i + 1}️⃣ {s.name} · <span style={{ color: '#7EC8A0', fontWeight: 600 }}>{Math.round(s.costRate)}%</span>
-                      </div>
-                    ))}
-                  </div>
-                </div>
-              </motion.div>
-            )}
+                style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 12, marginBottom: 14 }}>
 
-            {/* 경고: 원가율 높은 상품 */}
-            {highCostSets.length > 0 && (
-              <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.15 }}
-                style={{ marginBottom: 14 }}>
-                <div style={{ fontSize: '0.85rem', fontWeight: 700, color: 'rgba(200,216,228,0.5)', marginBottom: 8 }}>
-                  ⚠️ 원가율 높은 상품 (60% 이상)
-                </div>
-                <div style={{ background: 'rgba(240,128,128,0.08)', border: '1px solid rgba(240,128,128,0.2)', borderRadius: 12, padding: '10px 12px' }}>
-                  <div style={{ fontSize: '0.75rem', color: 'rgba(200,216,228,0.6)', lineHeight: 1.6 }}>
-                    {highCostSets.map((s, i) => (
-                      <div key={s.id} style={{ marginBottom: i < highCostSets.length - 1 ? 4 : 0 }}>
-                        {s.name} · <span style={{ color: '#F08080', fontWeight: 600 }}>{Math.round(s.costRate)}%</span>
-                      </div>
-                    ))}
+                {/* 왼쪽: TOP 5 수익성 좋은 상품 */}
+                {top5Sets.length > 0 && (
+                  <div style={{ background: 'rgba(126,200,160,0.08)', border: '1px solid rgba(126,200,160,0.2)', borderRadius: 12, padding: '12px 10px' }}>
+                    <div style={{ fontSize: '0.75rem', fontWeight: 700, color: '#7EC8A0', marginBottom: 8 }}>
+                      TOP 5 수익성 좋은 상품
+                    </div>
+                    <div style={{ fontSize: '0.7rem', color: 'rgba(200,216,228,0.65)', lineHeight: 1.8 }}>
+                      {top5Sets.map((s, i) => (
+                        <div key={s.id} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                          <span style={{ flex: 1, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+                            <span style={{ color: 'rgba(200,216,228,0.5)', fontWeight: 600, marginRight: 4 }}>{i + 1}</span>
+                            {s.name}
+                          </span>
+                          <span style={{ color: '#7EC8A0', fontWeight: 700, flexShrink: 0, marginLeft: 6 }}>{Math.round(s.costRate)}%</span>
+                        </div>
+                      ))}
+                    </div>
                   </div>
-                </div>
+                )}
+
+                {/* 오른쪽: 원가율 높은 상품 */}
+                {highCostSets.length > 0 && (
+                  <div style={{ background: 'rgba(240,128,128,0.08)', border: '1px solid rgba(240,128,128,0.2)', borderRadius: 12, padding: '12px 10px' }}>
+                    <div style={{ fontSize: '0.75rem', fontWeight: 700, color: '#F08080', marginBottom: 8 }}>
+                      원가율 높은 상품
+                    </div>
+                    <div style={{ fontSize: '0.7rem', color: 'rgba(200,216,228,0.65)', lineHeight: 1.8 }}>
+                      {highCostSets.slice(0, 5).map((s, i) => (
+                        <div key={s.id} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                          <span style={{ flex: 1, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+                            <span style={{ color: 'rgba(200,216,228,0.5)', fontWeight: 600, marginRight: 4 }}>{i + 1}</span>
+                            {s.name}
+                          </span>
+                          <span style={{ color: '#F08080', fontWeight: 700, flexShrink: 0, marginLeft: 6 }}>{Math.round(s.costRate)}%</span>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                )}
               </motion.div>
             )}
           </>
@@ -932,33 +891,46 @@ export default function HomePage() {
 
         {homeTab === 'sets' ? (
           <>
-            {/* 세트 탭: 카테고리 필터 + 정렬 (사용 중인 카테고리만 표시) */}
-            <div style={{ display: 'flex', gap: 6, padding: '8px 0', overflowX: 'auto', flexShrink: 0, marginBottom: 14, scrollbarWidth: 'none' }}>
-              {['전체', ...orderedCategories].map((cat) => (
-                <button key={cat} onClick={() => setSetFilter(cat as any)}
-                  style={{
-                    padding: '6px 12px', borderRadius: 20, border: 'none', cursor: 'pointer',
-                    background: setFilter === cat ? '#4A7FA5' : 'rgba(255,255,255,0.06)',
-                    color: setFilter === cat ? 'white' : 'rgba(200,216,228,0.5)',
-                    fontSize: '0.72rem', fontWeight: 700, fontFamily: "'Noto Sans KR',sans-serif", whiteSpace: 'nowrap', flexShrink: 0,
-                  }}
-                >
-                  {activeCategories.find(c => c.name === cat)?.emoji} {cat}
-                </button>
-              ))}
-              <div style={{ width: 1, background: 'rgba(255,255,255,0.1)', margin: '0 4px', flexShrink: 0 }} />
-              {['newest', 'costRate'].map(s => (
-                <button key={s} onClick={() => setSortBy(s as any)}
-                  style={{
-                    padding: '6px 12px', borderRadius: 20, border: 'none', cursor: 'pointer',
-                    background: sortBy === s ? 'rgba(74,127,165,0.3)' : 'rgba(255,255,255,0.04)',
-                    color: 'rgba(200,216,228,0.5)', fontSize: '0.72rem', fontWeight: 700,
-                    fontFamily: "'Noto Sans KR',sans-serif", whiteSpace: 'nowrap', flexShrink: 0,
-                  }}
-                >
-                  {s === 'newest' ? '최신순' : '원가율↑'}
-                </button>
-              ))}
+            {/* 세트 탭: 카테고리 필터 + 홀/배달 토글 (토글 고정) */}
+            <div style={{ display: 'flex', gap: 0, marginBottom: 14, alignItems: 'center', justifyContent: 'space-between' }}>
+              <div style={{ display: 'flex', gap: 6, padding: '8px 0', overflowX: 'auto', flexShrink: 1, scrollbarWidth: 'none', minWidth: 0, paddingRight: 8 }}>
+                {['전체', ...orderedCategories].map((cat) => (
+                  <button key={cat} onClick={() => setSetFilter(cat as any)}
+                    style={{
+                      padding: '6px 12px', borderRadius: 20, border: 'none', cursor: 'pointer',
+                      background: setFilter === cat ? '#4A7FA5' : 'rgba(255,255,255,0.06)',
+                      color: setFilter === cat ? 'white' : 'rgba(200,216,228,0.5)',
+                      fontSize: '0.72rem', fontWeight: 700, fontFamily: "'Noto Sans KR',sans-serif", whiteSpace: 'nowrap', flexShrink: 0,
+                    }}
+                  >
+                    {cat}
+                  </button>
+                ))}
+              </div>
+              <div style={{
+                display: 'flex', gap: 1, padding: '3px', borderRadius: 16,
+                background: 'rgba(255,255,255,0.06)', border: '1px solid rgba(74,127,165,0.2)',
+                flexShrink: 0,
+              }}>
+                {[
+                  { key: 'all', label: '전체' },
+                  { key: 'hall', label: '홀' },
+                  { key: 'delivery', label: '배달' }
+                ].map(ch => (
+                  <motion.button key={ch.key} whileTap={{ scale: 0.95 }}
+                    onClick={() => setChannelFilter(ch.key as any)}
+                    style={{
+                      padding: '4px 10px', borderRadius: 14, border: 'none', cursor: 'pointer',
+                      background: channelFilter === ch.key ? '#4A7FA5' : 'transparent',
+                      color: channelFilter === ch.key ? 'white' : 'rgba(200,216,228,0.6)',
+                      fontSize: '0.65rem', fontWeight: 600, fontFamily: "'Noto Sans KR',sans-serif",
+                      whiteSpace: 'nowrap', transition: 'all 0.2s',
+                    }}
+                  >
+                    {ch.label}
+                  </motion.button>
+                ))}
+              </div>
             </div>
 
             {/* 세트 목록 - 카테고리별 그룹화 */}
@@ -985,9 +957,6 @@ export default function HomePage() {
                 {orderedCategories.map((categoryName, catIdx) => (
                   <section key={categoryName} style={{ marginBottom: 24 }}>
                     <div style={{ display: 'flex', alignItems: 'center', gap: 6, marginBottom: 10, paddingLeft: 4 }}>
-                      <span style={{ fontSize: '1.2rem' }}>
-                        {activeCategories.find(c => c.name === categoryName)?.emoji}
-                      </span>
                       <h3 style={{ margin: 0, fontSize: '0.92rem', fontWeight: 700, color: 'rgba(200,216,228,0.8)' }}>
                         {categoryName}
                       </h3>
@@ -1020,15 +989,6 @@ export default function HomePage() {
                                 style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 10 }}
                               >
                                 <div style={{ display: 'flex', alignItems: 'center', gap: 7, flex: 1, minWidth: 0 }}>
-                                  <span style={{
-                                    fontSize: '0.6rem', padding: '2px 7px', borderRadius: 20, flexShrink: 0,
-                                    background: set.channel === 'delivery' ? 'rgba(74,127,165,0.25)' : 'rgba(74,140,111,0.25)',
-                                    color: set.channel === 'delivery' ? '#5B9EC9' : '#5AAD82',
-                                    border: `1px solid ${set.channel === 'delivery' ? 'rgba(74,127,165,0.4)' : 'rgba(74,140,111,0.4)'}`,
-                                    fontWeight: 700,
-                                  }}>
-                                    {set.channel === 'delivery' ? '🛵 배달' : '🏠 홀'}
-                                  </span>
                                   <span style={{ fontSize: '0.95rem', fontWeight: 700, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{set.name}</span>
                                 </div>
                                 <div style={{ display: 'flex', alignItems: 'center', gap: 10, flexShrink: 0 }}>
@@ -1070,8 +1030,69 @@ export default function HomePage() {
                                       ))}
                                     </div>
 
+                                    {/* 스택바 차트 */}
+                                    {set.sale_price > 0 && (
+                                      <div style={{ marginBottom: 12 }}>
+                                        {(() => {
+                                          const CATEGORY_COLORS: Record<string, string> = {
+                                            main: '#4A7FA5',
+                                            side: '#4A8C6F',
+                                            banchan: '#C44A4A',
+                                            drink: '#9B6B9B',
+                                            extra: '#C8843A',
+                                          }
+                                          const CATEGORY_LABELS: Record<string, string> = {
+                                            main: '메인',
+                                            side: '사이드',
+                                            banchan: '반찬',
+                                            drink: '음료',
+                                            extra: '기타',
+                                          }
+                                          const base = Math.max(set.sale_price, set.totalCost)
+                                          const costSegments = (['main', 'side', 'banchan', 'drink', 'extra'] as const).map(cat => {
+                                            const sum = set.blocks.filter((b: any) => b.category === cat).reduce((a, b) => a + b.cost, 0)
+                                            return { cat, sum, pct: (sum / base) * 100 }
+                                          }).filter(s => s.sum > 0)
+                                          const profit = set.sale_price > set.totalCost ? set.sale_price - set.totalCost : 0
+
+                                          return (
+                                            <>
+                                              <div style={{
+                                                height: 16, borderRadius: 12, display: 'flex', overflow: 'hidden', background: 'rgba(255,255,255,0.05)',
+                                              }}>
+                                                {costSegments.map(({ cat, pct }) => (
+                                                  <div key={cat} style={{
+                                                    width: `${pct}%`, background: CATEGORY_COLORS[cat], height: '100%', minWidth: pct > 0.5 ? 3 : 0,
+                                                  }} />
+                                                ))}
+                                                {profit > 0 && (
+                                                  <div style={{
+                                                    width: `${(profit / base) * 100}%`, background: 'rgba(126,200,160,0.7)', height: '100%',
+                                                  }} />
+                                                )}
+                                              </div>
+                                              <div style={{ display: 'flex', gap: 8, marginTop: 8, fontSize: '0.7rem', flexWrap: 'wrap' }}>
+                                                {costSegments.map(({ cat, sum, pct }) => (
+                                                  <div key={cat} style={{ display: 'flex', alignItems: 'center', gap: 3, flexShrink: 0 }}>
+                                                    <div style={{ width: 6, height: 6, borderRadius: 1, background: CATEGORY_COLORS[cat] }} />
+                                                    <span style={{ color: 'rgba(200,216,228,0.6)', whiteSpace: 'nowrap' }}>{CATEGORY_LABELS[cat]} {pct.toFixed(0)}%</span>
+                                                  </div>
+                                                ))}
+                                                {profit > 0 && (
+                                                  <div style={{ display: 'flex', alignItems: 'center', gap: 3, flexShrink: 0 }}>
+                                                    <div style={{ width: 6, height: 6, borderRadius: 1, background: 'rgba(126,200,160,0.7)' }} />
+                                                    <span style={{ color: 'rgba(126,200,160,0.7)', whiteSpace: 'nowrap' }}>이익 {((profit / set.sale_price) * 100).toFixed(0)}%</span>
+                                                  </div>
+                                                )}
+                                              </div>
+                                            </>
+                                          )
+                                        })()}
+                                      </div>
+                                    )}
+
                                     {/* 판매가 · 총원가 · 순이익 */}
-                                    <div style={{ display: 'flex', gap: 12, marginBottom: 14, fontSize: '0.8rem' }}>
+                                    <div style={{ display: 'flex', justifyContent: 'flex-end', gap: 20, marginBottom: 14, fontSize: '0.8rem' }}>
                                       <div>
                                         <div style={{ fontSize: '0.58rem', color: 'rgba(200,216,228,0.35)', marginBottom: 2 }}>판매가</div>
                                         <div style={{ fontWeight: 600, color: 'rgba(200,216,228,0.6)' }}>
@@ -1093,11 +1114,29 @@ export default function HomePage() {
                                     </div>
 
                                     {/* 고독이의 한마디 */}
-                                    <div style={{ background: 'rgba(74,127,165,0.15)', borderRadius: 8, padding: '8px 10px', marginBottom: 12, borderLeft: `3px solid ${ri.color}` }}>
-                                      <div style={{ fontSize: '0.72rem', color: ri.color, fontWeight: 600 }}>
-                                        🐟 {ri.label}
-                                      </div>
-                                    </div>
+                                    {(() => {
+                                      let comment = ''
+                                      if (set.sale_price <= 0) {
+                                        comment = '판매가를 입력하면 원가율을 알 수 있어요'
+                                      } else if (set.costRate < 10) {
+                                        comment = `원가율 ${set.costRate.toFixed(1)}%... 이건 미친 마진이에요!`
+                                      } else if (set.costRate < 30) {
+                                        comment = `원가율 ${set.costRate.toFixed(1)}%. 엄청 좋아요! 고독이도 박수치고 있어요`
+                                      } else if (set.costRate < 50) {
+                                        comment = `원가율 ${set.costRate.toFixed(1)}%. 잘 관리하고 있어요! 고독이도 흐뭇해요 🐟`
+                                      } else if (set.costRate < 80) {
+                                        comment = `원가율 ${set.costRate.toFixed(1)}%... 위험해요. 가격을 올리거나 원가를 줄여봐요`
+                                      } else {
+                                        comment = `원가율 ${set.costRate.toFixed(1)}%!! 거의 남는 게 없어요. 고독이가 걱정돼요`
+                                      }
+                                      return (
+                                        <div style={{ background: 'rgba(74,127,165,0.15)', borderRadius: 8, padding: '8px 10px', marginBottom: 12, borderLeft: `3px solid ${ri.color}` }}>
+                                          <div style={{ fontSize: '0.72rem', color: ri.color, fontWeight: 600 }}>
+                                            🐟 {comment}
+                                          </div>
+                                        </div>
+                                      )
+                                    })()}
 
                                     {/* 수정 버튼 */}
                                     <button onClick={e => { e.stopPropagation(); router.push(`/proto?id=${set.id}`) }}
@@ -1177,7 +1216,7 @@ export default function HomePage() {
                             key={menu.id}
                             initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }}
                             transition={{ delay: i * 0.03 }}
-                            onClick={() => router.push(`/calculator?menuId=${menu.id}&returnTo=/`)}
+                            onClick={() => router.push(`/calculator?menuId=${menu.id}&returnTo=/?tab=menus`)}
                             style={{
                               background: 'rgba(255,255,255,0.04)',
                               border: '1px solid rgba(255,255,255,0.08)',
@@ -1188,10 +1227,26 @@ export default function HomePage() {
                             whileTap={{ scale: 0.96 }}
                           >
                             <div style={{ fontSize: '1.4rem', marginBottom: 6 }}>{menu.emoji}</div>
-                            <div style={{ fontSize: '0.82rem', fontWeight: 700, color: 'white', marginBottom: 3 }}>{menu.name}</div>
+                            <div style={{ fontSize: '0.82rem', fontWeight: 700, color: 'white', marginBottom: 6 }}>{menu.name}</div>
                             {menu.ingredients && menu.ingredients.length > 0 && (
-                              <div style={{ fontSize: '0.65rem', color: 'rgba(200,216,228,0.5)', lineHeight: 1.4 }}>
-                                {Array.isArray(menu.ingredients) ? menu.ingredients.join(', ') : ''}
+                              <div style={{ display: 'flex', flexWrap: 'wrap', gap: 4 }}>
+                                {menu.ingredients.slice(0, 3).map((ing: string, idx: number) => (
+                                  <span key={idx} style={{
+                                    fontSize: '0.62rem', padding: '2px 7px',
+                                    background: 'rgba(74,127,165,0.18)',
+                                    border: '1px solid rgba(74,127,165,0.25)',
+                                    borderRadius: 20, color: '#7DB8D8', fontWeight: 600,
+                                    whiteSpace: 'nowrap',
+                                  }}>{ing}</span>
+                                ))}
+                                {menu.ingredients.length > 3 && (
+                                  <span style={{
+                                    fontSize: '0.62rem', padding: '2px 7px',
+                                    background: 'rgba(255,255,255,0.06)',
+                                    border: '1px solid rgba(255,255,255,0.1)',
+                                    borderRadius: 20, color: 'rgba(200,216,228,0.4)', fontWeight: 600,
+                                  }}>+{menu.ingredients.length - 3}</span>
+                                )}
                               </div>
                             )}
                           </motion.div>
@@ -1206,87 +1261,14 @@ export default function HomePage() {
         )}
       </main>
 
-      {/* ── 모바일: 탭별 하단 버튼 ── */}
-      {homeTab === 'sets' && (
-        <motion.div
-          className="home-bottom-mobile"
-          initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }}
-          transition={{ delay: 0.15 }}
-          style={{
-            position: 'fixed', bottom: 0, left: 0, right: 0, zIndex: 20,
-            background: 'rgba(10,18,28,0.96)', backdropFilter: 'blur(16px)',
-            borderTop: '1px solid rgba(74,127,165,0.12)',
-            padding: '14px 20px',
-            paddingBottom: 'calc(env(safe-area-inset-bottom, 0px) + 14px)',
-          }}
-        >
-          <div style={{ maxWidth: 680, margin: '0 auto' }}>
-            <motion.button
-              whileHover={{ scale: 1.03 }} whileTap={{ scale: 0.96 }}
-              onClick={() => router.push('/proto')}
-              style={{
-                width: '100%',
-                background: 'linear-gradient(135deg, #3A6FA5, #2A5080)',
-                border: 'none', borderRadius: 14, color: 'white', fontSize: '0.82rem',
-                padding: '12px 18px', cursor: 'pointer',
-                boxShadow: '0 4px 16px rgba(58,111,165,0.35)',
-                fontFamily: "'Noto Sans KR', sans-serif", fontWeight: 700,
-              }}
-            >＋ 상품 추가</motion.button>
-          </div>
-        </motion.div>
-      )}
 
-      {/* ── 모바일: 레시피관리 탭 하단 버튼 ── */}
-      {homeTab === 'menus' && (
-        <motion.div
-          className="home-bottom-mobile"
-          initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }}
-          transition={{ delay: 0.15 }}
-          style={{
-            position: 'fixed', bottom: 0, left: 0, right: 0, zIndex: 20,
-            background: 'rgba(10,18,28,0.96)', backdropFilter: 'blur(16px)',
-            borderTop: '1px solid rgba(74,127,165,0.12)',
-            padding: '14px 20px',
-            paddingBottom: 'calc(env(safe-area-inset-bottom, 0px) + 14px)',
-          }}
-        >
-          <div style={{ maxWidth: 680, margin: '0 auto', display: 'flex', gap: 10 }}>
-            <motion.button
-              whileHover={{ scale: 1.03 }} whileTap={{ scale: 0.96 }}
-              onClick={() => router.push('/fridge')}
-              style={{
-                flex: 1,
-                background: 'rgba(74,127,165,0.2)',
-                border: '1px solid rgba(74,127,165,0.3)', borderRadius: 14, color: '#7DB8D8', fontSize: '0.82rem',
-                padding: '12px 18px', cursor: 'pointer',
-                fontFamily: "'Noto Sans KR', sans-serif", fontWeight: 700,
-              }}
-            >🧊 냉장고</motion.button>
-            <motion.button
-              whileHover={{ scale: 1.03 }} whileTap={{ scale: 0.96 }}
-              onClick={() => router.push('/proto')}
-              style={{
-                flex: 1.2,
-                background: 'linear-gradient(135deg, #3A6FA5, #2A5080)',
-                border: 'none', borderRadius: 14, color: 'white', fontSize: '0.82rem',
-                padding: '12px 18px', cursor: 'pointer',
-                boxShadow: '0 4px 16px rgba(58,111,165,0.35)',
-                fontFamily: "'Noto Sans KR', sans-serif", fontWeight: 700,
-              }}
-            >➕ 레시피 추가</motion.button>
-          </div>
-        </motion.div>
-      )}
-
-      {/* ── PC: FAB (floating, 메뉴판 탭에서만) ── */}
+      {/* ── FAB: 메뉴판 탭 ── */}
       {homeTab === 'sets' && (
         <motion.button
-          className="home-bottom-pc"
           whileHover={{ scale: 1.04 }} whileTap={{ scale: 0.96 }}
           onClick={() => router.push('/proto')}
           style={{
-            position: 'fixed', bottom: 28, right: 24,
+            position: 'fixed', bottom: 28, right: 24, zIndex: 20,
             background: 'linear-gradient(135deg, #3A6FA5, #2A5080)',
             border: 'none', borderRadius: 18, color: 'white', fontSize: '0.9rem',
             padding: '14px 22px', cursor: 'pointer',
@@ -1296,32 +1278,61 @@ export default function HomePage() {
         >＋ 상품 추가</motion.button>
       )}
 
-      {/* ── PC: 레시피관리 탭 버튼 ── */}
+      {/* ── FAB: 레시피관리 탭 ── */}
       {homeTab === 'menus' && (
-        <div className="home-bottom-pc" style={{ position: 'fixed', bottom: 28, right: 24, zIndex: 20, display: 'flex', gap: 10 }}>
-          <motion.button
-            whileHover={{ scale: 1.04 }} whileTap={{ scale: 0.96 }}
-            onClick={() => router.push('/fridge')}
-            style={{
-              background: 'rgba(74,127,165,0.2)',
-              border: '1px solid rgba(74,127,165,0.3)', borderRadius: 18, color: '#7DB8D8', fontSize: '0.9rem',
-              padding: '14px 22px', cursor: 'pointer',
-              fontFamily: "'Noto Sans KR', sans-serif", fontWeight: 700,
-            }}
-          >🧊 냉장고</motion.button>
-          <motion.button
-            whileHover={{ scale: 1.04 }} whileTap={{ scale: 0.96 }}
-            onClick={() => router.push('/proto')}
-            style={{
-              background: 'linear-gradient(135deg, #3A6FA5, #2A5080)',
-              border: 'none', borderRadius: 18, color: 'white', fontSize: '0.9rem',
-              padding: '14px 22px', cursor: 'pointer',
-              boxShadow: '0 8px 28px rgba(58,111,165,0.4)',
-              fontFamily: "'Noto Sans KR', sans-serif", fontWeight: 700,
-            }}
-          >➕ 레시피 추가</motion.button>
-        </div>
+        <motion.button
+          whileHover={{ scale: 1.04 }} whileTap={{ scale: 0.96 }}
+          onClick={() => router.push('/calculator?new=1&returnTo=/?tab=menus')}
+          style={{
+            position: 'fixed', bottom: 28, right: 24, zIndex: 20,
+            background: 'linear-gradient(135deg, #3A6FA5, #2A5080)',
+            border: 'none', borderRadius: 18, color: 'white', fontSize: '0.9rem',
+            padding: '14px 22px', cursor: 'pointer',
+            boxShadow: '0 8px 28px rgba(58,111,165,0.4)',
+            fontFamily: "'Noto Sans KR', sans-serif", fontWeight: 700,
+          }}
+        >➕ 레시피 추가</motion.button>
       )}
+
+      {/* ── 냉장고 Bottom Sheet ── */}
+      <AnimatePresence>
+        {showFridge && (
+          <>
+            {/* 딤 배경 */}
+            <motion.div
+              initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}
+              onClick={() => setShowFridge(false)}
+              style={{ position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.5)', zIndex: 50 }}
+            />
+            {/* 시트 */}
+            <motion.div
+              initial={{ y: '100%' }} animate={{ y: 0 }} exit={{ y: '100%' }}
+              transition={{ type: 'spring', damping: 30, stiffness: 300 }}
+              style={{
+                position: 'fixed', bottom: 0, left: 0, right: 0, zIndex: 51,
+                height: '67vh',
+                background: '#111B27',
+                borderRadius: '22px 22px 0 0',
+                overflow: 'hidden',
+                display: 'flex', flexDirection: 'column',
+              }}
+            >
+              {/* 핸들 + 헤더 */}
+              <div style={{ padding: '12px 20px 8px', borderBottom: '1px solid rgba(255,255,255,0.06)', flexShrink: 0 }}>
+                <div style={{ width: 36, height: 4, background: 'rgba(255,255,255,0.15)', borderRadius: 2, margin: '0 auto 12px' }} />
+                <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+                  <span style={{ fontSize: '1rem', fontWeight: 700, color: 'white' }}>🧊 냉장고</span>
+                  <button onClick={() => setShowFridge(false)} style={{ background: 'none', border: 'none', color: 'rgba(200,216,228,0.5)', fontSize: '1.2rem', cursor: 'pointer', padding: 4 }}>✕</button>
+                </div>
+              </div>
+              {/* 내용 */}
+              <div style={{ flex: 1, overflowY: 'auto', padding: '16px 20px' }}>
+                <Fridge user={user} />
+              </div>
+            </motion.div>
+          </>
+        )}
+      </AnimatePresence>
 
       {/* 온보딩 모달 */}
       <OnboardingModal

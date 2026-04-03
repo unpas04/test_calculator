@@ -76,6 +76,8 @@ function CalculatorContent() {
   const searchParams = useSearchParams()
   const menuIdParam = searchParams.get('menuId')
   const returnTo = searchParams.get('returnTo')
+  const isNew = searchParams.get('new') === '1'
+  const fromRecipes = returnTo?.startsWith('/') && returnTo !== '/proto'
   const [user, setUser] = useState<any>(null)
   const [loading, setLoading] = useState(true)
   const [menus, setMenus] = useState<any[]>([])
@@ -166,9 +168,15 @@ function CalculatorContent() {
           })
           return { ...m, delivery_fee: m.delivery_fee, card_fee: m.card_fee, ingredients: deduped }
         })
-        setMenus(formatted)
-        const target = menuIdParam ? formatted.find((m: any) => m.id === menuIdParam) : null
-        setCurrentId(target ? target.id : formatted[0].id)
+        if (isNew) {
+          const newMenu = defaultMenu()
+          setMenus([...formatted, newMenu])
+          setCurrentId(newMenu.id)
+        } else {
+          setMenus(formatted)
+          const target = menuIdParam ? formatted.find((m: any) => m.id === menuIdParam) : null
+          setCurrentId(target ? target.id : formatted[0].id)
+        }
       }
     }
 
@@ -511,16 +519,18 @@ function CalculatorContent() {
 
   return (
     <div style={{ display: 'flex', minHeight: '100vh' }}>
-      <AppSidebar
-        menus={menus.map(m => ({ ...m, costRate: calcCostRate(m), subLabel: calcSubLabel(m) }))}
-        currentId={currentId}
-        onSelect={setCurrentId}
-        onNew={handleNew}
-        onDelete={handleDelete}
-        user={user}
-        onLogout={logout}
-      />
-      <main className="main-content" style={{ marginLeft: 260, flex: 1, padding: '32px 28px 60px', maxWidth: 760 }}>
+      {!fromRecipes && (
+        <AppSidebar
+          menus={menus.map(m => ({ ...m, costRate: calcCostRate(m), subLabel: calcSubLabel(m) }))}
+          currentId={currentId}
+          onSelect={setCurrentId}
+          onNew={handleNew}
+          onDelete={handleDelete}
+          user={user}
+          onLogout={logout}
+        />
+      )}
+      <main className="main-content" style={{ marginLeft: fromRecipes ? 0 : 260, flex: 1, padding: '32px 28px 60px', maxWidth: 760 }}>
         {!user && (
           <div style={{ background: 'rgba(74,127,165,0.12)', border: '1px solid rgba(74,127,165,0.25)', borderRadius: 10, padding: '10px 16px', marginBottom: 20, display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 12, fontFamily: "'Noto Sans KR', sans-serif" }}>
             <span style={{ fontSize: '0.78rem', color: '#7DB8D8' }}>🐟 로그인하면 데이터가 저장돼요</span>
@@ -533,11 +543,19 @@ function CalculatorContent() {
             background: 'rgba(74,127,165,0.15)', border: '1px solid rgba(74,127,165,0.3)',
             color: '#7DB8D8', textDecoration: 'none', fontWeight: 700,
             borderRadius: 8, padding: '5px 12px', fontSize: '0.78rem',
-          }}><ArrowLeft size={13} style={{ flexShrink: 0 }} /> 메뉴구성</a>
+          }}><ArrowLeft size={13} style={{ flexShrink: 0 }} /> {fromRecipes ? (isNew ? '레시피관리' : '레시피관리') : '메뉴구성'}</a>
           <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
             <a href="/" style={{ color: 'var(--text-soft)', textDecoration: 'none', fontWeight: 500 }}>홈</a>
             <span style={{ color: 'var(--text-soft)', opacity: 0.4 }}>›</span>
-            <span style={{ color: 'var(--text-mid)', fontWeight: 700 }}>원가 편집기</span>
+            {fromRecipes ? (
+              <>
+                <a href="/" style={{ color: 'var(--text-soft)', textDecoration: 'none', fontWeight: 500 }}>레시피관리</a>
+                <span style={{ color: 'var(--text-soft)', opacity: 0.4 }}>›</span>
+                <span style={{ color: 'var(--text-mid)', fontWeight: 700 }}>{isNew ? '레시피추가' : '레시피수정'}</span>
+              </>
+            ) : (
+              <span style={{ color: 'var(--text-mid)', fontWeight: 700 }}>원가 편집기</span>
+            )}
           </div>
         </div>
         {currentMenu ? (

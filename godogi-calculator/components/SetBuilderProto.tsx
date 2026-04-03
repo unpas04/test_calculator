@@ -109,12 +109,6 @@ function SetBlock({ block, onRemove, onMoveLeft, onMoveRight, onEdit }: {
         cursor: onEdit ? 'pointer' : 'default',
       }}
     >
-      {/* 카테고리 뱃지 */}
-      <div className="sb-block-label" style={{
-        position: 'absolute', top: -10, left: '50%', transform: 'translateX(-50%)',
-        background: s.border, borderRadius: 20, padding: '1px 7px',
-        fontSize: '0.58rem', color: 'white', fontFamily: "'Noto Sans KR',sans-serif", fontWeight: 700, whiteSpace: 'nowrap',
-      }}>{s.label}</div>
       {/* 데스크탑 카드 레이아웃 */}
       <div className="sb-block-card-body">
         <div className="sb-block-emoji" style={{ fontSize: isMain ? '2rem' : '1.5rem', marginBottom: 5 }}>{block.emoji}</div>
@@ -128,7 +122,6 @@ function SetBlock({ block, onRemove, onMoveLeft, onMoveRight, onEdit }: {
           <div style={{ fontFamily: "'Noto Sans KR',sans-serif", fontWeight: 700, fontSize: '0.88rem', color: 'white' }}>{block.name}</div>
           <div style={{ fontSize: '0.7rem', color: 'rgba(255,255,255,0.5)', marginTop: 1 }}>{fmt(block.cost)}원</div>
         </div>
-        <div style={{ fontSize: '0.62rem', color: 'rgba(255,255,255,0.35)', flexShrink: 0, background: `${s.border}33`, border: `1px solid ${s.border}66`, borderRadius: 20, padding: '2px 8px' }}>{s.label}</div>
         {onEdit && (
           <motion.button
             onClick={e => { e.stopPropagation(); onEdit() }}
@@ -318,6 +311,10 @@ export default function SetBuilderProto() {
   const [isDirty, setIsDirty] = useState(false)
   const [paletteSearch, setPaletteSearch] = useState('')
   const [paletteCategory, setPaletteCategory] = useState<'all' | BlockCategory>('all')
+  const [setCategory, setSetCategory] = useState<string>('')
+  const [showCategoryDropdown, setShowCategoryDropdown] = useState(false)
+  const [showCategoryModal, setShowCategoryModal] = useState(false)
+  const [customCategoryInput, setCustomCategoryInput] = useState('')
 
   useEffect(() => {
     const stored = localStorage.getItem(FEES_KEY)
@@ -366,7 +363,7 @@ export default function SetBuilderProto() {
       const { data } = await supabase
         .from('sets')
         .select(`
-          id, name, sale_price, channel,
+          id, name, sale_price, channel, category,
           set_items(
             id, sort_order, menu_id,
             menus(id, name, category, emoji, labor, overhead, batch_yield, serving_size,
@@ -380,6 +377,7 @@ export default function SetBuilderProto() {
       setSetName(data.name)
       setSalePrice(data.sale_price > 0 ? data.sale_price.toLocaleString('ko-KR') : '')
       if (data.channel) setChannel(data.channel as 'delivery' | 'hall')
+      if (data.category) setSetCategory(data.category)
       const loadedBlocks = (data.set_items || [])
         .sort((a: any, b: any) => a.sort_order - b.sort_order)
         .map((item: any) => ({
@@ -527,6 +525,7 @@ export default function SetBuilderProto() {
 
   const handleSave = async () => {
     if (blocks.length === 0) return
+    if (!setCategory) { alert('카테고리를 선택해주세요'); return }
     if (!userId) { setShowLoginModal(true); return }
     const supabase = createClient()
     try {
@@ -536,6 +535,7 @@ export default function SetBuilderProto() {
           name: setName || '메뉴 구성',
           sale_price: salePriceNum,
           channel,
+          category: setCategory,
           updated_at: new Date().toISOString(),
         }).eq('id', editId)
       } else {
@@ -544,6 +544,7 @@ export default function SetBuilderProto() {
           name: setName || '메뉴 구성',
           sale_price: salePriceNum,
           channel,
+          category: setCategory,
         }).select().single()
         if (error || !data) { console.error(error); return }
         setId = data.id
@@ -837,6 +838,67 @@ export default function SetBuilderProto() {
                 outline: 'none', paddingBottom: 4, minWidth: 0,
               }}
             />
+            <div style={{ position: 'relative', flexShrink: 0 }}>
+              <motion.button
+                whileTap={{ scale: 0.95 }}
+                onClick={() => setShowCategoryDropdown(v => !v)}
+                style={{
+                  padding: '4px 8px', borderRadius: 8, border: `1px solid ${setCategory ? '#4A7FA5' : '#E74C3C'}`,
+                  background: 'rgba(74,127,165,0.15)', color: setCategory ? 'white' : 'rgba(200,216,228,0.5)',
+                  fontSize: '0.7rem', fontFamily: "'Noto Sans KR',sans-serif", fontWeight: 600,
+                  cursor: 'pointer', outline: 'none', transition: 'all 0.2s', minWidth: 100, maxWidth: 110,
+                  overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap',
+                }}
+              >
+                {setCategory ? (setCategory.length > 8 ? setCategory.slice(0, 8) + '...' : setCategory) : '카테고리'} ▼
+              </motion.button>
+              {showCategoryDropdown && (
+                <motion.div
+                  initial={{ opacity: 0, y: -4 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  exit={{ opacity: 0, y: -4 }}
+                  onClick={e => e.stopPropagation()}
+                  style={{
+                    position: 'fixed', zIndex: 100,
+                    background: '#0F1923', border: '1px solid rgba(74,127,165,0.3)', borderRadius: 10,
+                    overflow: 'hidden', width: 180, boxShadow: '0 4px 12px rgba(0,0,0,0.4)',
+                    bottom: 'auto', top: '50px', right: 20,
+                  }}
+                >
+                  <div style={{ maxHeight: 220, overflowY: 'auto' }}>
+                    {['탕/찌개류', '볶음류', '구이류', '밥류', '반찬류', '음료', '디저트', '면류', '분식', '기타'].map(cat => (
+                      <motion.button
+                        key={cat}
+                        whileHover={{ background: 'rgba(74,127,165,0.2)' }}
+                        whileTap={{ background: 'rgba(74,127,165,0.3)' }}
+                        onClick={() => { setSetCategory(cat); setShowCategoryDropdown(false); setIsDirty(true) }}
+                        style={{
+                          width: '100%', padding: '8px 10px', border: 'none', background: setCategory === cat ? 'rgba(74,127,165,0.3)' : 'transparent',
+                          color: setCategory === cat ? '#7DB8D8' : 'rgba(200,216,228,0.7)', fontSize: '0.73rem',
+                          fontFamily: "'Noto Sans KR',sans-serif", cursor: 'pointer', textAlign: 'left', transition: 'all 0.15s',
+                        }}
+                      >
+                        {cat}
+                      </motion.button>
+                    ))}
+                  </div>
+                  <div style={{ borderTop: '1px solid rgba(74,127,165,0.2)', padding: '2px' }}>
+                    <motion.button
+                      whileHover={{ background: 'rgba(200,216,228,0.08)' }}
+                      whileTap={{ background: 'rgba(200,216,228,0.12)' }}
+                      onClick={() => { setShowCategoryDropdown(false); setShowCategoryModal(true) }}
+                      style={{
+                        width: '100%', padding: '6px 10px', border: 'none', background: 'transparent',
+                        color: 'rgba(200,216,228,0.6)', fontSize: '0.7rem', fontFamily: "'Noto Sans KR',sans-serif",
+                        cursor: 'pointer', textAlign: 'left', transition: 'all 0.15s',
+                      }}
+                    >
+                      + 직접 입력
+                    </motion.button>
+                  </div>
+                </motion.div>
+              )}
+            </div>
             <motion.button
               className="sb-add-btn"
               whileTap={{ scale: 0.93 }}
@@ -854,11 +916,11 @@ export default function SetBuilderProto() {
               onClick={handleSave}
               animate={saved ? { scale: [1, 1.08, 1] } : {}}
               style={{
-                background: saved ? '#4A8C6F' : blocks.length > 0 ? 'linear-gradient(135deg, #3A6FA5, #2A5080)' : 'rgba(255,255,255,0.06)',
+                background: saved ? '#4A8C6F' : blocks.length > 0 && setCategory ? 'linear-gradient(135deg, #3A6FA5, #2A5080)' : 'rgba(255,255,255,0.06)',
                 border: 'none', borderRadius: 10, padding: '8px 14px',
-                color: blocks.length > 0 ? 'white' : 'rgba(200,216,228,0.3)',
+                color: blocks.length > 0 && setCategory ? 'white' : 'rgba(200,216,228,0.3)',
                 fontFamily: "'Noto Sans KR',sans-serif", fontWeight: 700, fontSize: '0.82rem',
-                cursor: blocks.length > 0 ? 'pointer' : 'default',
+                cursor: blocks.length > 0 && setCategory ? 'pointer' : 'default',
                 flexShrink: 0, transition: 'background 0.2s',
               }}
             >{saved ? '✓' : '저장'}<span className="sb-save-text">{saved ? ' 저장됨' : ''}</span></motion.button>
@@ -1060,6 +1122,80 @@ export default function SetBuilderProto() {
             }}
           ><span style={{ fontSize: '1rem', lineHeight: 1 }}>＋</span> 구성 추가</motion.button>
         </div>
+
+        {/* 카테고리 직접 입력 모달 */}
+        <AnimatePresence>
+          {showCategoryModal && (
+            <>
+              <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}
+                onClick={() => { setShowCategoryModal(false); setCustomCategoryInput('') }}
+                style={{ position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.5)', zIndex: 200 }} />
+              <motion.div initial={{ opacity: 0, scale: 0.95, y: 20 }} animate={{ opacity: 1, scale: 1, y: 0 }} exit={{ opacity: 0, scale: 0.95, y: 20 }}
+                style={{ position: 'fixed', top: '35%', left: 0, right: 0, marginLeft: 'auto', marginRight: 'auto', transform: 'translateY(-50%)', zIndex: 201, width: '90%', maxWidth: 320, boxSizing: 'border-box' }}>
+                <div style={{ background: '#111B27', border: '1px solid rgba(74,127,165,0.3)', borderRadius: 16, padding: 16 }}>
+                  <div style={{ fontSize: '0.95rem', fontWeight: 700, color: 'white', marginBottom: 12, fontFamily: "'Noto Sans KR',sans-serif" }}>
+                    새 카테고리
+                  </div>
+                  <input
+                    autoFocus
+                    type="text"
+                    placeholder="카테고리명 입력..."
+                    value={customCategoryInput}
+                    onChange={e => setCustomCategoryInput(e.target.value)}
+                    onKeyDown={e => {
+                      if (e.key === 'Enter' && customCategoryInput.trim()) {
+                        setSetCategory(customCategoryInput.trim());
+                        setShowCategoryModal(false);
+                        setCustomCategoryInput('');
+                        setIsDirty(true);
+                      }
+                    }}
+                    style={{
+                      width: '100%', padding: '10px 12px', marginBottom: 14, boxSizing: 'border-box',
+                      background: 'rgba(255,255,255,0.05)', border: '1px solid rgba(74,127,165,0.3)',
+                      borderRadius: 10, color: 'white', fontSize: '0.85rem', fontFamily: "'Noto Sans KR',sans-serif",
+                      outline: 'none', transition: 'all 0.2s',
+                    }}
+                    onFocus={e => e.target.style.borderColor = '#4A7FA5'}
+                    onBlur={e => e.target.style.borderColor = 'rgba(74,127,165,0.3)'}
+                  />
+                  <div style={{ display: 'flex', gap: 10 }}>
+                    <motion.button
+                      whileTap={{ scale: 0.95 }}
+                      onClick={() => { setShowCategoryModal(false); setCustomCategoryInput('') }}
+                      style={{
+                        flex: 1, padding: '8px 12px', background: 'rgba(255,255,255,0.06)', border: '1px solid rgba(255,255,255,0.1)',
+                        borderRadius: 10, color: 'rgba(200,216,228,0.6)', fontSize: '0.78rem', fontFamily: "'Noto Sans KR',sans-serif",
+                        fontWeight: 600, cursor: 'pointer', transition: 'all 0.2s',
+                      }}
+                    >
+                      취소
+                    </motion.button>
+                    <motion.button
+                      whileTap={{ scale: 0.95 }}
+                      onClick={() => {
+                        if (customCategoryInput.trim()) {
+                          setSetCategory(customCategoryInput.trim());
+                          setShowCategoryModal(false);
+                          setCustomCategoryInput('');
+                          setIsDirty(true);
+                        }
+                      }}
+                      style={{
+                        flex: 1, padding: '8px 12px', background: customCategoryInput.trim() ? '#4A7FA5' : 'rgba(74,127,165,0.2)',
+                        border: 'none', borderRadius: 10, color: customCategoryInput.trim() ? 'white' : 'rgba(200,216,228,0.3)',
+                        fontSize: '0.78rem', fontFamily: "'Noto Sans KR',sans-serif", fontWeight: 600,
+                        cursor: customCategoryInput.trim() ? 'pointer' : 'default', transition: 'all 0.2s',
+                      }}
+                    >
+                      추가
+                    </motion.button>
+                  </div>
+                </div>
+              </motion.div>
+            </>
+          )}
+        </AnimatePresence>
 
         {/* 이탈 경고 모달 */}
         <AnimatePresence>
