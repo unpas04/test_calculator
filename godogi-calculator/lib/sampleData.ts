@@ -260,6 +260,15 @@ const CAFE_MENUS: SampleMenu[] = [
       { name: '얼음', price: 1000, qty: 2000, unit: 'g', yield_: 100, use_amount: 200, sort_order: 2 },
     ],
   },
+  {
+    name: '핸드드립 커피', emoji: '☕', category: 'drink',
+    overhead: 500, packaging: 0, labor: 0, delivery_fee: 0, card_fee: 0,
+    sale_price: 6500, batch_yield: 0, serving_size: 0,
+    ingredients: [
+      { name: '스페셜 원두', price: 45000, qty: 1000, unit: 'g', yield_: 100, use_amount: 15, sort_order: 0 },
+      { name: '정수', price: 500, qty: 2000, unit: 'ml', yield_: 100, use_amount: 200, sort_order: 1 },
+    ],
+  },
   // Pastries & Sides
   {
     name: '머핀', emoji: '🧁', category: 'side',
