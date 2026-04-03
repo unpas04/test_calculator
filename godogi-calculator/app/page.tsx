@@ -788,7 +788,7 @@ export default function HomePage() {
       const menuIds = def.menuNames.map(n => menuByName[n]).filter(Boolean)
       if (menuIds.length === 0) continue
       const { data: newSet } = await supabase.from('sets').insert({
-        user_id: userId, name: def.name, channel: def.channel, sale_price: def.sale_price,
+        user_id: userId, name: def.name, channel: def.channel, sale_price: def.sale_price, category: def.category,
       }).select().single()
       if (newSet) {
         await supabase.from('set_items').insert(
