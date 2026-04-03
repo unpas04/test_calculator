@@ -816,8 +816,8 @@ export default function SetBuilderProto() {
               </div>
             )}
 
-            {/* 메뉴판 경로: 2열 레이아웃 */}
-            {searchParams.get('source') === 'menu' ? (
+            {/* 메뉴판 경로: 2열 레이아웃 (editId가 있으면 메뉴판에서 온 것) */}
+            {editId ? (
               <>
                 {/* 왼쪽 열: 뒤로가기 */}
                 <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>

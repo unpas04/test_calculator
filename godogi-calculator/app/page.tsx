@@ -1624,7 +1624,7 @@ export default function HomePage() {
                                     {/* 수정/삭제 버튼 (한 줄) */}
                                     <div style={{ display: 'flex', gap: 8 }}>
                                       {/* 수정 버튼 */}
-                                      <button onClick={e => { e.stopPropagation(); router.push(`/proto?id=${set.id}`) }}
+                                      <button onClick={e => { e.stopPropagation(); router.push(`/proto?id=${set.id}&source=menu`) }}
                                         style={{
                                           flex: 1, padding: '8px 0', background: 'rgba(74,127,165,0.2)',
                                           border: '1px solid rgba(74,127,165,0.3)', borderRadius: 8,
