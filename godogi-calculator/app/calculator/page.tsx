@@ -77,7 +77,8 @@ function CalculatorContent() {
   const menuIdParam = searchParams.get('menuId')
   const returnTo = searchParams.get('returnTo')
   const isNew = searchParams.get('new') === '1'
-  const fromRecipes = returnTo?.startsWith('/') && returnTo !== '/proto'
+  const isFromMenu = searchParams.get('source') === 'menu'
+  const fromRecipes = !isFromMenu && returnTo?.startsWith('/') && returnTo !== '/proto'
   const [user, setUser] = useState<any>(null)
   const [loading, setLoading] = useState(true)
   const [menus, setMenus] = useState<any[]>([])
@@ -554,7 +555,11 @@ function CalculatorContent() {
                 <span style={{ color: 'var(--text-mid)', fontWeight: 700 }}>{isNew ? '레시피추가' : '레시피수정'}</span>
               </>
             ) : (
-              <span style={{ color: 'var(--text-mid)', fontWeight: 700 }}>원가 편집기</span>
+              <>
+                <a href="/proto" style={{ color: 'var(--text-soft)', textDecoration: 'none', fontWeight: 500 }}>메뉴구성</a>
+                <span style={{ color: 'var(--text-soft)', opacity: 0.4 }}>›</span>
+                <span style={{ color: 'var(--text-mid)', fontWeight: 700 }}>레시피수정</span>
+              </>
             )}
           </div>
         </div>

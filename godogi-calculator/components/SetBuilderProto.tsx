@@ -808,32 +808,56 @@ export default function SetBuilderProto() {
         <div className="sb-wrap" style={{ flex: 1, padding: '28px 36px', display: 'flex', flexDirection: 'column', gap: 16 }}>
 
           {/* 헤더: 뒤로가기 + 세트 이름 + 버튼들 */}
-          <div style={{ display: 'flex', flexDirection: 'column', gap: 6 }}>
-            {editId && (
-              <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
-                <div style={{ width: 6, height: 6, borderRadius: '50%', background: '#F4A460', animation: 'pulse 1.5s infinite' }} />
-                <span style={{ fontSize: '0.68rem', color: 'rgba(200,216,228,0.4)', fontFamily: "'Noto Sans KR',sans-serif" }}>수정 중</span>
-              </div>
-            )}
+          <div style={{ display: 'flex', flexDirection: 'column', gap: 24 }}>
+            {/* 1행: 햄버거 버튼 */}
+            <motion.button
+              whileTap={{ scale: 0.9 }}
+              onClick={() => {
+                tryNavigate('/')
+                setTimeout(() => {
+                  const menuPanel = document.querySelector('[data-tab-bar="true"]')
+                  if (menuPanel) menuPanel.scrollIntoView({ behavior: 'smooth' })
+                }, 100)
+              }}
+              style={{
+                background: 'none', border: 'none', color: '#C8D4E0',
+                fontSize: '1.4rem', cursor: 'pointer', padding: '4px 8px',
+                display: 'inline-flex', alignItems: 'center', justifyContent: 'center',
+                width: 'fit-content',
+              }}
+            >☰</motion.button>
 
-            {/* 메뉴판 경로: 2열 레이아웃 */}
+            {/* 메뉴판 경로: 3행 레이아웃 */}
             {editId && (
               <>
-                {/* 왼쪽 열: 뒤로가기 */}
-                <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+                {/* 2행: 뒤로가기 + 수정중 */}
+                <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
                   <motion.button
                     whileTap={{ scale: 0.93 }}
-                    onClick={() => tryNavigate('/')}
-                    style={{
-                      background: '#4A7FA5', border: '1px solid #5B9EC9',
-                      color: 'white', borderRadius: 6, padding: '6px 10px',
-                      fontFamily: "'Noto Sans KR',sans-serif", fontSize: '0.72rem', cursor: 'pointer',
-                      flexShrink: 0, fontWeight: 500,
+                    onClick={() => {
+                      tryNavigate('/')
+                      setTimeout(() => {
+                        const menuPanel = document.querySelector('[data-tab-bar="true"]')
+                        if (menuPanel) menuPanel.scrollIntoView({ behavior: 'smooth' })
+                      }, 100)
                     }}
-                  >← 메뉴구성</motion.button>
+                    style={{
+                      background: 'rgba(74,127,165,0.15)', border: '1px solid rgba(74,127,165,0.3)',
+                      color: '#7DB8D8', borderRadius: 8, padding: '5px 12px',
+                      fontFamily: "'Noto Sans KR',sans-serif", fontSize: '0.78rem', cursor: 'pointer',
+                      flexShrink: 0, fontWeight: 700, display: 'inline-flex', alignItems: 'center', gap: 5,
+                    }}
+                  >← 메뉴판</motion.button>
+                  {/* 수정 중 표시 */}
+                  {editId && (
+                    <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
+                      <div style={{ width: 6, height: 6, borderRadius: '50%', background: '#F4A460', animation: 'pulse 1.5s infinite' }} />
+                      <span style={{ fontSize: '0.68rem', color: 'rgba(200,216,228,0.4)', fontFamily: "'Noto Sans KR',sans-serif" }}>수정 중</span>
+                    </div>
+                  )}
                 </div>
 
-                {/* 오른쪽 열: 메뉴명 + 카테고리 + 저장 */}
+                {/* 3행: 메뉴명 + 카테고리 + 저장 */}
                 <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
                   <input
                     value={setName}
@@ -1078,22 +1102,6 @@ export default function SetBuilderProto() {
             )}
           </AnimatePresence>
         </div>
-
-        {/* 원가 편집기 고정 FAB */}
-        <motion.button
-          whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.95 }}
-          onClick={() => tryNavigate('/calculator')}
-          style={{
-            position: 'fixed', bottom: 20, right: 24,
-            background: 'rgba(17,27,39,0.92)', backdropFilter: 'blur(10px)',
-            border: '1px solid rgba(74,127,165,0.3)', borderRadius: 14,
-            color: 'rgba(200,216,228,0.7)', fontSize: '0.75rem',
-            padding: '9px 14px', cursor: 'pointer',
-            fontFamily: "'Noto Sans KR',sans-serif", fontWeight: 700,
-            boxShadow: '0 4px 16px rgba(0,0,0,0.3)',
-            zIndex: 30, display: 'flex', alignItems: 'center', gap: 6,
-          }}
-        ><Pencil size={13} /> 원가 편집기</motion.button>
 
         {/* 모바일 전용 구성추가 FAB */}
         <div
