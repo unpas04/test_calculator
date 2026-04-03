@@ -829,9 +829,9 @@ export default function HomePage() {
                   {/* 왼쪽: TOP 5 수익성 좋은 상품 */}
                   {top5Sets.length > 0 && (
                     <div style={{ background: 'rgba(126,200,160,0.08)', border: '1px solid rgba(126,200,160,0.2)', borderRadius: 12, padding: '12px 10px' }}>
-                      <div style={{ fontSize: '0.7rem', color: 'rgba(200,216,228,0.65)', lineHeight: 1.8 }}>
+                      <div style={{ fontSize: '0.7rem', color: 'rgba(200,216,228,0.65)' }}>
                         {top5Sets.map((s, i) => (
-                          <div key={s.id} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                          <div key={s.id} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', paddingBottom: 8, marginBottom: 8, borderBottom: i < top5Sets.length - 1 ? '1px solid rgba(126,200,160,0.15)' : 'none' }}>
                             <span style={{ flex: 1, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
                               <span style={{ color: 'rgba(200,216,228,0.5)', fontWeight: 600, marginRight: 4 }}>{i + 1}</span>
                               {s.name}
@@ -846,9 +846,9 @@ export default function HomePage() {
                   {/* 오른쪽: 원가율 높은 상품 */}
                   {highCostSets.length > 0 && (
                     <div style={{ background: 'rgba(240,128,128,0.08)', border: '1px solid rgba(240,128,128,0.2)', borderRadius: 12, padding: '12px 10px' }}>
-                      <div style={{ fontSize: '0.7rem', color: 'rgba(200,216,228,0.65)', lineHeight: 1.8 }}>
+                      <div style={{ fontSize: '0.7rem', color: 'rgba(200,216,228,0.65)' }}>
                         {highCostSets.slice(0, 5).map((s, i) => (
-                          <div key={s.id} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                          <div key={s.id} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', paddingBottom: 8, marginBottom: 8, borderBottom: i < 4 ? '1px solid rgba(240,128,128,0.15)' : 'none' }}>
                             <span style={{ flex: 1, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
                               <span style={{ color: 'rgba(200,216,228,0.5)', fontWeight: 600, marginRight: 4 }}>{i + 1}</span>
                               {s.name}
