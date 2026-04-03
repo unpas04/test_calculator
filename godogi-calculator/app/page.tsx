@@ -808,48 +808,58 @@ export default function HomePage() {
 
             {/* TOP 5 수익성 좋은 상품 + 원가율 높은 상품 (2열 레이아웃) */}
             {(top5Sets.length > 0 || highCostSets.length > 0) && (
-              <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.1 }}
-                style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 12, marginBottom: 14 }}>
-
-                {/* 왼쪽: TOP 5 수익성 좋은 상품 */}
-                {top5Sets.length > 0 && (
-                  <div style={{ background: 'rgba(126,200,160,0.08)', border: '1px solid rgba(126,200,160,0.2)', borderRadius: 12, padding: '12px 10px' }}>
-                    <div style={{ fontSize: '0.75rem', fontWeight: 700, color: '#7EC8A0', marginBottom: 8 }}>
+              <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.1 }}>
+                {/* 제목들: 카드 위 */}
+                <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 12, marginBottom: 8 }}>
+                  {top5Sets.length > 0 && (
+                    <div style={{ fontSize: '0.78rem', fontWeight: 700, color: 'white' }}>
                       TOP 5 수익성 좋은 상품
                     </div>
-                    <div style={{ fontSize: '0.7rem', color: 'rgba(200,216,228,0.65)', lineHeight: 1.8 }}>
-                      {top5Sets.map((s, i) => (
-                        <div key={s.id} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                          <span style={{ flex: 1, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
-                            <span style={{ color: 'rgba(200,216,228,0.5)', fontWeight: 600, marginRight: 4 }}>{i + 1}</span>
-                            {s.name}
-                          </span>
-                          <span style={{ color: '#7EC8A0', fontWeight: 700, flexShrink: 0, marginLeft: 6 }}>{Math.round(s.costRate)}%</span>
-                        </div>
-                      ))}
-                    </div>
-                  </div>
-                )}
-
-                {/* 오른쪽: 원가율 높은 상품 */}
-                {highCostSets.length > 0 && (
-                  <div style={{ background: 'rgba(240,128,128,0.08)', border: '1px solid rgba(240,128,128,0.2)', borderRadius: 12, padding: '12px 10px' }}>
-                    <div style={{ fontSize: '0.75rem', fontWeight: 700, color: '#F08080', marginBottom: 8 }}>
+                  )}
+                  {highCostSets.length > 0 && (
+                    <div style={{ fontSize: '0.78rem', fontWeight: 700, color: 'white' }}>
                       원가율 높은 상품
                     </div>
-                    <div style={{ fontSize: '0.7rem', color: 'rgba(200,216,228,0.65)', lineHeight: 1.8 }}>
-                      {highCostSets.slice(0, 5).map((s, i) => (
-                        <div key={s.id} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                          <span style={{ flex: 1, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
-                            <span style={{ color: 'rgba(200,216,228,0.5)', fontWeight: 600, marginRight: 4 }}>{i + 1}</span>
-                            {s.name}
-                          </span>
-                          <span style={{ color: '#F08080', fontWeight: 700, flexShrink: 0, marginLeft: 6 }}>{Math.round(s.costRate)}%</span>
-                        </div>
-                      ))}
+                  )}
+                </div>
+
+                {/* 카드들 */}
+                <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 12, marginBottom: 14 }}>
+
+                  {/* 왼쪽: TOP 5 수익성 좋은 상품 */}
+                  {top5Sets.length > 0 && (
+                    <div style={{ background: 'rgba(126,200,160,0.08)', border: '1px solid rgba(126,200,160,0.2)', borderRadius: 12, padding: '12px 10px' }}>
+                      <div style={{ fontSize: '0.7rem', color: 'rgba(200,216,228,0.65)', lineHeight: 1.8 }}>
+                        {top5Sets.map((s, i) => (
+                          <div key={s.id} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                            <span style={{ flex: 1, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+                              <span style={{ color: 'rgba(200,216,228,0.5)', fontWeight: 600, marginRight: 4 }}>{i + 1}</span>
+                              {s.name}
+                            </span>
+                            <span style={{ color: '#7EC8A0', fontWeight: 700, flexShrink: 0, marginLeft: 6 }}>{Math.round(s.costRate)}%</span>
+                          </div>
+                        ))}
+                      </div>
                     </div>
-                  </div>
-                )}
+                  )}
+
+                  {/* 오른쪽: 원가율 높은 상품 */}
+                  {highCostSets.length > 0 && (
+                    <div style={{ background: 'rgba(240,128,128,0.08)', border: '1px solid rgba(240,128,128,0.2)', borderRadius: 12, padding: '12px 10px' }}>
+                      <div style={{ fontSize: '0.7rem', color: 'rgba(200,216,228,0.65)', lineHeight: 1.8 }}>
+                        {highCostSets.slice(0, 5).map((s, i) => (
+                          <div key={s.id} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                            <span style={{ flex: 1, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+                              <span style={{ color: 'rgba(200,216,228,0.5)', fontWeight: 600, marginRight: 4 }}>{i + 1}</span>
+                              {s.name}
+                            </span>
+                            <span style={{ color: '#F08080', fontWeight: 700, flexShrink: 0, marginLeft: 6 }}>{Math.round(s.costRate)}%</span>
+                          </div>
+                        ))}
+                      </div>
+                    </div>
+                  )}
+                </div>
               </motion.div>
             )}
           </>
