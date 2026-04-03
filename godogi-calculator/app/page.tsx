@@ -1239,13 +1239,13 @@ export default function HomePage() {
             {/* 상단 핵심 통계 카드 */}
             <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.05 }}
               style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: 10, marginBottom: 16 }}>
-              {/* 상품 개수 */}
+              {/* 메뉴 개수 */}
               <div style={{
                 background: 'linear-gradient(135deg, rgba(74,127,165,0.15), rgba(91,158,201,0.1))',
                 border: '1px solid rgba(74,127,165,0.2)',
                 borderRadius: 12, padding: '14px 12px', textAlign: 'center'
               }}>
-                <div style={{ fontSize: '0.6rem', color: 'rgba(200,216,228,0.4)', marginBottom: 4, fontWeight: 600 }}>📋 상품</div>
+                <div style={{ fontSize: '0.6rem', color: 'rgba(200,216,228,0.4)', marginBottom: 4, fontWeight: 600 }}>📋 메뉴</div>
                 <div style={{ fontSize: '1.3rem', fontWeight: 800, color: '#4A7FA5' }}>{filteredSets.length}개</div>
               </div>
               {/* 평균 원가율 */}
@@ -1773,7 +1773,7 @@ export default function HomePage() {
             boxShadow: '0 8px 28px rgba(58,111,165,0.4)',
             fontFamily: "'Noto Sans KR', sans-serif", fontWeight: 700,
           }}
-        >＋ 상품 추가</motion.button>
+        >＋ 메뉴 추가</motion.button>
       )}
 
       {/* ── FAB: 레시피관리 탭 ── */}

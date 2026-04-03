@@ -384,6 +384,7 @@ export default function Calculator({ menu, onChange, onOpenFridge, onSave }: Pro
           { value: 'side',    label: '사이드',  color: '#4A8C6F' },
           { value: 'banchan', label: '반찬',   color: '#C44A4A' },
           { value: 'drink',   label: '음료',   color: '#9B6B9B' },
+          { value: 'dessert', label: '디저트', color: '#D4A5A5' },
           { value: 'extra',   label: '기타',   color: '#C8843A' },
         ] as const).map(({ value, label, color }) => {
           const selected = (menu.category || 'main') === value

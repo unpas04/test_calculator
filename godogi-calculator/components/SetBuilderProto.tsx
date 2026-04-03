@@ -818,14 +818,18 @@ export default function SetBuilderProto() {
           <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
             <motion.button
               whileTap={{ scale: 0.93 }}
-              onClick={() => tryNavigate('/')}
+              onClick={() => {
+                const source = searchParams.get('source')
+                const returnPath = source === 'menu' ? '/proto' : '/'
+                tryNavigate(returnPath)
+              }}
               style={{
                 background: 'rgba(255,255,255,0.06)', border: '1px solid rgba(255,255,255,0.1)',
                 color: 'rgba(200,216,228,0.55)', borderRadius: 10, padding: '8px 10px',
                 fontFamily: "'Noto Sans KR',sans-serif", fontSize: '0.78rem', cursor: 'pointer',
                 flexShrink: 0,
               }}
-            >←</motion.button>
+            >← {searchParams.get('source') === 'menu' ? '메뉴구성' : '레시피관리'}</motion.button>
             <input
               value={setName}
               onChange={e => { setSetName(e.target.value); setIsDirty(true) }}
@@ -900,17 +904,6 @@ export default function SetBuilderProto() {
               )}
             </div>
             <motion.button
-              className="sb-add-btn"
-              whileTap={{ scale: 0.93 }}
-              onClick={() => setShowPalette(true)}
-              style={{
-                display: 'none', background: '#4A7FA5', color: 'white', border: 'none',
-                borderRadius: 10, padding: '8px 12px',
-                fontFamily: "'Noto Sans KR',sans-serif", fontWeight: 700, fontSize: '0.82rem',
-                cursor: 'pointer', flexShrink: 0,
-              }}
-            ><Plus size={14} /><span className="sb-add-text"> 추가</span></motion.button>
-            <motion.button
               className="sb-save-btn"
               whileTap={{ scale: 0.93 }}
               onClick={handleSave}
@@ -950,7 +943,7 @@ export default function SetBuilderProto() {
                       onRemove={() => removeBlock(b.id)}
                       onMoveLeft={i > 0 ? () => moveBlock(i, -1) : undefined}
                       onMoveRight={i < blocks.length - 1 ? () => moveBlock(i, 1) : undefined}
-                      onEdit={() => tryNavigate(`/calculator?menuId=${b.menu_id}${editId ? `&returnTo=/proto?id=${editId}` : '&returnTo=/proto'}`)}
+                      onEdit={() => tryNavigate(`/calculator?menuId=${b.menu_id}&source=menu${editId ? `&returnTo=/proto?id=${editId}` : '&returnTo=/proto'}`)}
                     />
                   </div>
                 ))
@@ -984,11 +977,6 @@ export default function SetBuilderProto() {
                       ? `${feeSettings.delivery_platform + feeSettings.delivery_card}%`
                       : `${feeSettings.hall_card}%`} 적용
                   </div>
-                  <button onClick={() => { setFeeForm(feeSettings); setShowFeeModal(true) }} style={{
-                    background: 'rgba(255,255,255,0.06)', border: '1px solid rgba(255,255,255,0.1)',
-                    color: 'rgba(200,216,228,0.4)', borderRadius: 8, padding: '5px 8px',
-                    fontSize: '0.75rem', cursor: 'pointer',
-                  }}><Settings size={14} /></button>
                 </div>
 
                 {/* 스택 바 차트 */}
