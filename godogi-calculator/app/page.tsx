@@ -5,9 +5,10 @@ import { useRouter, useSearchParams } from 'next/navigation'
 import { motion, AnimatePresence } from 'framer-motion'
 import { X } from 'lucide-react'
 import { createClient } from '../lib/supabase'
-import { FIRST_LOGIN_MENU_SAMPLES, SAMPLE_SET_DEFINITIONS, SampleMenu } from '../lib/sampleData'
+import { INDUSTRY_SAMPLES, ALL_SAMPLE_MENUS, SAMPLE_SET_DEFINITIONS, SampleMenu } from '../lib/sampleData'
 import ShareButton from '../components/ShareButton'
 import Fridge from '../components/Fridge'
+import DashboardSidebar from '../components/DashboardSidebar'
 
 const FEES_KEY = 'godogi_fees'
 const DEFAULT_FEES = { delivery_platform: 6.8, delivery_card: 1.5, hall_card: 1.5 }
@@ -21,13 +22,14 @@ const DEFAULT_PRODUCT_CATEGORIES = [
 
 // 업종 목록
 const INDUSTRY_LIST = [
-  '한식', '카페/디저트', '술집/이자카야', '양식', '일식', '치킨/패스트푸드', '분식', '기타'
+  '한식', '카페/디저트', '중식', '술집/이자카야', '양식', '일식', '치킨/패스트푸드', '분식', '기타'
 ]
 
 // 업종별 카테고리 매핑
 const INDUSTRY_CATEGORIES: Record<string, string[]> = {
   '한식': ['탕/찌개류', '볶음류', '구이류', '밥류', '반찬류', '음료', '기타'],
   '카페/디저트': ['커피/음료', '베이커리', '케이크', '스무디/쉐이크', '기타'],
+  '중식': ['면류', '볶음류', '찜/조림', '밥류', '탕/국', '음료', '기타'],
   '술집/이자카야': ['안주류', '구이류', '찜/조림', '사이드', '술/음료', '기타'],
   '양식': ['메인', '파스타/피자', '스프/샐러드', '음료/디저트', '기타'],
   '일식': ['초밥/롤', '라멘/면류', '덮밥류', '사이드', '음료', '기타'],
@@ -94,6 +96,205 @@ function getRateColor(avg: number, target: number) {
   if (avg < target * 0.9) return '#7EC8A0'      // 초록: 목표 대비 90% 이하
   if (avg < target * 1.2) return '#F4A460'      // 주황: 목표 대비 120% 이하
   return '#F08080'                               // 빨강: 초과
+}
+
+// SetupModal: 매장명 입력 + 업종 선택
+function SetupModal({ show, step, setStep, name, setName, industry, setIndustry, loading, onComplete }: {
+  show: boolean
+  step: number
+  setStep: (n: number) => void
+  name: string
+  setName: (s: string) => void
+  industry: string
+  setIndustry: (s: string) => void
+  loading: boolean
+  onComplete: () => void
+}) {
+  const INDUSTRIES = ['한식', '카페/디저트', '중식', '술집/이자카야', '양식', '일식', '치킨/패스트푸드', '분식', '기타']
+  const INDUSTRY_EMOJIS: Record<string, string> = {
+    '한식': '🍲',
+    '카페/디저트': '☕',
+    '중식': '🥡',
+    '술집/이자카야': '🍺',
+    '양식': '🍝',
+    '일식': '🍣',
+    '치킨/패스트푸드': '🍗',
+    '분식': '🌶️',
+    '기타': '🍽️',
+  }
+
+  if (!show) return null
+
+  return (
+    <div style={{
+      position: 'fixed',
+      inset: 0,
+      background: 'rgba(0,0,0,0.85)',
+      display: 'flex',
+      alignItems: 'center',
+      justifyContent: 'center',
+      zIndex: 300,
+      fontFamily: "'Noto Sans KR', sans-serif",
+    }}>
+      <motion.div
+        initial={{ scale: 0.9, opacity: 0 }}
+        animate={{ scale: 1, opacity: 1 }}
+        transition={{ duration: 0.2 }}
+        style={{
+          background: '#1A2840',
+          borderRadius: 24,
+          padding: '36px 28px',
+          width: '100%',
+          maxWidth: 380,
+          boxShadow: '0 20px 60px rgba(0,0,0,0.5)',
+        }}
+      >
+        {/* Step indicators */}
+        <div style={{ display: 'flex', gap: 8, justifyContent: 'center', marginBottom: 32 }}>
+          {[0, 1].map(i => (
+            <div key={i} style={{
+              width: 8,
+              height: 8,
+              borderRadius: '50%',
+              background: step === i ? '#4A7FA5' : 'rgba(255,255,255,0.2)',
+              transition: 'background 0.3s',
+            }} />
+          ))}
+        </div>
+
+        {step === 0 ? (
+          // Step 0: 매장명 입력
+          <>
+            <h2 style={{ color: 'white', fontSize: '1.3rem', fontWeight: 600, marginBottom: 8, textAlign: 'center' }}>
+              매장명을 알려주세요 🏪
+            </h2>
+            <p style={{ color: 'rgba(200,216,228,0.6)', fontSize: '0.9rem', textAlign: 'center', marginBottom: 24 }}>
+              원가 리포트에 표시돼요
+            </p>
+            <input
+              type="text"
+              placeholder="예: 고독이 식당"
+              value={name}
+              onChange={e => setName(e.target.value)}
+              onKeyDown={e => e.key === 'Enter' && name.trim() && setStep(1)}
+              autoFocus
+              style={{
+                width: '100%',
+                boxSizing: 'border-box',
+                background: 'rgba(255,255,255,0.06)',
+                border: name.trim() ? '1.5px solid #4A7FA5' : '1.5px solid rgba(255,255,255,0.1)',
+                borderRadius: 12,
+                padding: '14px 16px',
+                color: 'white',
+                fontSize: '0.95rem',
+                fontFamily: "'Noto Sans KR', sans-serif",
+                outline: 'none',
+                marginBottom: 24,
+                transition: 'border-color 0.2s',
+              }}
+            />
+            <button
+              onClick={() => name.trim() && setStep(1)}
+              disabled={!name.trim()}
+              style={{
+                width: '100%',
+                padding: '14px',
+                borderRadius: 12,
+                border: 'none',
+                background: name.trim() ? 'linear-gradient(135deg, #4A7FA5 0%, #5A9BC0 100%)' : 'rgba(74,127,165,0.4)',
+                color: 'white',
+                fontSize: '1rem',
+                fontWeight: 600,
+                cursor: name.trim() ? 'pointer' : 'not-allowed',
+                opacity: name.trim() ? 1 : 0.5,
+                transition: 'all 0.2s',
+              }}
+            >
+              다음 →
+            </button>
+          </>
+        ) : (
+          // Step 1: 업종 선택
+          <>
+            <h2 style={{ color: 'white', fontSize: '1.3rem', fontWeight: 600, marginBottom: 8, textAlign: 'center' }}>
+              업종을 선택해주세요
+            </h2>
+            <p style={{ color: 'rgba(200,216,228,0.6)', fontSize: '0.9rem', textAlign: 'center', marginBottom: 24 }}>
+              업종에 맞는 샘플 메뉴를 넣어드려요
+            </p>
+            {!loading ? (
+              <>
+                <div style={{
+                  display: 'grid',
+                  gridTemplateColumns: '1fr 1fr',
+                  gap: 12,
+                  marginBottom: 24,
+                }}>
+                  {INDUSTRIES.map(ind => (
+                    <button
+                      key={ind}
+                      onClick={() => setIndustry(ind)}
+                      style={{
+                        padding: '12px',
+                        borderRadius: 10,
+                        border: '1.5px solid',
+                        borderColor: industry === ind ? '#4A7FA5' : 'rgba(255,255,255,0.1)',
+                        background: industry === ind ? 'rgba(74,127,165,0.25)' : 'rgba(255,255,255,0.06)',
+                        color: industry === ind ? 'white' : 'rgba(200,216,228,0.8)',
+                        fontSize: '0.9rem',
+                        fontWeight: industry === ind ? 600 : 500,
+                        cursor: 'pointer',
+                        transition: 'all 0.2s',
+                        fontFamily: "'Noto Sans KR', sans-serif",
+                      }}
+                    >
+                      {ind} {INDUSTRY_EMOJIS[ind]}
+                    </button>
+                  ))}
+                </div>
+                <button
+                  onClick={onComplete}
+                  disabled={!industry}
+                  style={{
+                    width: '100%',
+                    padding: '14px',
+                    borderRadius: 12,
+                    border: 'none',
+                    background: industry ? 'linear-gradient(135deg, #4A7FA5 0%, #5A9BC0 100%)' : 'rgba(74,127,165,0.4)',
+                    color: 'white',
+                    fontSize: '1rem',
+                    fontWeight: 600,
+                    cursor: industry ? 'pointer' : 'not-allowed',
+                    opacity: industry ? 1 : 0.5,
+                    transition: 'all 0.2s',
+                  }}
+                >
+                  완료 🐟
+                </button>
+              </>
+            ) : (
+              <div style={{
+                textAlign: 'center',
+                color: 'rgba(200,216,228,0.8)',
+                padding: '40px 0',
+              }}>
+                <motion.div
+                  animate={{ opacity: [0.5, 1, 0.5] }}
+                  transition={{ duration: 2, repeat: Infinity }}
+                  style={{ fontSize: '2rem', marginBottom: 16 }}
+                >
+                  🐟
+                </motion.div>
+                <p style={{ fontSize: '0.95rem', lineHeight: 1.6 }}>
+                  업종에 맞는<br/>샘플 메뉴를 준비하는 중...
+                </p>
+              </div>
+            )}
+          </>
+        )}
+      </motion.div>
+    </div>
+  )
 }
 
 function OnboardingModal({ show, step, setStep, onClose }: {
@@ -201,6 +402,20 @@ export default function HomePage() {
   const [showOnboarding, setShowOnboarding] = useState(false)
   const [onboardingStep, setOnboardingStep] = useState(0)
 
+  // Setup modal 상태
+  const [showSetup, setShowSetup] = useState(false)
+  const [setupStep, setSetupStep] = useState(0)
+  const [setupName, setSetupName] = useState('')
+  const [setupIndustry, setSetupIndustry] = useState('')
+  const [setupLoading, setSetupLoading] = useState(false)
+
+  // 사이드바 상태
+  const [sidebarOpen, setSidebarOpen] = useState(false)
+  const [receiptResult, setReceiptResult] = useState<any>(null)
+  const [receiptOcrLoading, setReceiptOcrLoading] = useState(false)
+  const [receiptSelected, setReceiptSelected] = useState<Set<number>>(new Set())
+  const [receipSupplierToBeSaved, setReceiptSupplierToBeSaved] = useState<any>(null)
+
   // 홈화면 탭 UI 상태
   const [homeTab, setHomeTab] = useState<'sets' | 'menus'>('sets')
   const [setSearch, setSetSearch] = useState('')
@@ -273,7 +488,7 @@ export default function HomePage() {
     if (typeof window !== 'undefined' && !localStorage.getItem('godogi_onboarded')) setShowOnboarding(true)
 
     const menuMap: Record<string, SampleMenu> = {}
-    FIRST_LOGIN_MENU_SAMPLES.forEach(m => { menuMap[m.name] = m })
+    ALL_SAMPLE_MENUS.forEach(m => { menuMap[m.name] = m })
     const DEFAULT_FEES = { delivery_platform: 6.8, delivery_card: 1.5, hall_card: 1.5 }
 
     const guestSets: DisplaySet[] = SAMPLE_SET_DEFINITIONS.map((def, i) => {
@@ -323,8 +538,24 @@ export default function HomePage() {
     if (!user) { loadedForUser.current = null; return }
     if (loadedForUser.current === user.id) return
     loadedForUser.current = user.id
-    loadSets()
-    if (!localStorage.getItem('godogi_onboarded')) setShowOnboarding(true)
+
+    // 신규 사용자 감지: shopInfo.name이 없고 godogi_onboarded가 없으면 SetupModal 표시
+    const savedShop = localStorage.getItem('godogi_shop_info')
+    let hasShopName = false
+    try {
+      hasShopName = savedShop ? !!JSON.parse(savedShop).name : false
+    } catch {
+      hasShopName = false
+    }
+    const isAlreadyOnboarded = !!localStorage.getItem('godogi_onboarded')
+
+    if (!hasShopName && !isAlreadyOnboarded) {
+      setShowSetup(true)
+      // loadSets()를 지연 - handleSetupComplete에서 호출
+    } else {
+      loadSets()
+      if (!isAlreadyOnboarded) setShowOnboarding(true)
+    }
   }, [user])
 
   // 세트 로드 후 메뉴 목록 추출
@@ -354,6 +585,82 @@ export default function HomePage() {
   const saveShopInfo = (info: ShopInfo) => {
     setShopInfo(info)
     localStorage.setItem(SHOP_INFO_KEY, JSON.stringify(info))
+  }
+
+  // 로그아웃
+  const logout = async () => {
+    await supabase.auth.signOut()
+    localStorage.removeItem('godogi_sets_cache')
+    localStorage.removeItem('godogi_backfill_done')
+    localStorage.removeItem(SHOP_INFO_KEY)
+    localStorage.removeItem('godogi_onboarded')
+    setUser(null)
+    setSets([])
+    setMenuStats(null)
+    setShopInfo({ name: '', industry: '', targetRate: 35 })
+  }
+
+  // 영수증 OCR 결과 처리
+  const handleReceiptResult = async (data: any) => {
+    setReceiptOcrLoading(false)
+    setReceiptResult(data)
+    setReceiptSelected(new Set())
+    setReceiptSupplierToBeSaved(data.supplier)
+  }
+
+  // 영수증 재료 냉장고에 추가
+  const handleReceiptAddToFridge = async () => {
+    if (!user || receiptSelected.size === 0) return
+
+    try {
+      const toAdd = Array.from(receiptSelected).map(idx => receiptResult.items[idx])
+      await supabase.from('fridge').insert(toAdd.map(item => ({
+        user_id: user.id, name: item.name, price: item.price,
+        per: item.per, unit: item.unit, yield_: 100, category: '기타',
+      })))
+
+      // 거래처가 있고 새로운 것이면 저장
+      if (receipSupplierToBeSaved && !receiptResult.savedSupplier) {
+        const { biz_no, ...supplierData } = receipSupplierToBeSaved
+        await supabase.from('suppliers').insert({
+          user_id: user.id,
+          biz_no,
+          ...supplierData,
+        })
+      }
+
+      // 성공 메시지 및 모달 닫기
+      alert(`${toAdd.length}개 재료가 냉장고에 추가되었습니다!`)
+      setReceiptResult(null)
+    } catch (err) {
+      alert('저장 실패: ' + (err instanceof Error ? err.message : '알 수 없는 오류'))
+    }
+  }
+
+  // Setup modal 완료 핸들러
+  const handleSetupComplete = async () => {
+    if (!setupName.trim() || !setupIndustry) return
+    setSetupLoading(true)
+
+    // 1. 매장 정보 저장
+    const newShopInfo: ShopInfo = { name: setupName.trim(), industry: setupIndustry, targetRate: 35 }
+    saveShopInfo(newShopInfo)
+
+    // 2. 업종별 샘플 데이터 삽입
+    if (user) {
+      await insertSampleData(user.id, setupIndustry)
+    }
+
+    // 3. 온보딩 완료 표시
+    localStorage.setItem('godogi_onboarded', '1')
+
+    setSetupLoading(false)
+    setShowSetup(false)
+
+    // 4. 대시보드 데이터 로드
+    if (user) {
+      loadSets()
+    }
   }
 
   const loadSets = async () => {
@@ -424,7 +731,7 @@ export default function HomePage() {
     const ingredientInserts: any[] = []
     for (const m of existingMenus) {
       if (menuIdsWithIngredients.has(m.id)) continue
-      const sample = FIRST_LOGIN_MENU_SAMPLES.find(s => s.name === m.name)
+      const sample = ALL_SAMPLE_MENUS.find(s => s.name === m.name)
       if (sample?.ingredients?.length) {
         sample.ingredients.forEach(ing => ingredientInserts.push({ menu_id: m.id, ...ing }))
       }
@@ -434,11 +741,13 @@ export default function HomePage() {
     }
   }
 
-  const insertSampleData = async (userId: string) => {
+  const insertSampleData = async (userId: string, industry?: string) => {
     // 게스트가 수정한 메뉴가 있으면 그걸 우선 사용
     const savedGuestRaw = localStorage.getItem('godogi_guest_menus')
     const guestMenus: any[] | null = savedGuestRaw ? JSON.parse(savedGuestRaw) : null
-    const menusSource = guestMenus || FIRST_LOGIN_MENU_SAMPLES
+    const fallbackKey = industry && INDUSTRY_SAMPLES[industry] ? industry : '한식'
+    const { menus: industryMenus, sets: industrySets } = INDUSTRY_SAMPLES[fallbackKey] ?? INDUSTRY_SAMPLES['한식']
+    const menusSource = guestMenus || industryMenus
 
     // 메뉴 확인/삽입
     const { data: existingMenus } = await supabase.from('menus').select('id, name').eq('user_id', userId)
@@ -474,7 +783,7 @@ export default function HomePage() {
     }
 
     // 샘플 세트 삽입
-    for (const def of SAMPLE_SET_DEFINITIONS) {
+    for (const def of industrySets) {
       const menuIds = def.menuNames.map(n => menuByName[n]).filter(Boolean)
       if (menuIds.length === 0) continue
       const { data: newSet } = await supabase.from('sets').insert({
@@ -508,6 +817,17 @@ export default function HomePage() {
   if (loading) return (
     <main style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', height: '100vh', background: '#0F1923' }}>
       <p style={{ fontFamily: "'Noto Sans KR',sans-serif", color: '#4A7FA5' }}>🐟 고독이가 헤엄치는 중...</p>
+      <SetupModal
+        show={showSetup}
+        step={setupStep}
+        setStep={setSetupStep}
+        name={setupName}
+        setName={setSetupName}
+        industry={setupIndustry}
+        setIndustry={setSetupIndustry}
+        loading={setupLoading}
+        onComplete={handleSetupComplete}
+      />
       <OnboardingModal show={showOnboarding} step={onboardingStep} setStep={setOnboardingStep} onClose={() => { localStorage.setItem('godogi_onboarded', '1'); setShowOnboarding(false); setOnboardingStep(0) }} />
     </main>
   )
@@ -562,48 +882,183 @@ export default function HomePage() {
   )
 
   return (
-    <div style={{ minHeight: '100vh', background: '#0F1923', color: 'white', fontFamily: "'Noto Sans KR', sans-serif" }}>
+    <div style={{ minHeight: '100vh', background: '#0F1923', color: 'white', fontFamily: "'Noto Sans KR', sans-serif", display: 'flex' }}>
+      {/* 사이드바 */}
+      {user && (
+        <DashboardSidebar
+          user={user}
+          onLogout={logout}
+          onReceiptUpload={handleReceiptResult}
+          receiptLoading={receiptOcrLoading}
+          onNavigateMenu={(target) => {
+            setHomeTab(target)
+            // 메뉴판관리('sets')로 갈 때만 스크롤 (대시보드 제외)
+            if (target === 'menus') {
+              setTimeout(() => {
+                const tabBar = document.querySelector('[data-tab-bar="true"]')
+                if (tabBar) {
+                  tabBar.scrollIntoView({ behavior: 'smooth', block: 'start' })
+                }
+              }, 50)
+            }
+          }}
+        />
+      )}
+
+      {/* 메인 콘텐츠 */}
+      <main style={{ flex: 1, marginLeft: user ? 240 : 0, transition: 'margin-left 0.25s' }} className="dashboard-main">
+      <SetupModal
+        show={showSetup}
+        step={setupStep}
+        setStep={setSetupStep}
+        name={setupName}
+        setName={setSetupName}
+        industry={setupIndustry}
+        setIndustry={setSetupIndustry}
+        loading={setupLoading}
+        onComplete={handleSetupComplete}
+      />
+
+      {/* 영수증 OCR 결과 모달 */}
+      {receiptResult && (
+        <div style={{
+          position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.85)',
+          display: 'flex', alignItems: 'center', justifyContent: 'center',
+          zIndex: 300, padding: 16,
+        }}>
+          <motion.div
+            initial={{ scale: 0.9, opacity: 0 }}
+            animate={{ scale: 1, opacity: 1 }}
+            style={{
+              background: '#1A2840', borderRadius: 24, padding: '28px 24px',
+              width: '100%', maxWidth: 420, fontFamily: "'Noto Sans KR', sans-serif",
+              maxHeight: '80vh', overflowY: 'auto',
+            }}
+          >
+            <div style={{ fontSize: '1.4rem', marginBottom: 16, textAlign: 'center' }}>📸 인식된 재료</div>
+
+            {/* 재료 목록 */}
+            {receiptResult.items && receiptResult.items.length > 0 ? (
+              <div style={{ marginBottom: 20 }}>
+                {receiptResult.items.map((item: any, idx: number) => (
+                  <label key={idx} style={{
+                    display: 'flex', alignItems: 'center', gap: 12,
+                    padding: '12px', marginBottom: 8, borderRadius: 10,
+                    background: 'rgba(74,127,165,0.1)', cursor: 'pointer',
+                  }}>
+                    <input
+                      type="checkbox"
+                      checked={receiptSelected.has(idx)}
+                      onChange={e => {
+                        const newSet = new Set(receiptSelected)
+                        if (e.target.checked) newSet.add(idx)
+                        else newSet.delete(idx)
+                        setReceiptSelected(newSet)
+                      }}
+                      style={{ width: 18, height: 18, cursor: 'pointer' }}
+                    />
+                    <div style={{ flex: 1 }}>
+                      <div style={{ color: 'white', fontSize: '0.9rem', fontWeight: 500 }}>{item.name}</div>
+                      <div style={{ color: 'rgba(200,216,228,0.5)', fontSize: '0.8rem' }}>
+                        {item.price.toLocaleString()}원 / {item.per}{item.unit}
+                      </div>
+                    </div>
+                  </label>
+                ))}
+              </div>
+            ) : (
+              <div style={{ color: 'rgba(200,216,228,0.5)', textAlign: 'center', padding: '20px 0' }}>
+                인식된 재료가 없어요
+              </div>
+            )}
+
+            {/* 거래처 정보 */}
+            {receipSupplierToBeSaved && (
+              <div style={{
+                background: 'rgba(74,127,165,0.15)', borderRadius: 12, padding: 16,
+                marginBottom: 20, border: '1px solid rgba(74,127,165,0.3)',
+              }}>
+                <div style={{ fontSize: '0.9rem', color: 'rgba(200,216,228,0.7)', marginBottom: 8 }}>🏪 거래처</div>
+                <div style={{ color: 'white', fontWeight: 600, fontSize: '0.95rem', marginBottom: 4 }}>
+                  {receipSupplierToBeSaved.name}
+                </div>
+                {receipSupplierToBeSaved.phone && (
+                  <div style={{ color: 'rgba(200,216,228,0.6)', fontSize: '0.85rem' }}>
+                    {receipSupplierToBeSaved.phone}
+                  </div>
+                )}
+              </div>
+            )}
+
+            {/* 버튼 */}
+            <div style={{ display: 'flex', gap: 8 }}>
+              <button
+                onClick={() => setReceiptResult(null)}
+                style={{
+                  flex: 1, padding: '12px', borderRadius: 10,
+                  background: 'transparent', border: '1px solid rgba(200,216,228,0.2)',
+                  color: 'rgba(200,216,228,0.6)', fontSize: '0.9rem', fontFamily: "'Noto Sans KR', sans-serif",
+                  fontWeight: 600, cursor: 'pointer',
+                }}
+              >
+                닫기
+              </button>
+              <button
+                onClick={handleReceiptAddToFridge}
+                disabled={receiptSelected.size === 0}
+                style={{
+                  flex: 1, padding: '12px', borderRadius: 10,
+                  background: receiptSelected.size > 0 ? 'linear-gradient(135deg, #4A7FA5 0%, #5A9BC0 100%)' : 'rgba(74,127,165,0.3)',
+                  border: 'none', color: 'white', fontSize: '0.9rem', fontFamily: "'Noto Sans KR', sans-serif",
+                  fontWeight: 600, cursor: receiptSelected.size > 0 ? 'pointer' : 'not-allowed',
+                  opacity: receiptSelected.size > 0 ? 1 : 0.5,
+                }}
+              >
+                🧊 냉장고에 추가 ({receiptSelected.size})
+              </button>
+            </div>
+          </motion.div>
+        </div>
+      )}
 
       {/* 헤더 */}
-      <header style={{ padding: '16px 16px 14px', borderBottom: '1px solid rgba(255,255,255,0.06)' }}>
-        <div style={{ maxWidth: 680, margin: '0 auto', display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 8 }}>
-          <div style={{ display: 'flex', alignItems: 'center', gap: 10, minWidth: 0 }}>
-            <motion.div style={{ flexShrink: 0 }}
-              animate={{ rotate: [0, -8, 8, -4, 0] }}
-              transition={{ duration: 2.5, repeat: Infinity, repeatDelay: 5 }}
-            >
-              <svg width="36" height="36" viewBox="0 0 100 100" fill="none">
-                <ellipse cx="50" cy="55" rx="32" ry="22" fill="#4A7FA5"/>
-                <ellipse cx="50" cy="53" rx="30" ry="20" fill="#5B9EC9"/>
-                <polygon points="82,55 100,40 100,70" fill="#4A7FA5"/>
-                <ellipse cx="46" cy="58" rx="18" ry="12" fill="#C8E6F5"/>
-                <circle cx="35" cy="48" r="5" fill="white"/>
-                <circle cx="35" cy="48" r="3" fill="#1E2D40"/>
-                <circle cx="36" cy="47" r="1" fill="white"/>
-                <path d="M 28 56 Q 32 60 36 56" stroke="#1E2D40" strokeWidth="1.5" fill="none" strokeLinecap="round"/>
-                <ellipse cx="50" cy="33" rx="10" ry="6" fill="#4A7FA5" transform="rotate(-10 50 33)"/>
-                <ellipse cx="30" cy="52" rx="4" ry="2.5" fill="#F4A0A0" opacity="0.6"/>
-              </svg>
-            </motion.div>
-            <div style={{ minWidth: 0 }}>
-              <h1 style={{ margin: 0, fontSize: '0.82rem', fontWeight: 600, letterSpacing: '0.01em', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis', color: 'rgba(200,216,228,0.6)' }}>고독이의 원가계산기</h1>
-              <p className="home-subtitle" style={{ margin: 0, fontSize: '0.65rem', color: 'rgba(200,216,228,0.3)', marginTop: 1 }}>우리 메뉴, 진짜로 남는 장사일까요?</p>
-            </div>
+      <header style={{ padding: '16px 16px 14px', borderBottom: '1px solid rgba(255,255,255,0.06)', display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+        <div style={{ display: 'flex', alignItems: 'center', gap: 10, minWidth: 0, marginLeft: user ? 30 : 0, transition: 'margin-left 0.25s' }}>
+          <motion.div style={{ flexShrink: 0 }}
+            animate={{ rotate: [0, -8, 8, -4, 0] }}
+            transition={{ duration: 2.5, repeat: Infinity, repeatDelay: 5 }}
+          >
+            <svg width="36" height="36" viewBox="0 0 100 100" fill="none">
+              <ellipse cx="50" cy="55" rx="32" ry="22" fill="#4A7FA5"/>
+              <ellipse cx="50" cy="53" rx="30" ry="20" fill="#5B9EC9"/>
+              <polygon points="82,55 100,40 100,70" fill="#4A7FA5"/>
+              <ellipse cx="46" cy="58" rx="18" ry="12" fill="#C8E6F5"/>
+              <circle cx="35" cy="48" r="5" fill="white"/>
+              <circle cx="35" cy="48" r="3" fill="#1E2D40"/>
+              <circle cx="36" cy="47" r="1" fill="white"/>
+              <path d="M 28 56 Q 32 60 36 56" stroke="#1E2D40" strokeWidth="1.5" fill="none" strokeLinecap="round"/>
+              <ellipse cx="50" cy="33" rx="10" ry="6" fill="#4A7FA5" transform="rotate(-10 50 33)"/>
+              <ellipse cx="30" cy="52" rx="4" ry="2.5" fill="#F4A0A0" opacity="0.6"/>
+            </svg>
+          </motion.div>
+          <div style={{ minWidth: 0 }}>
+            <h1 style={{ margin: 0, fontSize: '0.82rem', fontWeight: 600, letterSpacing: '0.01em', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis', color: 'rgba(200,216,228,0.6)' }}>고독이의 원가계산기</h1>
+            <p className="home-subtitle" style={{ margin: 0, fontSize: '0.65rem', color: 'rgba(200,216,228,0.3)', marginTop: 1 }}>우리 메뉴, 진짜로 남는 장사일까요?</p>
           </div>
-          <div style={{ display: 'flex', gap: 6, alignItems: 'center', flexShrink: 0 }}>
-            {!user && (
-              <button onClick={loginWithGoogle} style={{
-                background: 'white', color: '#1E2D40', border: 'none',
-                borderRadius: 8, padding: '7px 12px',
-                fontSize: '0.72rem', cursor: 'pointer', fontFamily: "'Noto Sans KR', sans-serif", fontWeight: 700, whiteSpace: 'nowrap',
-              }}>🔑 로그인</button>
-            )}
-            <ShareButton
-              utm_source="kakao"
-              utm_medium="social"
-              utm_campaign="home_header"
-            />
-          </div>
+        </div>
+        <div style={{ display: 'flex', gap: 6, alignItems: 'center', flexShrink: 0 }}>
+          {!user && (
+            <button onClick={loginWithGoogle} style={{
+              background: 'white', color: '#1E2D40', border: 'none',
+              borderRadius: 8, padding: '7px 12px',
+              fontSize: '0.72rem', cursor: 'pointer', fontFamily: "'Noto Sans KR', sans-serif", fontWeight: 700, whiteSpace: 'nowrap',
+            }}>🔑 로그인</button>
+          )}
+          <ShareButton
+            utm_source="kakao"
+            utm_medium="social"
+            utm_campaign="home_header"
+          />
         </div>
       </header>
       <style>{`
@@ -618,6 +1073,19 @@ export default function HomePage() {
           .home-bottom-mobile { display: none !important; }
           .home-bottom-pc { display: block !important; }
           .home-main { padding-bottom: 220px !important; }
+        }
+
+        /* 대시보드 사이드바 반응형 */
+        @media (max-width: 768px) {
+          .dashboard-sidebar-toggle { display: block !important; }
+          .dashboard-sidebar-overlay { display: block !important; }
+          .dashboard-sidebar-close { display: block !important; }
+          .dashboard-sidebar { transform: translateX(-100%); }
+          .dashboard-sidebar-open { transform: translateX(0) !important; }
+          .dashboard-main { margin-left: 0 !important; }
+        }
+        @media (min-width: 769px) {
+          .dashboard-sidebar-toggle { display: none !important; }
         }
       `}</style>
 
@@ -869,7 +1337,7 @@ export default function HomePage() {
         )}
 
         {/* 탭 바 */}
-        <div style={{ display: 'flex', borderBottom: '1px solid rgba(255,255,255,0.06)', flexShrink: 0, marginBottom: 14 }}>
+        <div data-tab-bar="true" style={{ display: 'flex', borderBottom: '1px solid rgba(255,255,255,0.06)', flexShrink: 0, marginBottom: 14 }}>
           {['sets', 'menus'].map((tab) => (
             <button
               key={tab}
@@ -1389,6 +1857,7 @@ export default function HomePage() {
       </>
         )
       })()}
+      </main>
     </div>
   )
 }
