@@ -434,6 +434,7 @@ export default function HomePage() {
   const [menuCategory, setMenuCategory] = useState('all')
   const [menuSearch, setMenuSearch] = useState('')
   const [allMenus, setAllMenus] = useState<any[]>([])
+  const [sidebarOpen, setSidebarOpen] = useState(false)
 
   // 매장 정보 상태
   interface ShopInfo {
@@ -910,8 +911,11 @@ export default function HomePage() {
           onLogout={logout}
           onReceiptUpload={handleReceiptResult}
           receiptLoading={receiptOcrLoading}
+          isOpen={sidebarOpen}
+          onOpenChange={setSidebarOpen}
           onNavigateMenu={(target) => {
             setHomeTab(target)
+            setSidebarOpen(false)
             // 메뉴판관리('sets')로 갈 때만 스크롤 (대시보드 제외)
             if (target === 'menus') {
               setTimeout(() => {

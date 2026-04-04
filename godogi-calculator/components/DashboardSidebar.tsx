@@ -7,11 +7,18 @@ interface Props {
   onLogout: () => void
   onReceiptUpload: (result: any) => void
   receiptLoading?: boolean
+  isOpen?: boolean
+  onOpenChange?: (open: boolean) => void
   onNavigateMenu?: (target: 'sets' | 'menus') => void
 }
 
-export default function DashboardSidebar({ user, onLogout, onReceiptUpload, receiptLoading = false, onNavigateMenu }: Props) {
-  const [isOpen, setIsOpen] = useState(false)
+export default function DashboardSidebar({ user, onLogout, onReceiptUpload, receiptLoading = false, isOpen: externalIsOpen = false, onOpenChange, onNavigateMenu }: Props) {
+  const [isOpen, setIsOpen] = useState(externalIsOpen)
+
+  // 외부에서 제어되는 경우 동기화
+  React.useEffect(() => {
+    setIsOpen(externalIsOpen)
+  }, [externalIsOpen])
   const router = useRouter()
   const receiptInputRef = useRef<HTMLInputElement>(null)
 
@@ -37,7 +44,7 @@ export default function DashboardSidebar({ user, onLogout, onReceiptUpload, rece
   }
 
   const handleNavigate = (target: string) => {
-    setIsOpen(false)
+    onOpenChange?.(false)
 
     if (target === 'dashboard') {
       onNavigateMenu?.('sets')
@@ -71,7 +78,7 @@ export default function DashboardSidebar({ user, onLogout, onReceiptUpload, rece
     <>
       {/* 오버레이 (모바일) */}
       {isOpen && (
-        <div onClick={() => setIsOpen(false)} style={{
+        <div onClick={() => onOpenChange?.(false)} style={{
           position: 'fixed', inset: 0, zIndex: 15,
           background: 'rgba(0,0,0,0.4)',
           display: 'none'
