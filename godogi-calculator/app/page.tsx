@@ -434,8 +434,6 @@ export default function HomePage() {
   const [menuCategory, setMenuCategory] = useState('all')
   const [menuSearch, setMenuSearch] = useState('')
   const [allMenus, setAllMenus] = useState<any[]>([])
-  const [sidebarOpen, setSidebarOpen] = useState(false)
-
   // 매장 정보 상태
   interface ShopInfo {
     name: string
