@@ -1739,15 +1739,14 @@ export default function HomePage() {
                             <button
                               onClick={(e) => { e.stopPropagation(); setDeleteConfirmId(menu.id) }}
                               style={{
-                                position: 'absolute', top: 6, right: 6,
-                                background: 'rgba(240,128,128,0.2)', border: 'none',
-                                borderRadius: '50%', width: 24, height: 24,
+                                position: 'absolute', top: 8, right: 8,
+                                background: 'none', border: 'none',
                                 display: 'flex', alignItems: 'center', justifyContent: 'center',
-                                cursor: 'pointer', color: '#F08080', fontSize: '1rem',
-                                transition: '0.2s', padding: 0,
+                                cursor: 'pointer', color: 'rgba(240,128,128,0.3)', fontSize: '0.9rem',
+                                transition: '0.2s', padding: 0, lineHeight: 1,
                               }}
-                              onMouseEnter={(e) => (e.currentTarget.style.background = 'rgba(240,128,128,0.4)')}
-                              onMouseLeave={(e) => (e.currentTarget.style.background = 'rgba(240,128,128,0.2)')}
+                              onMouseEnter={(e) => (e.currentTarget.style.color = 'rgba(240,128,128,0.7)')}
+                              onMouseLeave={(e) => (e.currentTarget.style.color = 'rgba(240,128,128,0.3)')}
                             >
                               ✕
                             </button>
