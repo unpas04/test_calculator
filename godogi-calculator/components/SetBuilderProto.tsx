@@ -810,15 +810,12 @@ export default function SetBuilderProto() {
 
           {/* 헤더: 뒤로가기 + 세트 이름 + 버튼들 */}
           <div style={{ display: 'flex', flexDirection: 'column', gap: 24 }}>
-            {/* 1행: 햄버거 버튼 - 뒤로가기 */}
+            {/* 1행: 햄버거 버튼 - 사이드바 토글 */}
             <motion.button
               whileTap={{ scale: 0.9 }}
               onClick={() => {
-                tryNavigate('/')
-                setTimeout(() => {
-                  const menuPanel = document.querySelector('[data-tab-bar="true"]')
-                  if (menuPanel) menuPanel.scrollIntoView({ behavior: 'smooth' })
-                }, 100)
+                // 커스텀 이벤트 발생
+                window.dispatchEvent(new Event('godogi-toggle-sidebar'))
               }}
               style={{
                 background: 'none', border: 'none', color: '#C8D4E0',

@@ -19,6 +19,29 @@ export default function DashboardSidebar({ user, onLogout, onReceiptUpload, rece
   useEffect(() => {
     setIsOpen(externalIsOpen)
   }, [externalIsOpen])
+
+  // localStorage 신호 감지 (SetBuilderProto에서의 토글 요청)
+  useEffect(() => {
+    const handleStorageChange = () => {
+      const signal = localStorage.getItem('godogi-sidebar-toggle')
+      if (signal) {
+        setIsOpen(prev => !prev)
+        localStorage.removeItem('godogi-sidebar-toggle')
+      }
+    }
+
+    window.addEventListener('storage', handleStorageChange)
+    // 같은 탭에서의 localStorage 변화는 storage 이벤트를 발생시키지 않으므로, 커스텀 이벤트 사용
+    window.addEventListener('godogi-toggle-sidebar', () => {
+      setIsOpen(prev => !prev)
+    })
+
+    return () => {
+      window.removeEventListener('storage', handleStorageChange)
+      window.removeEventListener('godogi-toggle-sidebar', () => {})
+    }
+  }, [])
+
   const router = useRouter()
   const receiptInputRef = useRef<HTMLInputElement>(null)
 
