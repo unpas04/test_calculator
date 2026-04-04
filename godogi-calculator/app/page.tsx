@@ -1428,19 +1428,19 @@ export default function HomePage() {
 
         {/* 검색창 + 홀/배달 토글 */}
         {homeTab === 'sets' ? (
-          <div style={{ display: 'flex', gap: 8, marginBottom: 12, alignItems: 'center', flexShrink: 0 }}>
+          <div style={{ display: 'flex', gap: 6, marginBottom: 12, alignItems: 'center', flexShrink: 0 }}>
             <input
               type="text"
               placeholder="상품 검색..."
               value={setSearch}
               onChange={(e) => setSetSearch(e.target.value)}
               style={{
-                flex: 1, padding: '10px 12px', fontSize: '16px', boxSizing: 'border-box',
+                flex: 1, padding: '8px 10px', fontSize: '14px', boxSizing: 'border-box',
                 background: 'rgba(255,255,255,0.07)', border: '1px solid rgba(200,216,228,0.15)',
                 borderRadius: 10, color: 'white', fontFamily: "'Noto Sans KR',sans-serif", outline: 'none'
               }}
             />
-            <div style={{ display: 'flex', gap: 4, padding: '6px 8px', borderRadius: 10, background: 'rgba(255,255,255,0.07)', border: '1px solid rgba(200,216,228,0.15)', flexShrink: 0, alignItems: 'center' }}>
+            <div style={{ display: 'flex', gap: 3, padding: '5px 6px', borderRadius: 8, background: 'rgba(255,255,255,0.07)', border: '1px solid rgba(200,216,228,0.15)', flexShrink: 0, alignItems: 'center' }}>
               {[
                 { key: 'all', label: '전체' },
                 { key: 'hall', label: '홀' },
@@ -1449,10 +1449,10 @@ export default function HomePage() {
                 <motion.button key={ch.key} whileTap={{ scale: 0.95 }}
                   onClick={() => setChannelFilter(ch.key as any)}
                   style={{
-                    padding: '4px 10px', borderRadius: 6, border: 'none', cursor: 'pointer',
+                    padding: '3px 8px', borderRadius: 5, border: 'none', cursor: 'pointer',
                     background: channelFilter === ch.key ? '#4A7FA5' : 'transparent',
                     color: channelFilter === ch.key ? 'white' : 'rgba(200,216,228,0.6)',
-                    fontSize: '0.75rem', fontWeight: 600, fontFamily: "'Noto Sans KR',sans-serif",
+                    fontSize: '0.65rem', fontWeight: 600, fontFamily: "'Noto Sans KR',sans-serif",
                     whiteSpace: 'nowrap', transition: 'all 0.2s',
                   }}
                 >
