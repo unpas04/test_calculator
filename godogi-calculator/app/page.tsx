@@ -1048,7 +1048,7 @@ export default function HomePage() {
         {/* 왼쪽: 햄버거 버튼 (모바일 사이드바) */}
         <button className="dashboard-sidebar-toggle" onClick={() => setSidebarOpen(!sidebarOpen)}
           style={{
-            display: 'none', background: 'none', border: 'none', cursor: 'pointer',
+            display: 'block', background: 'none', border: 'none', cursor: 'pointer',
             fontSize: '1.2rem', color: 'white', padding: '8px', marginLeft: '-8px',
             flexShrink: 0,
           }}>☰</button>
