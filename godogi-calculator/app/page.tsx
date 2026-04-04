@@ -1329,7 +1329,7 @@ export default function HomePage() {
               <div className="top5-cards" style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 12, marginBottom: 14, alignItems: 'start', width: '100%', minWidth: 0 }}>
 
                 {/* 왼쪽: TOP 5 수익성 좋은 상품 */}
-                <div style={{ background: 'rgba(126,200,160,0.08)', border: '1px solid rgba(126,200,160,0.2)', borderRadius: 12, padding: '12px 10px', height: 220, display: 'flex', flexDirection: 'column', width: '100%', minWidth: 0 }}>
+                <div style={{ background: 'rgba(126,200,160,0.08)', border: '1px solid rgba(126,200,160,0.2)', borderRadius: 12, padding: '10px 8px', height: 185, display: 'flex', flexDirection: 'column', width: '100%', minWidth: 0 }}>
                   <div style={{ fontSize: '0.7rem', color: 'rgba(200,216,228,0.65)', flex: 1, overflowY: 'auto', paddingRight: 4 }}>
                     {top5Sets.length > 0 ? (
                       top5Sets.map((s, i) => {
@@ -1368,7 +1368,7 @@ export default function HomePage() {
                 </div>
 
                 {/* 오른쪽: 원가율 높은 상품 */}
-                <div style={{ background: 'rgba(240,128,128,0.08)', border: '1px solid rgba(240,128,128,0.2)', borderRadius: 12, padding: '12px 10px', height: 220, display: 'flex', flexDirection: 'column', width: '100%', minWidth: 0 }}>
+                <div style={{ background: 'rgba(240,128,128,0.08)', border: '1px solid rgba(240,128,128,0.2)', borderRadius: 12, padding: '10px 8px', height: 185, display: 'flex', flexDirection: 'column', width: '100%', minWidth: 0 }}>
                   <div style={{ fontSize: '0.7rem', color: 'rgba(200,216,228,0.65)', flex: 1, overflowY: 'auto', paddingRight: 4 }}>
                     {highCostSets.length > 0 ? (
                       highCostSets.slice(0, 5).map((s, i) => (
