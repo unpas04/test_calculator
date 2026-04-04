@@ -1102,11 +1102,11 @@ export default function HomePage() {
         /* 모바일: 통합 바 표시, PC floating 숨김 */
         .home-bottom-mobile { display: flex !important; }
         .home-bottom-pc { display: none !important; }
-        .home-main { padding-bottom: calc(env(safe-area-inset-bottom, 0px) + 100px) !important; }
+        .home-main { padding-bottom: calc(env(safe-area-inset-bottom, 0px) + 100px) !important; max-width: 100% !important; }
         @media (min-width: 641px) {
           .home-bottom-mobile { display: none !important; }
           .home-bottom-pc { display: block !important; }
-          .home-main { padding-bottom: 220px !important; }
+          .home-main { padding-bottom: 220px !important; max-width: 680px !important; }
         }
 
         /* 대시보드 사이드바 반응형 */
@@ -1124,7 +1124,11 @@ export default function HomePage() {
 
         /* TOP 5 카드 반응형 */
         @media (max-width: 768px) {
-          .top5-cards { display: grid !important; grid-template-columns: 1fr 1fr !important; width: 100% !important; }
+          .top5-cards {
+            display: grid !important;
+            grid-template-columns: 1fr 1fr !important;
+            width: 100% !important;
+          }
         }
       `}</style>
 
@@ -1310,7 +1314,7 @@ export default function HomePage() {
             </motion.div>
 
             {/* TOP 5 수익성 좋은 상품 + 원가율 높은 상품 (반응형) */}
-            <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.1 }} style={{ width: '100%', overflow: 'hidden' }}>
+            <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.1 }} style={{ width: 'calc(100% + 24px)', marginLeft: '-12px', marginRight: '-12px', paddingLeft: '12px', paddingRight: '12px', marginTop: 24 }}>
               {/* 제목들: 카드 위 */}
               <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 12, marginBottom: 8 }}>
                 <div style={{ fontSize: '0.78rem', fontWeight: 700, color: 'white' }}>
@@ -1404,7 +1408,7 @@ export default function HomePage() {
         )}
 
         {/* 탭 바 */}
-        <div data-tab-bar="true" style={{ display: 'flex', borderBottom: '1px solid rgba(255,255,255,0.06)', flexShrink: 0, marginBottom: 14 }}>
+        <div data-tab-bar="true" style={{ display: 'flex', borderBottom: '1px solid rgba(255,255,255,0.06)', flexShrink: 0, marginBottom: 28, marginTop: 28 }}>
           {['sets', 'menus'].map((tab) => (
             <button
               key={tab}
