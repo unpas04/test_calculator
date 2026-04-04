@@ -1042,13 +1042,22 @@ export default function HomePage() {
       )}
 
       {/* 헤더 */}
-      <header style={{ padding: '16px 16px 14px', borderBottom: '1px solid rgba(255,255,255,0.06)', display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
-        <div style={{ display: 'flex', alignItems: 'center', gap: 10, minWidth: 0, marginLeft: user ? 30 : 0, transition: 'margin-left 0.25s' }}>
+      <header style={{ padding: '16px 12px 14px', borderBottom: '1px solid rgba(255,255,255,0.06)', display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 10 }}>
+        {/* 왼쪽: 햄버거 버튼 (모바일 사이드바) */}
+        <button className="dashboard-sidebar-toggle" onClick={() => setSidebarOpen(!sidebarOpen)}
+          style={{
+            display: 'none', background: 'none', border: 'none', cursor: 'pointer',
+            fontSize: '1.2rem', color: 'white', padding: '8px', marginLeft: '-8px',
+            flexShrink: 0,
+          }}>☰</button>
+
+        {/* 중앙: 로고 + 타이틀 */}
+        <div style={{ display: 'flex', alignItems: 'center', gap: 8, minWidth: 0, flex: 1 }}>
           <motion.div style={{ flexShrink: 0 }}
             animate={{ rotate: [0, -8, 8, -4, 0] }}
             transition={{ duration: 2.5, repeat: Infinity, repeatDelay: 5 }}
           >
-            <svg width="36" height="36" viewBox="0 0 100 100" fill="none">
+            <svg width="32" height="32" viewBox="0 0 100 100" fill="none">
               <ellipse cx="50" cy="55" rx="32" ry="22" fill="#4A7FA5"/>
               <ellipse cx="50" cy="53" rx="30" ry="20" fill="#5B9EC9"/>
               <polygon points="82,55 100,40 100,70" fill="#4A7FA5"/>
@@ -1066,6 +1075,8 @@ export default function HomePage() {
             <p className="home-subtitle" style={{ margin: 0, fontSize: '0.65rem', color: 'rgba(200,216,228,0.3)', marginTop: 1 }}>우리 메뉴, 진짜로 남는 장사일까요?</p>
           </div>
         </div>
+
+        {/* 오른쪽: 로그인 + 공유 */}
         <div style={{ display: 'flex', gap: 6, alignItems: 'center', flexShrink: 0 }}>
           {!user && (
             <button onClick={loginWithGoogle} style={{
