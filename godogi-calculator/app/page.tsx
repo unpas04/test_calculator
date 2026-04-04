@@ -1742,11 +1742,11 @@ export default function HomePage() {
                                 position: 'absolute', top: 8, right: 8,
                                 background: 'none', border: 'none',
                                 display: 'flex', alignItems: 'center', justifyContent: 'center',
-                                cursor: 'pointer', color: 'rgba(240,128,128,0.3)', fontSize: '0.9rem',
+                                cursor: 'pointer', color: 'rgba(200,216,228,0.15)', fontSize: '0.9rem',
                                 transition: '0.2s', padding: 0, lineHeight: 1,
                               }}
-                              onMouseEnter={(e) => (e.currentTarget.style.color = 'rgba(240,128,128,0.7)')}
-                              onMouseLeave={(e) => (e.currentTarget.style.color = 'rgba(240,128,128,0.3)')}
+                              onMouseEnter={(e) => (e.currentTarget.style.color = 'rgba(200,216,228,0.5)')}
+                              onMouseLeave={(e) => (e.currentTarget.style.color = 'rgba(200,216,228,0.15)')}
                             >
                               ✕
                             </button>
