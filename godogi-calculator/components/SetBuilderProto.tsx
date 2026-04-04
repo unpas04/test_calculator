@@ -814,9 +814,13 @@ export default function SetBuilderProto() {
             <motion.button
               whileTap={{ scale: 0.9 }}
               onClick={() => {
-                // 사이드바 열기 (sidebar toggle 클래스의 버튼 클릭)
-                const toggleBtn = document.querySelector('.dashboard-sidebar-toggle') as HTMLButtonElement
-                if (toggleBtn) toggleBtn.click()
+                // 사이드바 토글 클래스의 버튼을 찾아서 click 이벤트 발생
+                setTimeout(() => {
+                  const toggleBtn = document.querySelector('.dashboard-sidebar-toggle') as HTMLButtonElement
+                  if (toggleBtn) {
+                    toggleBtn.dispatchEvent(new MouseEvent('click', { bubbles: true, cancelable: true }))
+                  }
+                }, 0)
               }}
               style={{
                 background: 'none', border: 'none', color: '#C8D4E0',
