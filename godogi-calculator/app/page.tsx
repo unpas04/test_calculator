@@ -1121,6 +1121,11 @@ export default function HomePage() {
         @media (min-width: 769px) {
           .dashboard-sidebar-toggle { display: none !important; }
         }
+
+        /* TOP 5 카드 반응형 */
+        @media (max-width: 768px) {
+          .top5-cards { display: grid !important; grid-template-columns: 1fr 1fr !important; width: 100% !important; }
+        }
       `}</style>
 
       {/* 필터링 로직 */}
@@ -1305,7 +1310,7 @@ export default function HomePage() {
             </motion.div>
 
             {/* TOP 5 수익성 좋은 상품 + 원가율 높은 상품 (반응형) */}
-            <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.1 }}>
+            <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.1 }} style={{ width: '100%', overflow: 'hidden' }}>
               {/* 제목들: 카드 위 */}
               <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 12, marginBottom: 8 }}>
                 <div style={{ fontSize: '0.78rem', fontWeight: 700, color: 'white' }}>
@@ -1317,10 +1322,10 @@ export default function HomePage() {
               </div>
 
               {/* 카드들 */}
-              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 12, marginBottom: 14, alignItems: 'start' }}>
+              <div className="top5-cards" style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 12, marginBottom: 14, alignItems: 'start' }}>
 
                 {/* 왼쪽: TOP 5 수익성 좋은 상품 */}
-                <div style={{ background: 'rgba(126,200,160,0.08)', border: '1px solid rgba(126,200,160,0.2)', borderRadius: 12, padding: '12px 10px', height: 220, display: 'flex', flexDirection: 'column' }}>
+                <div style={{ background: 'rgba(126,200,160,0.08)', border: '1px solid rgba(126,200,160,0.2)', borderRadius: 12, padding: '12px 10px', height: 220, display: 'flex', flexDirection: 'column', width: '100%' }}>
                   <div style={{ fontSize: '0.7rem', color: 'rgba(200,216,228,0.65)', flex: 1, overflowY: 'auto', paddingRight: 4 }}>
                     {top5Sets.length > 0 ? (
                       top5Sets.map((s, i) => {
@@ -1359,7 +1364,7 @@ export default function HomePage() {
                 </div>
 
                 {/* 오른쪽: 원가율 높은 상품 */}
-                <div style={{ background: 'rgba(240,128,128,0.08)', border: '1px solid rgba(240,128,128,0.2)', borderRadius: 12, padding: '12px 10px', height: 220, display: 'flex', flexDirection: 'column' }}>
+                <div style={{ background: 'rgba(240,128,128,0.08)', border: '1px solid rgba(240,128,128,0.2)', borderRadius: 12, padding: '12px 10px', height: 220, display: 'flex', flexDirection: 'column', width: '100%' }}>
                   <div style={{ fontSize: '0.7rem', color: 'rgba(200,216,228,0.65)', flex: 1, overflowY: 'auto', paddingRight: 4 }}>
                     {highCostSets.length > 0 ? (
                       highCostSets.slice(0, 5).map((s, i) => (
