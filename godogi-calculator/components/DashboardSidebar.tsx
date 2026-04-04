@@ -1,5 +1,5 @@
 'use client'
-import { useState, useRef } from 'react'
+import { useState, useRef, useEffect } from 'react'
 import { useRouter } from 'next/navigation'
 
 interface Props {
@@ -16,7 +16,7 @@ export default function DashboardSidebar({ user, onLogout, onReceiptUpload, rece
   const [isOpen, setIsOpen] = useState(externalIsOpen)
 
   // 외부에서 제어되는 경우 동기화
-  React.useEffect(() => {
+  useEffect(() => {
     setIsOpen(externalIsOpen)
   }, [externalIsOpen])
   const router = useRouter()
