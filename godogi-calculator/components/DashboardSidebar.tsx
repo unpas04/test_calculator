@@ -101,9 +101,16 @@ export default function DashboardSidebar({ user, onLogout, onReceiptUpload, rece
       }} className={`dashboard-sidebar ${isOpen ? 'dashboard-sidebar-open' : ''}`}>
 
         {/* 헤더 */}
-        <div style={{ flexShrink: 0, padding: '20px 16px', borderBottom: '1px solid rgba(255,255,255,0.1)' }}>
-          <div style={{ display: 'flex', alignItems: 'flex-start', gap: 12, marginBottom: 12 }}>
-            <svg width="32" height="32" viewBox="0 0 100 100" fill="none" xmlns="http://www.w3.org/2000/svg" style={{ flexShrink: 0 }}>
+        <div style={{
+          flexShrink: 0,
+          padding: '24px 16px',
+          background: 'linear-gradient(135deg, rgba(74,127,165,0.1), rgba(91,158,201,0.05))',
+          borderBottom: '1px solid rgba(74,127,165,0.2)',
+          borderRadius: '0 0 16px 0'
+        }}>
+          {/* 로고 + 제목 */}
+          <div style={{ display: 'flex', alignItems: 'center', gap: 12, marginBottom: 16 }}>
+            <svg width="40" height="40" viewBox="0 0 100 100" fill="none" xmlns="http://www.w3.org/2000/svg" style={{ flexShrink: 0 }}>
               <ellipse cx="50" cy="55" rx="32" ry="22" fill="#4A7FA5"/>
               <ellipse cx="50" cy="53" rx="30" ry="20" fill="#5B9EC9"/>
               <polygon points="82,55 100,40 100,70" fill="#4A7FA5"/>
@@ -115,20 +122,40 @@ export default function DashboardSidebar({ user, onLogout, onReceiptUpload, rece
               <ellipse cx="50" cy="33" rx="10" ry="6" fill="#4A7FA5" transform="rotate(-10 50 33)"/>
               <ellipse cx="30" cy="52" rx="4" ry="2.5" fill="#F4A0A0" opacity="0.6"/>
             </svg>
-            <div style={{ flex: 1, minWidth: 0 }}>
-              <div style={{ fontWeight: 700, fontSize: '0.95rem', color: 'white', letterSpacing: '-0.01em', lineHeight: 1.3, marginBottom: 6 }}>
-                고독이의<br/>원가계산기
+            <div style={{ flex: 1 }}>
+              <div style={{ fontWeight: 800, fontSize: '1.1rem', color: 'white', letterSpacing: '-0.02em', lineHeight: 1.2 }}>
+                고독이의
               </div>
-              <div style={{ fontSize: '0.75rem', color: 'rgba(200,216,228,0.5)', wordBreak: 'break-all', lineHeight: 1.4 }}>
-                {user?.email}
+              <div style={{ fontWeight: 700, fontSize: '0.9rem', color: '#7DB8D8', lineHeight: 1.2 }}>
+                원가계산기
               </div>
             </div>
             {/* 닫기 버튼 (모바일) */}
             <button onClick={() => setIsOpen(false)} style={{
-              background: 'none', border: 'none', color: 'rgba(200,216,228,0.4)',
-              cursor: 'pointer', fontSize: '1.2rem', display: 'none', flexShrink: 0
-            }} className="dashboard-sidebar-close">✕</button>
+              background: 'rgba(255,255,255,0.1)', border: 'none', color: 'rgba(200,216,228,0.6)',
+              cursor: 'pointer', fontSize: '1.2rem', display: 'none', flexShrink: 0,
+              width: 32, height: 32, borderRadius: 8, transition: '0.2s'
+            }} onMouseEnter={(e) => { e.currentTarget.style.background = 'rgba(255,255,255,0.15)'; e.currentTarget.style.color = 'white' }}
+              onMouseLeave={(e) => { e.currentTarget.style.background = 'rgba(255,255,255,0.1)'; e.currentTarget.style.color = 'rgba(200,216,228,0.6)' }}
+              className="dashboard-sidebar-close">✕</button>
           </div>
+
+          {/* 이메일 */}
+          {user?.email && (
+            <div style={{
+              padding: '10px 12px',
+              background: 'rgba(255,255,255,0.05)',
+              border: '1px solid rgba(74,127,165,0.2)',
+              borderRadius: 8,
+              fontSize: '0.75rem',
+              color: 'rgba(200,216,228,0.6)',
+              wordBreak: 'break-all',
+              lineHeight: 1.4,
+              fontWeight: 500
+            }}>
+              {user.email}
+            </div>
+          )}
         </div>
 
         {/* 메뉴 */}
