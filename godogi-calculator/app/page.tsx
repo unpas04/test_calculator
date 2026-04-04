@@ -1774,7 +1774,7 @@ export default function HomePage() {
         ) : (
           <>
             {/* 레시피 탭: 카테고리 필터 */}
-            <div style={{ display: 'flex', gap: 6, padding: '8px 0', overflowX: 'auto', flexShrink: 0, marginBottom: 14, scrollbarWidth: 'none' }}>
+            <div style={{ display: 'flex', gap: 6, overflowX: 'auto', marginBottom: 14, scrollbarWidth: 'none', msOverflowStyle: 'none' }}>
               {['all', 'main', 'side', 'banchan', 'drink', 'dessert', 'extra'].map(cat => (
                 <button key={cat} onClick={() => setMenuCategory(cat)}
                   style={{
