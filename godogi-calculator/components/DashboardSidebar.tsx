@@ -165,20 +165,19 @@ export default function DashboardSidebar({ user, onLogout, onReceiptUpload, rece
             <button
               onClick={() => handleNavigate(dashboardItem.target)}
               style={{
-                width: '100%', textAlign: 'left', padding: '14px 16px',
+                width: '100%', textAlign: 'left', padding: '12px 16px',
                 background: 'transparent', border: 'none',
-                borderRadius: 0, color: 'white',
-                fontSize: '1rem', fontFamily: "'Noto Sans KR', sans-serif", fontWeight: 600,
+                borderRadius: 0, color: 'rgba(200,216,228,0.8)',
+                fontSize: '0.9rem', fontFamily: "'Noto Sans KR', sans-serif", fontWeight: 500,
                 cursor: 'pointer', transition: 'all 0.15s',
-                opacity: 0.7,
               }}
               onMouseEnter={e => {
-                (e.currentTarget as HTMLButtonElement).style.background = 'rgba(74,127,165,0.15)'
-                ;(e.currentTarget as HTMLButtonElement).style.opacity = '1'
+                (e.currentTarget as HTMLButtonElement).style.background = 'rgba(74,127,165,0.1)'
+                ;(e.currentTarget as HTMLButtonElement).style.color = 'white'
               }}
               onMouseLeave={e => {
                 (e.currentTarget as HTMLButtonElement).style.background = 'transparent'
-                ;(e.currentTarget as HTMLButtonElement).style.opacity = '0.7'
+                ;(e.currentTarget as HTMLButtonElement).style.color = 'rgba(200,216,228,0.8)'
               }}
             >
               {dashboardItem.label}
