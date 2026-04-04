@@ -17,6 +17,13 @@ export default function ProtoPage() {
     supabase.auth.getSession().then(({ data: { session } }) => {
       setUser(session?.user ?? null)
     })
+
+    // 인증 상태 변경 감시
+    const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => {
+      setUser(session?.user ?? null)
+    })
+
+    return () => subscription?.unsubscribe()
   }, [])
 
   const handleLogout = async () => {

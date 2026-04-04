@@ -7,6 +7,7 @@ import { ArrowLeft } from 'lucide-react'
 import { useSearchParams } from 'next/navigation'
 import AppSidebar from '../../components/AppSidebar'
 import Calculator from '../../components/Calculator'
+import DashboardSidebar from '../../components/DashboardSidebar'
 
 const FRIDGE_CATEGORIES = ['전체', '육류', '채소', '양념/소스', '유제품', '곡류/면', '과일', '수산물', '기타']
 const FRIDGE_UNITS = ['g', 'ml', '개', '팩', 'kg', 'L']
@@ -98,6 +99,7 @@ function CalculatorContent() {
   const [ocrSelected, setOcrSelected] = useState<Set<number>>(new Set())
   const [ocrEditIdx, setOcrEditIdx] = useState<number | null>(null)
   const [ocrSupplier, setOcrSupplier] = useState<any>(null)
+  const [sidebarOpen, setSidebarOpen] = useState(false)
   const supabase = createClient()
   const autoSaveTimer = useRef<any>(null)
   const loadedForUser = useRef<string | null>(null)
@@ -520,6 +522,16 @@ function CalculatorContent() {
 
   return (
     <div style={{ display: 'flex', minHeight: '100vh' }}>
+      {/* DashboardSidebar for fromRecipes */}
+      {fromRecipes && user && (
+        <DashboardSidebar
+          user={user}
+          onLogout={logout}
+          onReceiptUpload={() => {}}
+          isOpen={sidebarOpen}
+          onOpenChange={setSidebarOpen}
+        />
+      )}
       {!fromRecipes && (
         <AppSidebar
           menus={menus.map(m => ({ ...m, costRate: calcCostRate(m), subLabel: calcSubLabel(m) }))}
@@ -531,38 +543,75 @@ function CalculatorContent() {
           onLogout={logout}
         />
       )}
-      <main className="main-content" style={{ marginLeft: fromRecipes ? 0 : 260, flex: 1, padding: '32px 28px 60px', maxWidth: 760 }}>
-        {!user && (
+      <main className={`main-content ${fromRecipes ? 'from-recipes' : ''}`} style={{ marginLeft: fromRecipes ? 0 : 260, flex: 1, padding: fromRecipes ? '12px 28px 60px' : '32px 28px 60px', maxWidth: 760, position: 'relative' }}>
+        {/* 헤더: 햄버거 + 뒤로가기 + 경로 (fromRecipes일 때만) */}
+        {fromRecipes && (
+          <div style={{ display: 'flex', flexDirection: 'column', gap: 24, marginBottom: 24 }}>
+            {/* 햄버거 버튼 */}
+            <button
+              onClick={() => setSidebarOpen(true)}
+              style={{
+                background: 'none',
+                border: 'none',
+                color: '#C8D4E0',
+                fontSize: '1.4rem',
+                cursor: 'pointer',
+                padding: '4px 8px',
+                display: 'inline-flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                width: 'fit-content',
+              }}
+              className="calc-hamburger-btn"
+            >
+              ☰
+            </button>
+
+            {/* 뒤로가기 + 경로 */}
+            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', fontSize: '0.78rem', fontFamily: "'Noto Sans KR', sans-serif" }}>
+              <a href={returnTo ?? '/proto'} style={{
+                display: 'inline-flex', alignItems: 'center', gap: 5,
+                background: 'rgba(74,127,165,0.15)', border: '1px solid rgba(74,127,165,0.3)',
+                color: '#7DB8D8', textDecoration: 'none', fontWeight: 700,
+                borderRadius: 8, padding: '5px 12px', fontSize: '0.78rem',
+              }}><ArrowLeft size={13} style={{ flexShrink: 0 }} /> 레시피관리</a>
+              <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
+                <a href="/" style={{ color: 'var(--text-soft)', textDecoration: 'none', fontWeight: 500 }}>홈</a>
+                <span style={{ color: 'var(--text-soft)', opacity: 0.4 }}>›</span>
+                <a href="/" style={{ color: 'var(--text-soft)', textDecoration: 'none', fontWeight: 500 }}>레시피관리</a>
+                <span style={{ color: 'var(--text-soft)', opacity: 0.4 }}>›</span>
+                <span style={{ color: 'var(--text-mid)', fontWeight: 700 }}>{isNew ? '레시피추가' : '레시피수정'}</span>
+              </div>
+            </div>
+          </div>
+        )}
+
+        {/* 비로그인 알림 (fromRecipes 아닐 때만) */}
+        {!fromRecipes && !user && (
           <div style={{ background: 'rgba(74,127,165,0.12)', border: '1px solid rgba(74,127,165,0.25)', borderRadius: 10, padding: '10px 16px', marginBottom: 20, display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 12, fontFamily: "'Noto Sans KR', sans-serif" }}>
             <span style={{ fontSize: '0.78rem', color: '#7DB8D8' }}>🐟 로그인하면 데이터가 저장돼요</span>
             <button onClick={loginWithGoogle} style={{ background: 'white', color: '#1E2D40', border: 'none', borderRadius: 8, padding: '6px 12px', fontFamily: "'Noto Sans KR', sans-serif", fontWeight: 700, fontSize: '0.75rem', cursor: 'pointer', flexShrink: 0 }}>🔑 로그인</button>
           </div>
         )}
-        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 24, fontSize: '0.78rem', fontFamily: "'Noto Sans KR', sans-serif" }}>
-          <a href={returnTo ?? '/proto'} style={{
-            display: 'inline-flex', alignItems: 'center', gap: 5,
-            background: 'rgba(74,127,165,0.15)', border: '1px solid rgba(74,127,165,0.3)',
-            color: '#7DB8D8', textDecoration: 'none', fontWeight: 700,
-            borderRadius: 8, padding: '5px 12px', fontSize: '0.78rem',
-          }}><ArrowLeft size={13} style={{ flexShrink: 0 }} /> {fromRecipes ? (isNew ? '레시피관리' : '레시피관리') : '메뉴구성'}</a>
-          <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
-            <a href="/" style={{ color: 'var(--text-soft)', textDecoration: 'none', fontWeight: 500 }}>홈</a>
-            <span style={{ color: 'var(--text-soft)', opacity: 0.4 }}>›</span>
-            {fromRecipes ? (
-              <>
-                <a href="/" style={{ color: 'var(--text-soft)', textDecoration: 'none', fontWeight: 500 }}>레시피관리</a>
-                <span style={{ color: 'var(--text-soft)', opacity: 0.4 }}>›</span>
-                <span style={{ color: 'var(--text-mid)', fontWeight: 700 }}>{isNew ? '레시피추가' : '레시피수정'}</span>
-              </>
-            ) : (
-              <>
-                <a href="/proto" style={{ color: 'var(--text-soft)', textDecoration: 'none', fontWeight: 500 }}>메뉴구성</a>
-                <span style={{ color: 'var(--text-soft)', opacity: 0.4 }}>›</span>
-                <span style={{ color: 'var(--text-mid)', fontWeight: 700 }}>레시피수정</span>
-              </>
-            )}
+
+        {/* 메뉴구성 화면의 뒤로가기 + 경로 (fromRecipes 아닐 때) */}
+        {!fromRecipes && (
+          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 24, fontSize: '0.78rem', fontFamily: "'Noto Sans KR', sans-serif" }}>
+            <a href={returnTo ?? '/proto'} style={{
+              display: 'inline-flex', alignItems: 'center', gap: 5,
+              background: 'rgba(74,127,165,0.15)', border: '1px solid rgba(74,127,165,0.3)',
+              color: '#7DB8D8', textDecoration: 'none', fontWeight: 700,
+              borderRadius: 8, padding: '5px 12px', fontSize: '0.78rem',
+            }}><ArrowLeft size={13} style={{ flexShrink: 0 }} /> 메뉴구성</a>
+            <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
+              <a href="/" style={{ color: 'var(--text-soft)', textDecoration: 'none', fontWeight: 500 }}>홈</a>
+              <span style={{ color: 'var(--text-soft)', opacity: 0.4 }}>›</span>
+              <a href="/proto" style={{ color: 'var(--text-soft)', textDecoration: 'none', fontWeight: 500 }}>메뉴구성</a>
+              <span style={{ color: 'var(--text-soft)', opacity: 0.4 }}>›</span>
+              <span style={{ color: 'var(--text-mid)', fontWeight: 700 }}>레시피수정</span>
+            </div>
           </div>
-        </div>
+        )}
         {currentMenu ? (
           <Calculator
             menu={currentMenu}
@@ -986,7 +1035,11 @@ function CalculatorContent() {
             padding-top: 64px !important;
             padding-bottom: calc(env(safe-area-inset-bottom, 0px) + 90px) !important;
           }
+          .main-content.from-recipes {
+            padding-top: 12px !important;
+          }
           .calc-fridge-fab { display: flex !important; }
+          .calc-hamburger-btn { display: flex !important; }
         }
       `}</style>
     </div>

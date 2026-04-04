@@ -20,6 +20,10 @@ export default function DashboardSidebar({ user, onLogout, onReceiptUpload, rece
     setIsOpen(externalIsOpen)
   }, [externalIsOpen])
 
+  useEffect(() => {
+    console.log('[DashboardSidebar] user:', user)
+  }, [user])
+
   const router = useRouter()
   const receiptInputRef = useRef<HTMLInputElement>(null)
 
@@ -141,7 +145,7 @@ export default function DashboardSidebar({ user, onLogout, onReceiptUpload, rece
           </div>
 
           {/* 이메일 */}
-          {user?.email && (
+          {user && user.email ? (
             <div style={{
               padding: '10px 12px',
               background: 'rgba(255,255,255,0.05)',
@@ -155,29 +159,33 @@ export default function DashboardSidebar({ user, onLogout, onReceiptUpload, rece
             }}>
               {user.email}
             </div>
-          )}
+          ) : null}
         </div>
 
         {/* 메뉴 */}
         <nav style={{ flex: 1, overflowY: 'auto', padding: '0' }}>
           {/* 대시보드 */}
-          <div style={{ padding: '8px 0' }}>
+          <div style={{ padding: '8px 12px' }}>
             <button
               onClick={() => handleNavigate(dashboardItem.target)}
               style={{
                 width: '100%', textAlign: 'left', padding: '12px 16px',
-                background: 'transparent', border: 'none',
-                borderRadius: 0, color: 'rgba(200,216,228,0.8)',
+                background: 'transparent',
+                border: 'none',
+                borderRadius: 12, color: 'rgba(200,216,228,0.8)',
                 fontSize: '0.9rem', fontFamily: "'Noto Sans KR', sans-serif", fontWeight: 500,
-                cursor: 'pointer', transition: 'all 0.15s',
+                cursor: 'pointer', transition: 'all 0.2s',
+                boxShadow: '0 1px 3px rgba(0,0,0,0.1)',
               }}
               onMouseEnter={e => {
-                (e.currentTarget as HTMLButtonElement).style.background = 'rgba(74,127,165,0.1)'
+                (e.currentTarget as HTMLButtonElement).style.background = 'rgba(74,127,165,0.08)'
                 ;(e.currentTarget as HTMLButtonElement).style.color = 'white'
+                ;(e.currentTarget as HTMLButtonElement).style.boxShadow = '0 4px 12px rgba(74,127,165,0.2)'
               }}
               onMouseLeave={e => {
                 (e.currentTarget as HTMLButtonElement).style.background = 'transparent'
                 ;(e.currentTarget as HTMLButtonElement).style.color = 'rgba(200,216,228,0.8)'
+                ;(e.currentTarget as HTMLButtonElement).style.boxShadow = '0 1px 3px rgba(0,0,0,0.1)'
               }}
             >
               {dashboardItem.label}
@@ -188,45 +196,51 @@ export default function DashboardSidebar({ user, onLogout, onReceiptUpload, rece
           <div style={{ height: '1px', background: 'rgba(255,255,255,0.1)', margin: '8px 0' }} />
 
           {/* 관리 섹션 (메뉴판, 레시피) */}
-          <div style={{ padding: '8px 0' }}>
+          <div style={{ padding: '8px 12px' }}>
             {managementItems.map(item => (
               <div key={item.id}>
                 <button
                   onClick={() => handleNavigate(item.target)}
                   style={{
                     width: '100%', textAlign: 'left', padding: '12px 16px',
-                    background: 'transparent', border: 'none',
-                    borderRadius: 0, color: 'rgba(200,216,228,0.8)',
+                    background: 'transparent',
+                    border: 'none',
+                    borderRadius: 12, color: 'rgba(200,216,228,0.8)',
                     fontSize: '0.9rem', fontFamily: "'Noto Sans KR', sans-serif", fontWeight: 500,
-                    cursor: 'pointer', transition: 'all 0.15s',
+                    cursor: 'pointer', transition: 'all 0.2s',
+                    boxShadow: '0 1px 3px rgba(0,0,0,0.1)',
+                    marginBottom: '8px',
                   }}
                   onMouseEnter={e => {
-                    (e.currentTarget as HTMLButtonElement).style.background = 'rgba(74,127,165,0.1)'
+                    (e.currentTarget as HTMLButtonElement).style.background = 'rgba(74,127,165,0.08)'
                     ;(e.currentTarget as HTMLButtonElement).style.color = 'white'
+                    ;(e.currentTarget as HTMLButtonElement).style.boxShadow = '0 4px 12px rgba(74,127,165,0.2)'
                   }}
                   onMouseLeave={e => {
                     (e.currentTarget as HTMLButtonElement).style.background = 'transparent'
                     ;(e.currentTarget as HTMLButtonElement).style.color = 'rgba(200,216,228,0.8)'
+                    ;(e.currentTarget as HTMLButtonElement).style.boxShadow = '0 1px 3px rgba(0,0,0,0.1)'
                   }}
                 >
                   {item.label}
                 </button>
                 {/* 서브메뉴 */}
                 {item.children && (
-                  <div>
+                  <div style={{ marginTop: '4px', paddingLeft: '12px' }}>
                     {item.children.map(child => (
                       <button
                         key={child.id}
                         onClick={() => handleNavigate(child.target)}
                         style={{
-                          width: '100%', textAlign: 'left', padding: '10px 16px 10px 32px',
+                          width: '100%', textAlign: 'left', padding: '10px 12px',
                           background: 'transparent', border: 'none',
-                          borderRadius: 0, color: 'rgba(200,216,228,0.6)',
+                          borderRadius: 8, color: 'rgba(200,216,228,0.6)',
                           fontSize: '0.85rem', fontFamily: "'Noto Sans KR', sans-serif", fontWeight: 400,
                           cursor: 'pointer', transition: 'all 0.15s',
+                          display: 'flex', alignItems: 'center', gap: '8px'
                         }}
                         onMouseEnter={e => {
-                          (e.currentTarget as HTMLButtonElement).style.background = 'rgba(74,127,165,0.08)'
+                          (e.currentTarget as HTMLButtonElement).style.background = 'rgba(74,127,165,0.12)'
                           ;(e.currentTarget as HTMLButtonElement).style.color = 'rgba(200,216,228,0.9)'
                         }}
                         onMouseLeave={e => {
@@ -234,6 +248,7 @@ export default function DashboardSidebar({ user, onLogout, onReceiptUpload, rece
                           ;(e.currentTarget as HTMLButtonElement).style.color = 'rgba(200,216,228,0.6)'
                         }}
                       >
+                        <span style={{ fontSize: '0.75rem', marginRight: '2px' }}>└</span>
                         {child.label}
                       </button>
                     ))}
@@ -247,25 +262,30 @@ export default function DashboardSidebar({ user, onLogout, onReceiptUpload, rece
           <div style={{ height: '1px', background: 'rgba(255,255,255,0.1)', margin: '8px 0' }} />
 
           {/* 비즈니스 섹션 (거래처, 인건비) */}
-          <div style={{ padding: '8px 0' }}>
+          <div style={{ padding: '8px 12px' }}>
             {businessItems.map(item => (
               <button
                 key={item.id}
                 onClick={() => handleNavigate(item.target)}
                 style={{
                   width: '100%', textAlign: 'left', padding: '12px 16px',
-                  background: 'transparent', border: 'none',
-                  borderRadius: 0, color: 'rgba(200,216,228,0.8)',
+                  background: 'transparent',
+                  border: 'none',
+                  borderRadius: 12, color: 'rgba(200,216,228,0.8)',
                   fontSize: '0.9rem', fontFamily: "'Noto Sans KR', sans-serif", fontWeight: 500,
-                  cursor: 'pointer', transition: 'all 0.15s',
+                  cursor: 'pointer', transition: 'all 0.2s',
+                  boxShadow: '0 1px 3px rgba(0,0,0,0.1)',
+                  marginBottom: '8px',
                 }}
                 onMouseEnter={e => {
-                  (e.currentTarget as HTMLButtonElement).style.background = 'rgba(74,127,165,0.1)'
+                  (e.currentTarget as HTMLButtonElement).style.background = 'rgba(74,127,165,0.08)'
                   ;(e.currentTarget as HTMLButtonElement).style.color = 'white'
+                  ;(e.currentTarget as HTMLButtonElement).style.boxShadow = '0 4px 12px rgba(74,127,165,0.2)'
                 }}
                 onMouseLeave={e => {
                   (e.currentTarget as HTMLButtonElement).style.background = 'transparent'
                   ;(e.currentTarget as HTMLButtonElement).style.color = 'rgba(200,216,228,0.8)'
+                  ;(e.currentTarget as HTMLButtonElement).style.boxShadow = '0 1px 3px rgba(0,0,0,0.1)'
                 }}
               >
                 {item.label}
