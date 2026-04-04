@@ -1390,42 +1390,48 @@ export default function HomePage() {
 
         {homeTab === 'sets' ? (
           <>
-            {/* 홀/배달 토글 (첫 번째 행, 오른쪽 정렬) */}
-            <div style={{ display: 'flex', gap: 1, padding: '3px', borderRadius: 16, background: 'rgba(255,255,255,0.06)', border: '1px solid rgba(74,127,165,0.2)', marginBottom: 12, width: 'fit-content', marginLeft: 'auto' }}>
-              {[
-                { key: 'all', label: '전체' },
-                { key: 'hall', label: '홀' },
-                { key: 'delivery', label: '배달' }
-              ].map(ch => (
-                <motion.button key={ch.key} whileTap={{ scale: 0.95 }}
-                  onClick={() => setChannelFilter(ch.key as any)}
-                  style={{
-                    padding: '4px 10px', borderRadius: 14, border: 'none', cursor: 'pointer',
-                    background: channelFilter === ch.key ? '#4A7FA5' : 'transparent',
-                    color: channelFilter === ch.key ? 'white' : 'rgba(200,216,228,0.6)',
-                    fontSize: '0.65rem', fontWeight: 600, fontFamily: "'Noto Sans KR',sans-serif",
-                    whiteSpace: 'nowrap', transition: 'all 0.2s',
-                  }}
-                >
-                  {ch.label}
-                </motion.button>
-              ))}
-            </div>
+            {/* 필터 행: 카테고리 + 홀/배달 토글 (한 줄) */}
+            <div style={{ display: 'flex', gap: 8, padding: '8px 0', marginBottom: 12, alignItems: 'center' }}>
+              {/* 카테고리 필터 (왼쪽, 스크롤 가능) */}
+              <div style={{ display: 'flex', gap: 4, padding: '0', overflowX: 'auto', flexShrink: 1, scrollbarWidth: 'auto', minWidth: 0, paddingRight: 8 }}>
+                {['전체', ...orderedCategories].map((cat) => (
+                  <button key={cat} onClick={() => setSetFilter(cat as any)}
+                    style={{
+                      padding: '4px 10px', borderRadius: 16, border: 'none', cursor: 'pointer',
+                      background: setFilter === cat ? '#4A7FA5' : 'rgba(255,255,255,0.06)',
+                      color: setFilter === cat ? 'white' : 'rgba(200,216,228,0.5)',
+                      fontSize: '0.65rem', fontWeight: 600, fontFamily: "'Noto Sans KR',sans-serif", whiteSpace: 'nowrap', flexShrink: 0,
+                    }}
+                  >
+                    {cat}
+                  </button>
+                ))}
+              </div>
 
-            {/* 세트 탭: 카테고리 필터 (두 번째 행) */}
-            <div style={{ display: 'flex', gap: 6, padding: '8px 0', overflowX: 'auto', flexShrink: 1, scrollbarWidth: 'none', minWidth: 0, paddingRight: 8, marginBottom: 12 }}>
-              {['전체', ...orderedCategories].map((cat) => (
-                <button key={cat} onClick={() => setSetFilter(cat as any)}
-                  style={{
-                    padding: '6px 12px', borderRadius: 20, border: 'none', cursor: 'pointer',
-                    background: setFilter === cat ? '#4A7FA5' : 'rgba(255,255,255,0.06)',
-                    color: setFilter === cat ? 'white' : 'rgba(200,216,228,0.5)',
-                    fontSize: '0.72rem', fontWeight: 700, fontFamily: "'Noto Sans KR',sans-serif", whiteSpace: 'nowrap', flexShrink: 0,
-                  }}
-                >
-                  {cat}
-                </button>
-              ))}
+              {/* 구분선 */}
+              <div style={{ width: '1px', height: '20px', background: 'rgba(255,255,255,0.1)', flexShrink: 0 }} />
+
+              {/* 홀/배달 토글 (오른쪽, 고정) */}
+              <div style={{ display: 'flex', gap: 1, padding: '2px', borderRadius: 12, background: 'rgba(255,255,255,0.06)', border: '1px solid rgba(74,127,165,0.2)', flexShrink: 0 }}>
+                {[
+                  { key: 'all', label: '전체' },
+                  { key: 'hall', label: '홀' },
+                  { key: 'delivery', label: '배달' }
+                ].map(ch => (
+                  <motion.button key={ch.key} whileTap={{ scale: 0.95 }}
+                    onClick={() => setChannelFilter(ch.key as any)}
+                    style={{
+                      padding: '3px 8px', borderRadius: 10, border: 'none', cursor: 'pointer',
+                      background: channelFilter === ch.key ? '#4A7FA5' : 'transparent',
+                      color: channelFilter === ch.key ? 'white' : 'rgba(200,216,228,0.6)',
+                      fontSize: '0.6rem', fontWeight: 600, fontFamily: "'Noto Sans KR',sans-serif",
+                      whiteSpace: 'nowrap', transition: 'all 0.2s',
+                    }}
+                  >
+                    {ch.label}
+                  </motion.button>
+                ))}
+              </div>
             </div>
 
             {/* 세트 목록 - 카테고리별 그룹화 */}
