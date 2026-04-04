@@ -444,6 +444,7 @@ export default function HomePage() {
   const [shopInfo, setShopInfo] = useState<ShopInfo>({ name: '', industry: '', targetRate: 35 })
   const [editingShop, setEditingShop] = useState(false)
   const [shopDraft, setShopDraft] = useState<ShopInfo>({ name: '', industry: '', targetRate: 35 })
+  const [selectedSetModal, setSelectedSetModal] = useState<DisplaySet | null>(null)
 
   const router = useRouter()
   const searchParams = useSearchParams()
@@ -1325,7 +1326,22 @@ export default function HomePage() {
                       top5Sets.map((s, i) => {
                         const medals = ['🥇', '🥈', '🥉']
                         return (
-                          <div key={s.id} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', paddingBottom: 8, marginBottom: 8, borderBottom: i < top5Sets.length - 1 ? '1px solid rgba(126,200,160,0.15)' : 'none' }}>
+                          <div
+                            key={s.id}
+                            onClick={() => setSelectedSetModal(s)}
+                            style={{
+                              display: 'flex',
+                              justifyContent: 'space-between',
+                              alignItems: 'center',
+                              paddingBottom: 8,
+                              marginBottom: 8,
+                              borderBottom: i < top5Sets.length - 1 ? '1px solid rgba(126,200,160,0.15)' : 'none',
+                              cursor: 'pointer',
+                              transition: 'opacity 0.2s',
+                            }}
+                            onMouseEnter={(e) => { (e.currentTarget as HTMLDivElement).style.opacity = '0.7' }}
+                            onMouseLeave={(e) => { (e.currentTarget as HTMLDivElement).style.opacity = '1' }}
+                          >
                             <span style={{ flex: 1, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
                               <span style={{ marginRight: 4 }}>{medals[i] || `${i + 1}`}</span>
                               {s.name}
@@ -1347,7 +1363,22 @@ export default function HomePage() {
                   <div style={{ fontSize: '0.7rem', color: 'rgba(200,216,228,0.65)' }}>
                     {highCostSets.length > 0 ? (
                       highCostSets.slice(0, 5).map((s, i) => (
-                        <div key={s.id} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', paddingBottom: 8, marginBottom: 8, borderBottom: i < 4 ? '1px solid rgba(240,128,128,0.15)' : 'none' }}>
+                        <div
+                          key={s.id}
+                          onClick={() => setSelectedSetModal(s)}
+                          style={{
+                            display: 'flex',
+                            justifyContent: 'space-between',
+                            alignItems: 'center',
+                            paddingBottom: 8,
+                            marginBottom: 8,
+                            borderBottom: i < 4 ? '1px solid rgba(240,128,128,0.15)' : 'none',
+                            cursor: 'pointer',
+                            transition: 'opacity 0.2s',
+                          }}
+                          onMouseEnter={(e) => { (e.currentTarget as HTMLDivElement).style.opacity = '0.7' }}
+                          onMouseLeave={(e) => { (e.currentTarget as HTMLDivElement).style.opacity = '1' }}
+                        >
                           <span style={{ flex: 1, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
                             <span style={{ marginRight: 4 }}>⚠️</span>
                             {s.name}
@@ -1909,6 +1940,83 @@ export default function HomePage() {
         setStep={setOnboardingStep}
         onClose={() => { localStorage.setItem('godogi_onboarded', '1'); setShowOnboarding(false); setOnboardingStep(0) }}
       />
+
+      {/* 상품 상세 모달 */}
+      <AnimatePresence>
+        {selectedSetModal && (
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            onClick={() => setSelectedSetModal(null)}
+            style={{
+              position: 'fixed',
+              inset: 0,
+              background: 'rgba(0,0,0,0.55)',
+              zIndex: 100,
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              padding: 24,
+            }}
+          >
+            <motion.div
+              initial={{ scale: 0.93 }}
+              animate={{ scale: 1 }}
+              exit={{ scale: 0.93 }}
+              onClick={(e) => e.stopPropagation()}
+              style={{
+                background: '#1A2840',
+                borderRadius: 18,
+                padding: '28px 24px',
+                width: '100%',
+                maxWidth: 400,
+                fontFamily: "'Noto Sans KR', sans-serif",
+              }}
+            >
+              <div style={{ fontSize: '1.2rem', fontWeight: 700, color: 'white', marginBottom: 16 }}>
+                {selectedSetModal.name}
+              </div>
+              <div style={{ display: 'flex', flexDirection: 'column', gap: 12, marginBottom: 24, fontSize: '0.85rem' }}>
+                <div style={{ display: 'flex', justifyContent: 'space-between', paddingBottom: 12, borderBottom: '1px solid rgba(255,255,255,0.1)' }}>
+                  <span style={{ color: 'rgba(200,216,228,0.6)' }}>판매가</span>
+                  <span style={{ color: 'white', fontWeight: 700 }}>₩{selectedSetModal.sale_price.toLocaleString()}</span>
+                </div>
+                <div style={{ display: 'flex', justifyContent: 'space-between', paddingBottom: 12, borderBottom: '1px solid rgba(255,255,255,0.1)' }}>
+                  <span style={{ color: 'rgba(200,216,228,0.6)' }}>원가</span>
+                  <span style={{ color: 'white', fontWeight: 700 }}>₩{selectedSetModal.totalCost.toLocaleString()}</span>
+                </div>
+                <div style={{ display: 'flex', justifyContent: 'space-between' }}>
+                  <span style={{ color: 'rgba(200,216,228,0.6)' }}>원가율</span>
+                  <span style={{
+                    color: selectedSetModal.costRate < 30 ? '#7EC8A0' : selectedSetModal.costRate < 50 ? '#F4A460' : '#F08080',
+                    fontWeight: 700
+                  }}>
+                    {Math.round(selectedSetModal.costRate)}%
+                  </span>
+                </div>
+              </div>
+              <button
+                onClick={() => setSelectedSetModal(null)}
+                style={{
+                  width: '100%',
+                  background: 'rgba(74,127,165,0.2)',
+                  border: 'none',
+                  borderRadius: 10,
+                  color: '#7DB8D8',
+                  padding: '11px',
+                  fontFamily: "'Noto Sans KR', sans-serif",
+                  fontWeight: 700,
+                  fontSize: '0.85rem',
+                  cursor: 'pointer',
+                }}
+              >
+                닫기
+              </button>
+            </motion.div>
+          </motion.div>
+        )}
+      </AnimatePresence>
 
       {/* 삭제 확인 모달 */}
       <AnimatePresence>
