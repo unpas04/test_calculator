@@ -288,7 +288,11 @@ function StackedBar({ blocks, totalCost, salePrice }: { blocks: Block[]; totalCo
 }
 
 // ── 메인 컴포넌트 ────────────────────────────────
-export default function SetBuilderProto() {
+interface Props {
+  onOpenSidebar?: () => void
+}
+
+export default function SetBuilderProto({ onOpenSidebar }: Props = {}) {
   const router = useRouter()
   const searchParams = useSearchParams()
   const editId = searchParams.get('id')
@@ -810,12 +814,11 @@ export default function SetBuilderProto() {
 
           {/* 헤더: 뒤로가기 + 세트 이름 + 버튼들 */}
           <div style={{ display: 'flex', flexDirection: 'column', gap: 24 }}>
-            {/* 1행: 햄버거 버튼 - 사이드바 토글 */}
+            {/* 1행: 햄버거 버튼 - 사이드바 열기 */}
             <motion.button
               whileTap={{ scale: 0.9 }}
               onClick={() => {
-                // 커스텀 이벤트 발생
-                window.dispatchEvent(new Event('godogi-toggle-sidebar'))
+                onOpenSidebar?.()
               }}
               style={{
                 background: 'none', border: 'none', color: '#C8D4E0',
