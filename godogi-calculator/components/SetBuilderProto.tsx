@@ -288,7 +288,11 @@ function StackedBar({ blocks, totalCost, salePrice }: { blocks: Block[]; totalCo
 }
 
 // ── 메인 컴포넌트 ────────────────────────────────
-export default function SetBuilderProto() {
+interface Props {
+  onOpenSidebar?: () => void
+}
+
+export default function SetBuilderProto({ onOpenSidebar }: Props = {}) {
   const router = useRouter()
   const searchParams = useSearchParams()
   const editId = searchParams.get('id')
@@ -814,13 +818,7 @@ export default function SetBuilderProto() {
             <motion.button
               whileTap={{ scale: 0.9 }}
               onClick={() => {
-                // 사이드바 토글 클래스의 버튼을 찾아서 click 이벤트 발생
-                setTimeout(() => {
-                  const toggleBtn = document.querySelector('.dashboard-sidebar-toggle') as HTMLButtonElement
-                  if (toggleBtn) {
-                    toggleBtn.dispatchEvent(new MouseEvent('click', { bubbles: true, cancelable: true }))
-                  }
-                }, 0)
+                onOpenSidebar?.()
               }}
               style={{
                 background: 'none', border: 'none', color: '#C8D4E0',
