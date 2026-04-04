@@ -1481,8 +1481,8 @@ export default function HomePage() {
           <>
 
             {/* 카테고리 필터 (아래) */}
-            <div style={{ display: 'flex', gap: 4, overflowX: 'auto', marginBottom: 12, scrollbarWidth: 'none', msOverflowStyle: 'none' }}>
-              {['전체', ...orderedCategories].map((cat) => (
+            <div style={{ display: 'flex', gap: 4, overflowX: 'auto', marginBottom: 12, scrollbarWidth: 'none', msOverflowStyle: 'none', width: '100%' }}>
+              {['전체', ...activeCategories].map((cat) => (
                   <button key={cat} onClick={() => setSetFilter(cat as any)}
                     style={{
                       padding: '8px 16px', borderRadius: 20, border: '1px solid rgba(74,127,165,0.3)', cursor: 'pointer',
@@ -1774,7 +1774,7 @@ export default function HomePage() {
         ) : (
           <>
             {/* 레시피 탭: 카테고리 필터 */}
-            <div style={{ display: 'flex', gap: 6, overflowX: 'auto', marginBottom: 14, scrollbarWidth: 'none', msOverflowStyle: 'none' }}>
+            <div style={{ display: 'flex', gap: 6, overflowX: 'auto', marginBottom: 14, scrollbarWidth: 'none', msOverflowStyle: 'none', width: '100%' }}>
               {['all', 'main', 'side', 'banchan', 'drink', 'dessert', 'extra'].map(cat => (
                 <button key={cat} onClick={() => setMenuCategory(cat)}
                   style={{
