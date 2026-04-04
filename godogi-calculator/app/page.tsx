@@ -1153,7 +1153,7 @@ export default function HomePage() {
 
         return (
       <>
-      <main className="home-main" style={{ maxWidth: 680, margin: '0 auto', padding: '0 24px 100px', display: 'flex', flexDirection: 'column' }}>
+      <main className="home-main" style={{ maxWidth: 680, margin: '0 auto', padding: '0 12px 100px', display: 'flex', flexDirection: 'column' }}>
         {/* 대시보드 통계 - 메뉴판 탭에서만 표시 */}
         {homeTab === 'sets' && (
           <>
