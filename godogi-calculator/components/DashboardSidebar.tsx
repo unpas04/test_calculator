@@ -69,15 +69,6 @@ export default function DashboardSidebar({ user, onLogout, onReceiptUpload, rece
 
   return (
     <>
-      {/* 모바일 토글 버튼 */}
-      <button onClick={() => setIsOpen(!isOpen)} style={{
-        position: 'fixed', top: 12, left: 12, zIndex: 40,
-        background: '#1A2840', color: '#fff',
-        border: 'none', borderRadius: 10,
-        padding: '8px 12px', fontSize: '1.1rem', cursor: 'pointer',
-        display: 'none'
-      }} className="dashboard-sidebar-toggle">☰</button>
-
       {/* 오버레이 (모바일) */}
       {isOpen && (
         <div onClick={() => setIsOpen(false)} style={{

@@ -1041,8 +1041,8 @@ export default function HomePage() {
         </div>
       )}
 
-      {/* 헤더 */}
-      <header style={{ padding: '16px 12px 14px', borderBottom: '1px solid rgba(255,255,255,0.06)', display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 10 }}>
+      {/* 헤더 (고정) */}
+      <header style={{ position: 'sticky', top: 0, zIndex: 10, padding: '16px 12px 14px', borderBottom: '1px solid rgba(255,255,255,0.06)', display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 10, background: '#0F1923' }}>
         {/* 왼쪽: 햄버거 버튼 (모바일 사이드바) */}
         <button className="dashboard-sidebar-toggle" onClick={() => setSidebarOpen(!sidebarOpen)}
           style={{
