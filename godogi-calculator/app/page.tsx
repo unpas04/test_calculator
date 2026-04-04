@@ -1426,48 +1426,59 @@ export default function HomePage() {
           ))}
         </div>
 
-        {/* 검색창 */}
-        <div style={{ padding: '0 0 10px 0', flexShrink: 0 }}>
-          <input
-            type="text"
-            placeholder={homeTab === 'sets' ? '상품 검색...' : '레시피 검색...'}
-            value={homeTab === 'sets' ? setSearch : menuSearch}
-            onChange={(e) => homeTab === 'sets' ? setSetSearch(e.target.value) : setMenuSearch(e.target.value)}
-            style={{
-              width: '100%', padding: '10px 12px', fontSize: '16px', boxSizing: 'border-box',
-              background: 'rgba(255,255,255,0.07)', border: '1px solid rgba(200,216,228,0.15)',
-              borderRadius: 10, color: 'white', fontFamily: "'Noto Sans KR',sans-serif", outline: 'none'
-            }}
-          />
-        </div>
+        {/* 검색창 + 홀/배달 토글 */}
+        {homeTab === 'sets' ? (
+          <div style={{ display: 'flex', gap: 8, marginBottom: 12, alignItems: 'center', flexShrink: 0 }}>
+            <input
+              type="text"
+              placeholder="상품 검색..."
+              value={setSearch}
+              onChange={(e) => setSetSearch(e.target.value)}
+              style={{
+                flex: 1, padding: '10px 12px', fontSize: '16px', boxSizing: 'border-box',
+                background: 'rgba(255,255,255,0.07)', border: '1px solid rgba(200,216,228,0.15)',
+                borderRadius: 10, color: 'white', fontFamily: "'Noto Sans KR',sans-serif", outline: 'none'
+              }}
+            />
+            <div style={{ display: 'flex', gap: 1, padding: '2px', borderRadius: 12, background: 'rgba(255,255,255,0.06)', border: '1px solid rgba(74,127,165,0.2)', flexShrink: 0 }}>
+              {[
+                { key: 'all', label: '전체' },
+                { key: 'hall', label: '홀' },
+                { key: 'delivery', label: '배달' }
+              ].map(ch => (
+                <motion.button key={ch.key} whileTap={{ scale: 0.95 }}
+                  onClick={() => setChannelFilter(ch.key as any)}
+                  style={{
+                    padding: '3px 8px', borderRadius: 10, border: 'none', cursor: 'pointer',
+                    background: channelFilter === ch.key ? '#4A7FA5' : 'transparent',
+                    color: channelFilter === ch.key ? 'white' : 'rgba(200,216,228,0.6)',
+                    fontSize: '0.6rem', fontWeight: 600, fontFamily: "'Noto Sans KR',sans-serif",
+                    whiteSpace: 'nowrap', transition: 'all 0.2s',
+                  }}
+                >
+                  {ch.label}
+                </motion.button>
+              ))}
+            </div>
+          </div>
+        ) : (
+          <div style={{ padding: '0 0 10px 0', flexShrink: 0 }}>
+            <input
+              type="text"
+              placeholder="레시피 검색..."
+              value={menuSearch}
+              onChange={(e) => setMenuSearch(e.target.value)}
+              style={{
+                width: '100%', padding: '10px 12px', fontSize: '16px', boxSizing: 'border-box',
+                background: 'rgba(255,255,255,0.07)', border: '1px solid rgba(200,216,228,0.15)',
+                borderRadius: 10, color: 'white', fontFamily: "'Noto Sans KR',sans-serif", outline: 'none'
+              }}
+            />
+          </div>
+        )}
 
         {homeTab === 'sets' ? (
           <>
-            {/* 홀/배달 토글 (위) */}
-            <div style={{ display: 'flex', justifyContent: 'flex-end', marginBottom: 12 }}>
-              <div style={{ display: 'flex', gap: 0, alignItems: 'center' }}>
-                <div style={{ display: 'flex', gap: 1, padding: '2px', borderRadius: 12, background: 'rgba(255,255,255,0.06)', border: '1px solid rgba(74,127,165,0.2)', flexShrink: 0 }}>
-                  {[
-                    { key: 'all', label: '전체' },
-                    { key: 'hall', label: '홀' },
-                    { key: 'delivery', label: '배달' }
-                  ].map(ch => (
-                    <motion.button key={ch.key} whileTap={{ scale: 0.95 }}
-                      onClick={() => setChannelFilter(ch.key as any)}
-                      style={{
-                        padding: '3px 8px', borderRadius: 10, border: 'none', cursor: 'pointer',
-                        background: channelFilter === ch.key ? '#4A7FA5' : 'transparent',
-                        color: channelFilter === ch.key ? 'white' : 'rgba(200,216,228,0.6)',
-                        fontSize: '0.6rem', fontWeight: 600, fontFamily: "'Noto Sans KR',sans-serif",
-                        whiteSpace: 'nowrap', transition: 'all 0.2s',
-                      }}
-                    >
-                      {ch.label}
-                    </motion.button>
-                  ))}
-                </div>
-              </div>
-            </div>
 
             {/* 카테고리 필터 (아래) */}
             <div style={{ display: 'flex', gap: 4, padding: '0', overflowX: 'auto', flexShrink: 1, scrollbarWidth: 'auto', minWidth: 0, paddingRight: 0, marginBottom: 12 }}>
