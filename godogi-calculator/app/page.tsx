@@ -812,14 +812,26 @@ export default function HomePage() {
     })
   }
 
-  const handleDelete = async (id: string, e: React.MouseEvent) => {
-    e.stopPropagation()
-    await supabase.from('sets').delete().eq('id', id)
-    const next = sets.filter(s => s.id !== id)
-    setSets(next)
-    const rates = next.filter(s => s.costRate > 0).map(s => s.costRate)
-    const avgRate = rates.length > 0 ? rates.reduce((a, b) => a + b, 0) / rates.length : null
-    setMenuStats(next.length > 0 ? { total: next.length, avgRate, warnCount: rates.filter(r => r > 60).length } : null)
+  const handleDelete = async (id: string, e: React.MouseEvent | null = null) => {
+    if (e) e.stopPropagation()
+
+    // 메뉴 삭제 vs 세트 삭제 판단
+    const isMenu = allMenus.some(m => m.id === id)
+
+    if (isMenu) {
+      // 메뉴 삭제
+      await supabase.from('menus').delete().eq('id', id)
+      const next = allMenus.filter(m => m.id !== id)
+      setAllMenus(next)
+    } else {
+      // 세트 삭제
+      await supabase.from('sets').delete().eq('id', id)
+      const next = sets.filter(s => s.id !== id)
+      setSets(next)
+      const rates = next.filter(s => s.costRate > 0).map(s => s.costRate)
+      const avgRate = rates.length > 0 ? rates.reduce((a, b) => a + b, 0) / rates.length : null
+      setMenuStats(next.length > 0 ? { total: next.length, avgRate, warnCount: rates.filter(r => r > 60).length } : null)
+    }
   }
 
   if (loading) return (
@@ -1278,7 +1290,7 @@ export default function HomePage() {
               </div>
             </motion.div>
 
-            {/* TOP 5 수익성 좋은 상품 + 원가율 높은 상품 (2열 레이아웃) */}
+            {/* TOP 5 수익성 좋은 상품 + 원가율 높은 상품 (반응형) */}
             <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.1 }}>
               {/* 제목들: 카드 위 */}
               <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 12, marginBottom: 8 }}>
@@ -1291,10 +1303,10 @@ export default function HomePage() {
               </div>
 
               {/* 카드들 */}
-              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 12, marginBottom: 14 }}>
+              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 12, marginBottom: 14, alignItems: 'start' }}>
 
                 {/* 왼쪽: TOP 5 수익성 좋은 상품 */}
-                <div style={{ background: 'rgba(126,200,160,0.08)', border: '1px solid rgba(126,200,160,0.2)', borderRadius: 12, padding: '12px 10px', minHeight: 120 }}>
+                <div style={{ background: 'rgba(126,200,160,0.08)', border: '1px solid rgba(126,200,160,0.2)', borderRadius: 12, padding: '12px 10px' }}>
                   <div style={{ fontSize: '0.7rem', color: 'rgba(200,216,228,0.65)' }}>
                     {top5Sets.length > 0 ? (
                       top5Sets.map((s, i) => {
@@ -1310,7 +1322,7 @@ export default function HomePage() {
                         )
                       })
                     ) : (
-                      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', height: '100%', color: 'rgba(200,216,228,0.4)', fontSize: '0.8rem' }}>
+                      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', minHeight: 80, color: 'rgba(200,216,228,0.4)', fontSize: '0.8rem' }}>
                         상품이 없어요
                       </div>
                     )}
@@ -1318,7 +1330,7 @@ export default function HomePage() {
                 </div>
 
                 {/* 오른쪽: 원가율 높은 상품 */}
-                <div style={{ background: 'rgba(240,128,128,0.08)', border: '1px solid rgba(240,128,128,0.2)', borderRadius: 12, padding: '12px 10px', minHeight: 120 }}>
+                <div style={{ background: 'rgba(240,128,128,0.08)', border: '1px solid rgba(240,128,128,0.2)', borderRadius: 12, padding: '12px 10px' }}>
                   <div style={{ fontSize: '0.7rem', color: 'rgba(200,216,228,0.65)' }}>
                     {highCostSets.length > 0 ? (
                       highCostSets.slice(0, 5).map((s, i) => (
@@ -1331,7 +1343,7 @@ export default function HomePage() {
                         </div>
                       ))
                     ) : (
-                      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', height: '100%', color: 'rgba(200,216,228,0.4)', fontSize: '0.8rem' }}>
+                      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', minHeight: 80, color: 'rgba(200,216,228,0.4)', fontSize: '0.8rem' }}>
                         상품이 없어요
                       </div>
                     )}
@@ -1378,46 +1390,42 @@ export default function HomePage() {
 
         {homeTab === 'sets' ? (
           <>
-            {/* 세트 탭: 카테고리 필터 + 홀/배달 토글 (토글 고정) */}
-            <div style={{ display: 'flex', gap: 0, marginBottom: 14, alignItems: 'center', justifyContent: 'space-between' }}>
-              <div style={{ display: 'flex', gap: 6, padding: '8px 0', overflowX: 'auto', flexShrink: 1, scrollbarWidth: 'none', minWidth: 0, paddingRight: 8 }}>
-                {['전체', ...orderedCategories].map((cat) => (
-                  <button key={cat} onClick={() => setSetFilter(cat as any)}
-                    style={{
-                      padding: '6px 12px', borderRadius: 20, border: 'none', cursor: 'pointer',
-                      background: setFilter === cat ? '#4A7FA5' : 'rgba(255,255,255,0.06)',
-                      color: setFilter === cat ? 'white' : 'rgba(200,216,228,0.5)',
-                      fontSize: '0.72rem', fontWeight: 700, fontFamily: "'Noto Sans KR',sans-serif", whiteSpace: 'nowrap', flexShrink: 0,
-                    }}
-                  >
-                    {cat}
-                  </button>
-                ))}
-              </div>
-              <div style={{
-                display: 'flex', gap: 1, padding: '3px', borderRadius: 16,
-                background: 'rgba(255,255,255,0.06)', border: '1px solid rgba(74,127,165,0.2)',
-                flexShrink: 0,
-              }}>
-                {[
-                  { key: 'all', label: '전체' },
-                  { key: 'hall', label: '홀' },
-                  { key: 'delivery', label: '배달' }
-                ].map(ch => (
-                  <motion.button key={ch.key} whileTap={{ scale: 0.95 }}
-                    onClick={() => setChannelFilter(ch.key as any)}
-                    style={{
-                      padding: '4px 10px', borderRadius: 14, border: 'none', cursor: 'pointer',
-                      background: channelFilter === ch.key ? '#4A7FA5' : 'transparent',
-                      color: channelFilter === ch.key ? 'white' : 'rgba(200,216,228,0.6)',
-                      fontSize: '0.65rem', fontWeight: 600, fontFamily: "'Noto Sans KR',sans-serif",
-                      whiteSpace: 'nowrap', transition: 'all 0.2s',
-                    }}
-                  >
-                    {ch.label}
-                  </motion.button>
-                ))}
-              </div>
+            {/* 세트 탭: 카테고리 필터 (개별 행) */}
+            <div style={{ display: 'flex', gap: 6, padding: '8px 0', overflowX: 'auto', flexShrink: 1, scrollbarWidth: 'none', minWidth: 0, paddingRight: 8, marginBottom: 12 }}>
+              {['전체', ...orderedCategories].map((cat) => (
+                <button key={cat} onClick={() => setSetFilter(cat as any)}
+                  style={{
+                    padding: '6px 12px', borderRadius: 20, border: 'none', cursor: 'pointer',
+                    background: setFilter === cat ? '#4A7FA5' : 'rgba(255,255,255,0.06)',
+                    color: setFilter === cat ? 'white' : 'rgba(200,216,228,0.5)',
+                    fontSize: '0.72rem', fontWeight: 700, fontFamily: "'Noto Sans KR',sans-serif", whiteSpace: 'nowrap', flexShrink: 0,
+                  }}
+                >
+                  {cat}
+                </button>
+              ))}
+            </div>
+
+            {/* 홀/배달 토글 (별도 행) */}
+            <div style={{ display: 'flex', gap: 1, padding: '3px', borderRadius: 16, background: 'rgba(255,255,255,0.06)', border: '1px solid rgba(74,127,165,0.2)', marginBottom: 14, width: 'fit-content' }}>
+              {[
+                { key: 'all', label: '전체' },
+                { key: 'hall', label: '홀' },
+                { key: 'delivery', label: '배달' }
+              ].map(ch => (
+                <motion.button key={ch.key} whileTap={{ scale: 0.95 }}
+                  onClick={() => setChannelFilter(ch.key as any)}
+                  style={{
+                    padding: '4px 10px', borderRadius: 14, border: 'none', cursor: 'pointer',
+                    background: channelFilter === ch.key ? '#4A7FA5' : 'transparent',
+                    color: channelFilter === ch.key ? 'white' : 'rgba(200,216,228,0.6)',
+                    fontSize: '0.65rem', fontWeight: 600, fontFamily: "'Noto Sans KR',sans-serif",
+                    whiteSpace: 'nowrap', transition: 'all 0.2s',
+                  }}
+                >
+                  {ch.label}
+                </motion.button>
+              ))}
             </div>
 
             {/* 세트 목록 - 카테고리별 그룹화 */}
@@ -1718,39 +1726,57 @@ export default function HomePage() {
                             key={menu.id}
                             initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }}
                             transition={{ delay: i * 0.03 }}
-                            onClick={() => router.push(`/calculator?menuId=${menu.id}&returnTo=/?tab=menus`)}
                             style={{
                               background: 'rgba(255,255,255,0.04)',
                               border: '1px solid rgba(255,255,255,0.08)',
                               borderRadius: 12, padding: '12px 14px',
-                              cursor: 'pointer', transition: '0.2s',
+                              cursor: 'pointer', transition: '0.2s', position: 'relative',
                             }}
                             whileHover={{ background: 'rgba(255,255,255,0.07)' }}
                             whileTap={{ scale: 0.96 }}
                           >
-                            <div style={{ fontSize: '1.4rem', marginBottom: 6 }}>{menu.emoji}</div>
-                            <div style={{ fontSize: '0.82rem', fontWeight: 700, color: 'white', marginBottom: 6 }}>{menu.name}</div>
-                            {menu.ingredients && menu.ingredients.length > 0 && (
-                              <div style={{ display: 'flex', flexWrap: 'wrap', gap: 4 }}>
-                                {menu.ingredients.slice(0, 3).map((ing: string, idx: number) => (
-                                  <span key={idx} style={{
-                                    fontSize: '0.62rem', padding: '2px 7px',
-                                    background: 'rgba(74,127,165,0.18)',
-                                    border: '1px solid rgba(74,127,165,0.25)',
-                                    borderRadius: 20, color: '#7DB8D8', fontWeight: 600,
-                                    whiteSpace: 'nowrap',
-                                  }}>{ing}</span>
-                                ))}
-                                {menu.ingredients.length > 3 && (
-                                  <span style={{
-                                    fontSize: '0.62rem', padding: '2px 7px',
-                                    background: 'rgba(255,255,255,0.06)',
-                                    border: '1px solid rgba(255,255,255,0.1)',
-                                    borderRadius: 20, color: 'rgba(200,216,228,0.4)', fontWeight: 600,
-                                  }}>+{menu.ingredients.length - 3}</span>
-                                )}
-                              </div>
-                            )}
+                            {/* 삭제 버튼 (우상단 X) */}
+                            <button
+                              onClick={(e) => { e.stopPropagation(); setDeleteConfirmId(menu.id) }}
+                              style={{
+                                position: 'absolute', top: 6, right: 6,
+                                background: 'rgba(240,128,128,0.2)', border: 'none',
+                                borderRadius: '50%', width: 24, height: 24,
+                                display: 'flex', alignItems: 'center', justifyContent: 'center',
+                                cursor: 'pointer', color: '#F08080', fontSize: '1rem',
+                                transition: '0.2s', padding: 0,
+                              }}
+                              onMouseEnter={(e) => (e.currentTarget.style.background = 'rgba(240,128,128,0.4)')}
+                              onMouseLeave={(e) => (e.currentTarget.style.background = 'rgba(240,128,128,0.2)')}
+                            >
+                              ✕
+                            </button>
+
+                            <div onClick={() => router.push(`/calculator?menuId=${menu.id}&returnTo=/?tab=menus`)}>
+                              <div style={{ fontSize: '1.4rem', marginBottom: 6 }}>{menu.emoji}</div>
+                              <div style={{ fontSize: '0.82rem', fontWeight: 700, color: 'white', marginBottom: 6 }}>{menu.name}</div>
+                              {menu.ingredients && menu.ingredients.length > 0 && (
+                                <div style={{ display: 'flex', flexWrap: 'wrap', gap: 4 }}>
+                                  {menu.ingredients.slice(0, 3).map((ing: string, idx: number) => (
+                                    <span key={idx} style={{
+                                      fontSize: '0.62rem', padding: '2px 7px',
+                                      background: 'rgba(74,127,165,0.18)',
+                                      border: '1px solid rgba(74,127,165,0.25)',
+                                      borderRadius: 20, color: '#7DB8D8', fontWeight: 600,
+                                      whiteSpace: 'nowrap',
+                                    }}>{ing}</span>
+                                  ))}
+                                  {menu.ingredients.length > 3 && (
+                                    <span style={{
+                                      fontSize: '0.62rem', padding: '2px 7px',
+                                      background: 'rgba(255,255,255,0.06)',
+                                      border: '1px solid rgba(255,255,255,0.1)',
+                                      borderRadius: 20, color: 'rgba(200,216,228,0.4)', fontWeight: 600,
+                                    }}>+{menu.ingredients.length - 3}</span>
+                                  )}
+                                </div>
+                              )}
+                            </div>
                           </motion.div>
                         ))}
                       </div>
@@ -1764,11 +1790,11 @@ export default function HomePage() {
       </main>
 
 
-      {/* ── FAB: 메뉴판 탭 ── */}
+      {/* ── FAB: 메뉴판 탭 (메뉴 추가) ── */}
       {homeTab === 'sets' && (
         <motion.button
           whileHover={{ scale: 1.04 }} whileTap={{ scale: 0.96 }}
-          onClick={() => router.push('/proto')}
+          onClick={() => router.push('/calculator?new=1&returnTo=/?tab=sets')}
           style={{
             position: 'fixed', bottom: 28, right: 24, zIndex: 20,
             background: 'linear-gradient(135deg, #3A6FA5, #2A5080)',
@@ -1854,7 +1880,9 @@ export default function HomePage() {
               onClick={e => e.stopPropagation()}
               style={{ background: '#1A2840', borderRadius: 18, padding: '28px 24px', width: '100%', maxWidth: 320, fontFamily: "'Noto Sans KR', sans-serif", textAlign: 'center' }}>
               <div style={{ fontSize: '1.8rem', marginBottom: 12 }}>🗑️</div>
-              <div style={{ color: 'white', fontWeight: 700, fontSize: '0.95rem', marginBottom: 8 }}>메뉴 구성을 삭제할까요?</div>
+              <div style={{ color: 'white', fontWeight: 700, fontSize: '0.95rem', marginBottom: 8 }}>
+                {allMenus.some(m => m.id === deleteConfirmId) ? '레시피를 삭제할까요?' : '메뉴 구성을 삭제할까요?'}
+              </div>
               <div style={{ color: 'rgba(200,216,228,0.45)', fontSize: '0.75rem', marginBottom: 24 }}>삭제하면 되돌릴 수 없어요</div>
               <div style={{ display: 'flex', gap: 8 }}>
                 <button onClick={() => setDeleteConfirmId(null)} style={{
