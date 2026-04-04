@@ -1410,10 +1410,24 @@ export default function HomePage() {
                 {['전체', ...orderedCategories].map((cat) => (
                   <button key={cat} onClick={() => setSetFilter(cat as any)}
                     style={{
-                      padding: '4px 10px', borderRadius: 16, border: 'none', cursor: 'pointer',
+                      padding: '6px 14px', borderRadius: 18, border: 'none', cursor: 'pointer',
                       background: setFilter === cat ? '#4A7FA5' : 'rgba(255,255,255,0.06)',
                       color: setFilter === cat ? 'white' : 'rgba(200,216,228,0.5)',
                       fontSize: '0.65rem', fontWeight: 600, fontFamily: "'Noto Sans KR',sans-serif", whiteSpace: 'nowrap', flexShrink: 0,
+                      transition: '0.2s',
+                      boxShadow: setFilter === cat ? '0 4px 12px rgba(74,127,165,0.3)' : '0 2px 6px rgba(0,0,0,0.2)',
+                    }}
+                    onMouseEnter={(e) => {
+                      if (setFilter !== cat) {
+                        (e.currentTarget as HTMLButtonElement).style.background = 'rgba(255,255,255,0.1)'
+                        ;(e.currentTarget as HTMLButtonElement).style.boxShadow = '0 4px 12px rgba(74,127,165,0.2)'
+                      }
+                    }}
+                    onMouseLeave={(e) => {
+                      if (setFilter !== cat) {
+                        (e.currentTarget as HTMLButtonElement).style.background = 'rgba(255,255,255,0.06)'
+                        ;(e.currentTarget as HTMLButtonElement).style.boxShadow = '0 2px 6px rgba(0,0,0,0.2)'
+                      }
                     }}
                   >
                     {cat}
