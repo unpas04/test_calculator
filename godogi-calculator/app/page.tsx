@@ -1314,7 +1314,7 @@ export default function HomePage() {
             </motion.div>
 
             {/* TOP 5 수익성 좋은 상품 + 원가율 높은 상품 (반응형) */}
-            <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.1 }} style={{ width: 'calc(100% + 24px)', marginLeft: '-12px', marginRight: '-12px', paddingLeft: '12px', paddingRight: '12px', marginTop: 24 }}>
+            <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.1 }} style={{ width: 'calc(100% + 24px)', marginLeft: '-12px', marginRight: '-12px', paddingLeft: '12px', paddingRight: '12px', marginTop: 12 }}>
               {/* 제목들: 카드 위 */}
               <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 12, marginBottom: 8 }}>
                 <div style={{ fontSize: '0.78rem', fontWeight: 700, color: 'white' }}>
@@ -1408,7 +1408,7 @@ export default function HomePage() {
         )}
 
         {/* 탭 바 */}
-        <div data-tab-bar="true" style={{ display: 'flex', borderBottom: '1px solid rgba(255,255,255,0.06)', flexShrink: 0, marginBottom: 28, marginTop: 28 }}>
+        <div data-tab-bar="true" style={{ display: 'flex', borderBottom: '1px solid rgba(255,255,255,0.06)', flexShrink: 0, marginBottom: 16, marginTop: 16 }}>
           {['sets', 'menus'].map((tab) => (
             <button
               key={tab}
@@ -1443,11 +1443,35 @@ export default function HomePage() {
 
         {homeTab === 'sets' ? (
           <>
-            {/* 필터 행: 카테고리 + 홀/배달 토글 (한 줄) */}
-            <div style={{ display: 'flex', gap: 8, padding: '8px 0', marginBottom: 12, alignItems: 'center', justifyContent: 'space-between' }}>
-              {/* 카테고리 필터 (왼쪽, 스크롤 가능) */}
-              <div style={{ display: 'flex', gap: 4, padding: '0', overflowX: 'auto', flexShrink: 1, scrollbarWidth: 'auto', minWidth: 0, paddingRight: 0 }}>
-                {['전체', ...orderedCategories].map((cat) => (
+            {/* 홀/배달 토글 (위) */}
+            <div style={{ display: 'flex', justifyContent: 'flex-end', marginBottom: 12 }}>
+              <div style={{ display: 'flex', gap: 0, alignItems: 'center' }}>
+                <div style={{ display: 'flex', gap: 1, padding: '2px', borderRadius: 12, background: 'rgba(255,255,255,0.06)', border: '1px solid rgba(74,127,165,0.2)', flexShrink: 0 }}>
+                  {[
+                    { key: 'all', label: '전체' },
+                    { key: 'hall', label: '홀' },
+                    { key: 'delivery', label: '배달' }
+                  ].map(ch => (
+                    <motion.button key={ch.key} whileTap={{ scale: 0.95 }}
+                      onClick={() => setChannelFilter(ch.key as any)}
+                      style={{
+                        padding: '3px 8px', borderRadius: 10, border: 'none', cursor: 'pointer',
+                        background: channelFilter === ch.key ? '#4A7FA5' : 'transparent',
+                        color: channelFilter === ch.key ? 'white' : 'rgba(200,216,228,0.6)',
+                        fontSize: '0.6rem', fontWeight: 600, fontFamily: "'Noto Sans KR',sans-serif",
+                        whiteSpace: 'nowrap', transition: 'all 0.2s',
+                      }}
+                    >
+                      {ch.label}
+                    </motion.button>
+                  ))}
+                </div>
+              </div>
+            </div>
+
+            {/* 카테고리 필터 (아래) */}
+            <div style={{ display: 'flex', gap: 4, padding: '0', overflowX: 'auto', flexShrink: 1, scrollbarWidth: 'auto', minWidth: 0, paddingRight: 0, marginBottom: 12 }}>
+              {['전체', ...orderedCategories].map((cat) => (
                   <button key={cat} onClick={() => setSetFilter(cat as any)}
                     style={{
                       padding: '8px 16px', borderRadius: 20, border: '1px solid rgba(74,127,165,0.3)', cursor: 'pointer',
@@ -1479,34 +1503,6 @@ export default function HomePage() {
                     {cat}
                   </button>
                 ))}
-              </div>
-
-              {/* 홀/배달 토글 (오른쪽, 고정, 구분선 포함) */}
-              <div style={{ display: 'flex', gap: 0, alignItems: 'center' }}>
-                {/* 구분선 */}
-                <div style={{ width: '1px', height: '20px', background: 'rgba(255,255,255,0.1)', marginRight: 8 }} />
-
-                <div style={{ display: 'flex', gap: 1, padding: '2px', borderRadius: 12, background: 'rgba(255,255,255,0.06)', border: '1px solid rgba(74,127,165,0.2)', flexShrink: 0 }}>
-                  {[
-                    { key: 'all', label: '전체' },
-                    { key: 'hall', label: '홀' },
-                    { key: 'delivery', label: '배달' }
-                  ].map(ch => (
-                    <motion.button key={ch.key} whileTap={{ scale: 0.95 }}
-                      onClick={() => setChannelFilter(ch.key as any)}
-                      style={{
-                        padding: '3px 8px', borderRadius: 10, border: 'none', cursor: 'pointer',
-                        background: channelFilter === ch.key ? '#4A7FA5' : 'transparent',
-                        color: channelFilter === ch.key ? 'white' : 'rgba(200,216,228,0.6)',
-                        fontSize: '0.6rem', fontWeight: 600, fontFamily: "'Noto Sans KR',sans-serif",
-                        whiteSpace: 'nowrap', transition: 'all 0.2s',
-                      }}
-                    >
-                      {ch.label}
-                    </motion.button>
-                  ))}
-                </div>
-              </div>
             </div>
 
             {/* 세트 목록 - 카테고리별 그룹화 */}
