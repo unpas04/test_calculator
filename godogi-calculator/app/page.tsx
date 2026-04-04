@@ -1406,8 +1406,8 @@ export default function HomePage() {
               ))}
             </div>
 
-            {/* 홀/배달 토글 (별도 행) */}
-            <div style={{ display: 'flex', gap: 1, padding: '3px', borderRadius: 16, background: 'rgba(255,255,255,0.06)', border: '1px solid rgba(74,127,165,0.2)', marginBottom: 14, width: 'fit-content' }}>
+            {/* 홀/배달 토글 (별도 행, 오른쪽 정렬) */}
+            <div style={{ display: 'flex', gap: 1, padding: '3px', borderRadius: 16, background: 'rgba(255,255,255,0.06)', border: '1px solid rgba(74,127,165,0.2)', marginBottom: 14, width: 'fit-content', marginLeft: 'auto' }}>
               {[
                 { key: 'all', label: '전체' },
                 { key: 'hall', label: '홀' },
