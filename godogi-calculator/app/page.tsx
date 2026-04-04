@@ -1440,7 +1440,7 @@ export default function HomePage() {
                 borderRadius: 10, color: 'white', fontFamily: "'Noto Sans KR',sans-serif", outline: 'none'
               }}
             />
-            <div style={{ display: 'flex', gap: 1, padding: '2px', borderRadius: 12, background: 'rgba(255,255,255,0.06)', border: '1px solid rgba(74,127,165,0.2)', flexShrink: 0 }}>
+            <div style={{ display: 'flex', gap: 4, padding: '6px 8px', borderRadius: 10, background: 'rgba(255,255,255,0.07)', border: '1px solid rgba(200,216,228,0.15)', flexShrink: 0, alignItems: 'center' }}>
               {[
                 { key: 'all', label: '전체' },
                 { key: 'hall', label: '홀' },
@@ -1449,10 +1449,10 @@ export default function HomePage() {
                 <motion.button key={ch.key} whileTap={{ scale: 0.95 }}
                   onClick={() => setChannelFilter(ch.key as any)}
                   style={{
-                    padding: '3px 8px', borderRadius: 10, border: 'none', cursor: 'pointer',
+                    padding: '4px 10px', borderRadius: 6, border: 'none', cursor: 'pointer',
                     background: channelFilter === ch.key ? '#4A7FA5' : 'transparent',
                     color: channelFilter === ch.key ? 'white' : 'rgba(200,216,228,0.6)',
-                    fontSize: '0.6rem', fontWeight: 600, fontFamily: "'Noto Sans KR',sans-serif",
+                    fontSize: '0.75rem', fontWeight: 600, fontFamily: "'Noto Sans KR',sans-serif",
                     whiteSpace: 'nowrap', transition: 'all 0.2s',
                   }}
                 >
