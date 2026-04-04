@@ -1347,9 +1347,9 @@ export default function HomePage() {
                             onMouseEnter={(e) => { (e.currentTarget as HTMLDivElement).style.opacity = '0.7' }}
                             onMouseLeave={(e) => { (e.currentTarget as HTMLDivElement).style.opacity = '1' }}
                           >
-                            <span style={{ flex: 1, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
-                              <span style={{ marginRight: 4 }}>{medals[i] || `${i + 1}`}</span>
-                              {s.name}
+                            <span style={{ flex: 1, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', minWidth: 0, display: 'flex', alignItems: 'center', gap: 4 }}>
+                              <span style={{ flexShrink: 0 }}>{medals[i] || `${i + 1}`}</span>
+                              <span style={{ overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', minWidth: 0 }}>{s.name}</span>
                             </span>
                             <span style={{ color: '#7EC8A0', fontWeight: 700, flexShrink: 0, marginLeft: 6 }}>{Math.round(s.costRate)}%</span>
                           </div>
@@ -1384,9 +1384,9 @@ export default function HomePage() {
                           onMouseEnter={(e) => { (e.currentTarget as HTMLDivElement).style.opacity = '0.7' }}
                           onMouseLeave={(e) => { (e.currentTarget as HTMLDivElement).style.opacity = '1' }}
                         >
-                          <span style={{ flex: 1, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
-                            <span style={{ marginRight: 4 }}>⚠️</span>
-                            {s.name}
+                          <span style={{ flex: 1, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', minWidth: 0, display: 'flex', alignItems: 'center', gap: 4 }}>
+                            <span style={{ flexShrink: 0 }}>⚠️</span>
+                            <span style={{ overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', minWidth: 0 }}>{s.name}</span>
                           </span>
                           <span style={{ color: '#F08080', fontWeight: 700, flexShrink: 0, marginLeft: 6 }}>{Math.round(s.costRate)}%</span>
                         </div>
