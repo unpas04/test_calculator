@@ -1391,7 +1391,7 @@ export default function HomePage() {
         {homeTab === 'sets' ? (
           <>
             {/* 필터 행: 카테고리 + 홀/배달 토글 (한 줄) */}
-            <div style={{ display: 'flex', gap: 8, padding: '8px 0', marginBottom: 12, alignItems: 'center' }}>
+            <div style={{ display: 'flex', gap: 8, padding: '8px 0', marginBottom: 12, alignItems: 'center', justifyContent: 'space-between' }}>
               {/* 카테고리 필터 (왼쪽, 스크롤 가능) */}
               <div style={{ display: 'flex', gap: 4, padding: '0', overflowX: 'auto', flexShrink: 1, scrollbarWidth: 'auto', minWidth: 0, paddingRight: 8 }}>
                 {['전체', ...orderedCategories].map((cat) => (
