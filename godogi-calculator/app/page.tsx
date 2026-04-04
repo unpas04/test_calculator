@@ -1481,7 +1481,7 @@ export default function HomePage() {
           <>
 
             {/* 카테고리 필터 (아래) */}
-            <div style={{ display: 'flex', gap: 4, padding: '0', overflowX: 'auto', flexShrink: 1, scrollbarWidth: 'auto', minWidth: 0, paddingRight: 0, marginBottom: 12 }}>
+            <div style={{ display: 'flex', gap: 4, overflowX: 'auto', marginBottom: 12, scrollbarWidth: 'none', msOverflowStyle: 'none' }}>
               {['전체', ...orderedCategories].map((cat) => (
                   <button key={cat} onClick={() => setSetFilter(cat as any)}
                     style={{
