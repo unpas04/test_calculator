@@ -558,19 +558,26 @@ export default function HomePage() {
     if (loadedForUser.current === user.id) return
     loadedForUser.current = user.id
 
-    // 신규 사용자 감지: shopInfo.name이 없으면 SetupModal 표시
-    // (shopInfo는 Auth useEffect에서 Supabase 로드 후 설정됨)
-    if (!shopInfo.name) {
-      setShowSetup(true)
-      // loadSets()를 지연 - handleSetupComplete에서 호출
-    } else {
-      loadSets()
-      // 온보딩 튜토리얼은 localStorage에서만 체크
-      if (!localStorage.getItem('godogi_onboarded')) {
-        setShowOnboarding(true)
+    // Supabase에서 shopInfo 직접 로드하여 신규/기존 사용자 판정
+    ;(async () => {
+      const { data: shopData } = await supabase
+        .from('shop_profiles')
+        .select('shop_name, industry, target_rate')
+        .eq('user_id', user.id)
+        .single()
+
+      // shopData가 없으면 신규 사용자 → SetupModal 표시
+      if (!shopData) {
+        setShowSetup(true)
+      } else {
+        // 기존 사용자 → 데이터 로드
+        loadSets()
+        if (!localStorage.getItem('godogi_onboarded')) {
+          setShowOnboarding(true)
+        }
       }
-    }
-  }, [user, shopInfo.name])
+    })()
+  }, [user])
 
   // 세트 로드 후 메뉴 목록 추출
   useEffect(() => {
