@@ -396,7 +396,8 @@ function OnboardingModal({ show, step, setStep, onClose }: {
   )
 }
 
-const SETS_CACHE_KEY = 'godogi_sets_cache'
+// user_id별로 캐시 분리
+const getSetsCacheKey = (userId: string) => `godogi_sets_cache_${userId}`
 
 export default function HomePage() {
   const [user, setUser] = useState<any>(null)
@@ -675,14 +676,19 @@ export default function HomePage() {
   const loadSets = async (industry?: string) => {
     const feeSettings = JSON.parse(localStorage.getItem(FEES_KEY) || JSON.stringify(DEFAULT_FEES))
 
-    // 캐시 있으면 즉시 표시
-    const cached = localStorage.getItem(SETS_CACHE_KEY)
-    if (cached) {
-      try {
-        const { sets: cachedSets, stats } = JSON.parse(cached)
-        setSets(cachedSets)
-        setMenuStats(stats)
-      } catch {}
+    // 캐시 있으면 즉시 표시 (user_id별 캐시)
+    if (user) {
+      const cacheKey = getSetsCacheKey(user.id)
+      const cached = localStorage.getItem(cacheKey)
+      if (cached) {
+        try {
+          const { sets: cachedSets, stats } = JSON.parse(cached)
+          setSets(cachedSets)
+          setMenuStats(stats)
+        } catch {}
+      } else {
+        setSetsLoading(true)
+      }
     } else {
       setSetsLoading(true)
     }
@@ -721,8 +727,9 @@ export default function HomePage() {
       const stats = { total: computed.length, avgRate: rates.length > 0 ? rates.reduce((a, b) => a + b, 0) / rates.length : null, warnCount: rates.filter(r => r > 60).length }
       setSets(computed)
       setMenuStats(stats)
-      // 캐시 저장
-      localStorage.setItem(SETS_CACHE_KEY, JSON.stringify({ sets: computed, stats }))
+      // 캐시 저장 (user_id별)
+      const cacheKey = getSetsCacheKey(user.id)
+      localStorage.setItem(cacheKey, JSON.stringify({ sets: computed, stats }))
       // backfill: 최초 1회만
       if (!localStorage.getItem('godogi_backfill_done')) {
         backfillIngredients(user.id).then(() => localStorage.setItem('godogi_backfill_done', '1'))
