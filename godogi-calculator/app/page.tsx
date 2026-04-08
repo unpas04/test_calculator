@@ -1877,7 +1877,7 @@ export default function HomePage() {
       </main>
 
 
-      {/* ── FAB: 메뉴판 탭 (메뉴판 추가) ── */}
+      {/* ── FAB: 메뉴판 탭 (메뉴 추가) ── */}
       {homeTab === 'sets' && (
         <motion.button
           whileHover={{ scale: 1.04 }} whileTap={{ scale: 0.96 }}
@@ -1890,7 +1890,7 @@ export default function HomePage() {
             boxShadow: '0 8px 28px rgba(58,111,165,0.4)',
             fontFamily: "'Noto Sans KR', sans-serif", fontWeight: 700,
           }}
-        >＋ 메뉴판 추가</motion.button>
+        >＋ 메뉴 추가</motion.button>
       )}
 
       {/* ── FAB: 레시피관리 탭 ── */}
