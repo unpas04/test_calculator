@@ -425,7 +425,8 @@ export default function HomePage() {
   const [receipSupplierToBeSaved, setReceiptSupplierToBeSaved] = useState<any>(null)
 
   // 홈화면 탭 UI 상태
-  const [homeTab, setHomeTab] = useState<'sets' | 'menus'>('sets')
+  const [homeTab, setHomeTab] = useState<'sets' | 'menus' | 'recipes'>('sets')
+  const [showRecipes, setShowRecipes] = useState(false)
   const [setSearch, setSetSearch] = useState('')
   const [setFilter, setSetFilter] = useState<string>('전체')
   const [sortBy, setSortBy] = useState<'newest' | 'costRate'>('newest')
@@ -1177,8 +1178,8 @@ export default function HomePage() {
         return (
       <>
       <main className="home-main" style={{ maxWidth: 680, margin: '0 auto', padding: '0 12px 100px', display: 'flex', flexDirection: 'column' }}>
-        {/* 대시보드 통계 - 메뉴판 탭에서만 표시 */}
-        {homeTab === 'sets' && (
+        {/* 대시보드 통계 - 메뉴판 보기에서만 표시 */}
+        {!showRecipes && (
           <>
             {/* 매장 정보 카드 */}
             <motion.div initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.02 }}
@@ -1407,27 +1408,24 @@ export default function HomePage() {
           </>
         )}
 
-        {/* 탭 바 */}
-        <div data-tab-bar="true" style={{ display: 'flex', borderBottom: '1px solid rgba(255,255,255,0.06)', flexShrink: 0, marginBottom: 16, marginTop: 16 }}>
-          {['sets', 'menus'].map((tab) => (
-            <button
-              key={tab}
-              onClick={() => { setHomeTab(tab as any); setSetSearch(''); setMenuSearch(''); setExpandedSetId(null) }}
-              style={{
-                flex: 1, padding: '12px 0', background: 'none', border: 'none', cursor: 'pointer',
-                color: homeTab === tab ? '#4A7FA5' : 'rgba(200,216,228,0.35)',
-                fontSize: '0.82rem', fontWeight: 600, fontFamily: "'Noto Sans KR',sans-serif",
-                borderBottom: homeTab === tab ? '2px solid #4A7FA5' : '2px solid transparent',
-                transition: '0.2s',
-              }}
-            >
-              {tab === 'sets' ? '🍽️ 내 메뉴판' : '📖 레시피관리'}
-            </button>
-          ))}
+        {/* 타이틀 + 레시피관리 버튼 */}
+        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 16, marginTop: 16, flexShrink: 0 }}>
+          <h2 style={{ fontSize: '0.95rem', fontWeight: 700, color: 'white', margin: 0 }}>내 메뉴판</h2>
+          <button
+            onClick={() => setShowRecipes(!showRecipes)}
+            style={{
+              padding: '6px 12px', background: showRecipes ? '#4A7FA5' : 'rgba(255,255,255,0.06)',
+              border: 'none', borderRadius: 6, color: showRecipes ? 'white' : 'rgba(200,216,228,0.6)',
+              fontSize: '0.75rem', fontWeight: 600, fontFamily: "'Noto Sans KR',sans-serif",
+              cursor: 'pointer', transition: '0.2s',
+            }}
+          >
+            {showRecipes ? '메뉴판 보기' : '레시피관리'}
+          </button>
         </div>
 
-        {/* 검색창 + 홀/배달 토글 */}
-        {homeTab === 'sets' ? (
+        {/* 검색창 + 홀/배달 토글 (메뉴판 보기) */}
+        {!showRecipes && (
           <div style={{ display: 'flex', gap: 4, marginBottom: 12, alignItems: 'center', flexShrink: 0, minWidth: 0 }}>
             <input
               type="text"
@@ -1461,7 +1459,10 @@ export default function HomePage() {
               ))}
             </div>
           </div>
-        ) : (
+        )}
+
+        {/* 검색창 (레시피 보기) */}
+        {showRecipes && (
           <div style={{ padding: '0 0 10px 0', flexShrink: 0 }}>
             <input
               type="text"
@@ -1477,10 +1478,10 @@ export default function HomePage() {
           </div>
         )}
 
-        {homeTab === 'sets' ? (
+        {!showRecipes ? (
           <>
 
-            {/* 카테고리 필터 (아래) */}
+            {/* 카테고리 필터 (메뉴판) */}
             <div style={{ display: 'flex', gap: 4, overflowX: 'auto', marginBottom: 12, scrollbarWidth: 'none', msOverflowStyle: 'none', width: '100%' }}>
               {['전체', ...activeCategories].map((cat) => (
                   <button key={cat} onClick={() => setSetFilter(cat as any)}
@@ -1773,7 +1774,7 @@ export default function HomePage() {
           </>
         ) : (
           <>
-            {/* 레시피 탭: 카테고리 필터 */}
+            {/* 레시피 카테고리 필터 */}
             <div style={{ display: 'flex', gap: 6, overflowX: 'auto', marginBottom: 14, scrollbarWidth: 'none', msOverflowStyle: 'none', width: '100%' }}>
               {['all', 'main', 'side', 'banchan', 'drink', 'dessert', 'extra'].map(cat => (
                 <button key={cat} onClick={() => setMenuCategory(cat)}
@@ -1877,8 +1878,8 @@ export default function HomePage() {
       </main>
 
 
-      {/* ── FAB: 메뉴판 탭 (메뉴 추가) ── */}
-      {homeTab === 'sets' && (
+      {/* ── FAB: 메뉴 추가 (메뉴판 보기) ── */}
+      {!showRecipes && (
         <motion.button
           whileHover={{ scale: 1.04 }} whileTap={{ scale: 0.96 }}
           onClick={() => router.push('/proto')}
@@ -1893,11 +1894,11 @@ export default function HomePage() {
         >＋ 메뉴 추가</motion.button>
       )}
 
-      {/* ── FAB: 레시피관리 탭 ── */}
-      {homeTab === 'menus' && (
+      {/* ── FAB: 레시피 추가 (레시피 보기) ── */}
+      {showRecipes && (
         <motion.button
           whileHover={{ scale: 1.04 }} whileTap={{ scale: 0.96 }}
-          onClick={() => router.push('/calculator?new=1&returnTo=/?tab=menus')}
+          onClick={() => router.push('/calculator?new=1&returnTo=/')}
           style={{
             position: 'fixed', bottom: 28, right: 24, zIndex: 20,
             background: 'linear-gradient(135deg, #3A6FA5, #2A5080)',
@@ -1906,7 +1907,7 @@ export default function HomePage() {
             boxShadow: '0 8px 28px rgba(58,111,165,0.4)',
             fontFamily: "'Noto Sans KR', sans-serif", fontWeight: 700,
           }}
-        >➕ 레시피 추가</motion.button>
+        >＋ 레시피 추가</motion.button>
       )}
 
       {/* ── 냉장고 Bottom Sheet ── */}
