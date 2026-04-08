@@ -290,9 +290,10 @@ function StackedBar({ blocks, totalCost, salePrice }: { blocks: Block[]; totalCo
 // ── 메인 컴포넌트 ────────────────────────────────
 interface Props {
   onOpenSidebar?: () => void
+  onOpenFridge?: () => void
 }
 
-export default function SetBuilderProto({ onOpenSidebar }: Props = {}) {
+export default function SetBuilderProto({ onOpenSidebar, onOpenFridge }: Props = {}) {
   const router = useRouter()
   const searchParams = useSearchParams()
   const editId = searchParams.get('id')
@@ -320,6 +321,8 @@ export default function SetBuilderProto({ onOpenSidebar }: Props = {}) {
   const [showCategoryModal, setShowCategoryModal] = useState(false)
   const [customCategoryInput, setCustomCategoryInput] = useState('')
   const [categorySearch, setCategorySearch] = useState('')
+  const [editingBlockId, setEditingBlockId] = useState<string | null>(null)
+  const [editingUseAmount, setEditingUseAmount] = useState('')
 
   useEffect(() => {
     const stored = localStorage.getItem(FEES_KEY)
@@ -655,10 +658,13 @@ export default function SetBuilderProto({ onOpenSidebar }: Props = {}) {
             })
           : filteredPalette.map(b => <PaletteBlock key={b.id} block={b} onAdd={() => addBlock(b)} />)
       )}
-      {/* 원가 편집기 이동 버튼 */}
+      {/* 냉장고에서 재료 추가 */}
       <div style={{ marginTop: 20, paddingTop: 14, borderTop: '1px solid rgba(255,255,255,0.06)' }}>
         <button
-          onClick={() => tryNavigate('/calculator')}
+          onClick={() => {
+            setShowPalette(false)
+            onOpenFridge?.()
+          }}
           style={{
             width: '100%', padding: '10px 0',
             background: 'rgba(74,127,165,0.15)', border: '1.5px dashed rgba(74,127,165,0.4)',
@@ -666,7 +672,7 @@ export default function SetBuilderProto({ onOpenSidebar }: Props = {}) {
             fontFamily: "'Noto Sans KR',sans-serif", fontWeight: 700, fontSize: '0.78rem',
             cursor: 'pointer', letterSpacing: '0.02em',
           }}
-        >＋ 추가</button>
+        >🧊 냉장고에서 추가</button>
       </div>
     </div>
   )
@@ -859,18 +865,15 @@ export default function SetBuilderProto({ onOpenSidebar }: Props = {}) {
 
                 {/* 3행: 메뉴명 + 카테고리 + 저장 */}
                 <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
-                  <input
-                    value={setName}
-                    onChange={e => { setSetName(e.target.value); setIsDirty(true) }}
-                    placeholder="예: 스파게티"
+                  {/* 메뉴명: 읽기전용 (냉장고에서만 추가) */}
+                  <div
                     style={{
-                      flex: 1, background: 'none', border: 'none',
-                      borderBottom: '2px solid rgba(74,127,165,0.35)',
+                      flex: 1, background: 'none', borderBottom: '2px solid rgba(74,127,165,0.35)',
                       color: 'white', fontSize: '1.1rem',
                       fontFamily: "'Noto Sans KR',sans-serif", fontWeight: 700,
-                      outline: 'none', paddingBottom: 4, minWidth: 0,
+                      paddingBottom: 4, minWidth: 0,
                     }}
-                  />
+                  >{setName}</div>
                   <div style={{ position: 'relative', flexShrink: 0 }}>
                     <motion.button
                       whileTap={{ scale: 0.95 }}
@@ -989,7 +992,10 @@ export default function SetBuilderProto({ onOpenSidebar }: Props = {}) {
                       onRemove={() => removeBlock(b.id)}
                       onMoveLeft={i > 0 ? () => moveBlock(i, -1) : undefined}
                       onMoveRight={i < blocks.length - 1 ? () => moveBlock(i, 1) : undefined}
-                      onEdit={() => tryNavigate(`/calculator?menuId=${b.menu_id}&source=menu${editId ? `&returnTo=/proto?id=${editId}` : '&returnTo=/proto'}`)}
+                      onEdit={() => {
+                        setEditingBlockId(b.id)
+                        setEditingUseAmount(b.name)
+                      }}
                     />
                   </div>
                 ))
@@ -1376,6 +1382,68 @@ export default function SetBuilderProto({ onOpenSidebar }: Props = {}) {
                   }}>저장 ✓</button>
                 </div>
               </motion.div>
+              </motion.div>
+            </>
+          )}
+        </AnimatePresence>
+
+        {/* 사용량 수정 모달 */}
+        <AnimatePresence>
+          {editingBlockId && (
+            <>
+              <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}
+                onClick={() => setEditingBlockId(null)}
+                style={{ position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.5)', zIndex: 200 }} />
+              <motion.div initial={{ opacity: 0, scale: 0.95, y: 20 }} animate={{ opacity: 1, scale: 1, y: 0 }} exit={{ opacity: 0, scale: 0.95, y: 20 }}
+                style={{ position: 'fixed', top: '50%', left: '50%', transform: 'translate(-50%, -50%)', zIndex: 201, width: '90%', maxWidth: 340, boxSizing: 'border-box' }}>
+                <div style={{ background: '#1A2840', border: '1px solid rgba(74,127,165,0.3)', borderRadius: 16, padding: 24 }}>
+                  <div style={{ fontSize: '1rem', fontWeight: 700, color: 'white', marginBottom: 20, fontFamily: "'Noto Sans KR',sans-serif" }}>
+                    사용량 수정
+                  </div>
+
+                  <input
+                    autoFocus
+                    type="number"
+                    placeholder="사용량 입력"
+                    value={editingUseAmount}
+                    onChange={e => setEditingUseAmount(e.target.value)}
+                    style={{
+                      width: '100%', boxSizing: 'border-box',
+                      background: 'rgba(255,255,255,0.06)', border: '1px solid rgba(74,127,165,0.3)',
+                      borderRadius: 10, padding: '12px 14px',
+                      color: 'white', fontSize: '0.9rem', fontFamily: "'Noto Sans KR',sans-serif",
+                      outline: 'none', marginBottom: 16,
+                    }}
+                  />
+
+                  <div style={{ borderTop: '1px solid rgba(255,255,255,0.06)', paddingTop: 16, marginBottom: 16, fontSize: '0.8rem', color: 'rgba(200,216,228,0.5)', fontFamily: "'Noto Sans KR',sans-serif", lineHeight: 1.6 }}>
+                    구입한 원재료의 가격은 냉장고 탭에서 수정하실 수 있어요.
+                  </div>
+
+                  <div style={{ display: 'flex', gap: 10 }}>
+                    <button onClick={() => setEditingBlockId(null)}
+                      style={{
+                        flex: 1, padding: '11px 0', background: 'rgba(255,255,255,0.06)', border: 'none', borderRadius: 10,
+                        color: 'rgba(200,216,228,0.6)', fontFamily: "'Noto Sans KR',sans-serif", fontWeight: 700, fontSize: '0.85rem',
+                        cursor: 'pointer',
+                      }}>취소</button>
+                    <button onClick={() => {
+                      const blockIdx = blocks.findIndex(b => b.id === editingBlockId)
+                      if (blockIdx >= 0) {
+                        const updated = [...blocks]
+                        updated[blockIdx] = { ...updated[blockIdx], name: editingUseAmount }
+                        setBlocks(updated)
+                        setIsDirty(true)
+                      }
+                      setEditingBlockId(null)
+                    }}
+                      style={{
+                        flex: 1, padding: '11px 0', background: '#4A7FA5', border: 'none', borderRadius: 10,
+                        color: 'white', fontFamily: "'Noto Sans KR',sans-serif", fontWeight: 700, fontSize: '0.85rem',
+                        cursor: 'pointer',
+                      }}>저장</button>
+                  </div>
+                </div>
               </motion.div>
             </>
           )}
