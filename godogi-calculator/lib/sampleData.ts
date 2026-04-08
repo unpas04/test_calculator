@@ -251,7 +251,7 @@ const CAFE_MENUS: SampleMenu[] = [
     ],
   },
   {
-    name: '아이스아메리카노', emoji: '🧊☕', category: 'drink',
+    name: '아이스아메리카노', emoji: '☕', category: 'drink',
     overhead: 300, packaging: 0, labor: 0, delivery_fee: 0, card_fee: 0,
     sale_price: 4000, batch_yield: 0, serving_size: 0,
     ingredients: [
@@ -1135,13 +1135,6 @@ const SNACK_SETS = [
     channel: 'hall' as const,
     sale_price: 5000,
     menuNames: ['오뎅탕'],
-  },
-  {
-    name: '분식 배달',
-    category: '핫 스낵',
-    channel: 'delivery' as const,
-    sale_price: 10000,
-    menuNames: ['떡볶이', '김밥', '포장용기', '비닐봉투', '냅킨·수저'],
   },
 ]
 

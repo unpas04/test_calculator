@@ -600,12 +600,12 @@ export default function HomePage() {
     await supabase.auth.signOut()
     localStorage.removeItem('godogi_sets_cache')
     localStorage.removeItem('godogi_backfill_done')
-    localStorage.removeItem(SHOP_INFO_KEY)
+    // SHOP_INFO_KEY는 삭제하지 않음 - 로그인 후에도 매장 정보 유지
     localStorage.removeItem('godogi_onboarded')
     setUser(null)
     setSets([])
     setMenuStats(null)
-    setShopInfo({ name: '', industry: '', targetRate: 35 })
+    // setShopInfo는 업데이트하지 않음 - localStorage의 정보 유지
   }
 
   // 영수증 OCR 결과 처리
