@@ -558,24 +558,19 @@ export default function HomePage() {
     if (loadedForUser.current === user.id) return
     loadedForUser.current = user.id
 
-    // 신규 사용자 감지: shopInfo.name이 없고 godogi_onboarded가 없으면 SetupModal 표시
-    const savedShop = localStorage.getItem('godogi_shop_info')
-    let hasShopName = false
-    try {
-      hasShopName = savedShop ? !!JSON.parse(savedShop).name : false
-    } catch {
-      hasShopName = false
-    }
-    const isAlreadyOnboarded = !!localStorage.getItem('godogi_onboarded')
-
-    if (!hasShopName && !isAlreadyOnboarded) {
+    // 신규 사용자 감지: shopInfo.name이 없으면 SetupModal 표시
+    // (shopInfo는 Auth useEffect에서 Supabase 로드 후 설정됨)
+    if (!shopInfo.name) {
       setShowSetup(true)
       // loadSets()를 지연 - handleSetupComplete에서 호출
     } else {
       loadSets()
-      if (!isAlreadyOnboarded) setShowOnboarding(true)
+      // 온보딩 튜토리얼은 localStorage에서만 체크
+      if (!localStorage.getItem('godogi_onboarded')) {
+        setShowOnboarding(true)
+      }
     }
-  }, [user])
+  }, [user, shopInfo.name])
 
   // 세트 로드 후 메뉴 목록 추출
   useEffect(() => {
@@ -627,12 +622,11 @@ export default function HomePage() {
     await supabase.auth.signOut()
     localStorage.removeItem('godogi_sets_cache')
     localStorage.removeItem('godogi_backfill_done')
-    // SHOP_INFO_KEY는 삭제하지 않음 - 로그인 후에도 매장 정보 유지
-    localStorage.removeItem('godogi_onboarded')
+    // 캐시만 제거 - 매장 정보는 Supabase에서 관리
     setUser(null)
     setSets([])
     setMenuStats(null)
-    // setShopInfo는 업데이트하지 않음 - localStorage의 정보 유지
+    setShopInfo({ name: '', industry: '', targetRate: 35 })
   }
 
   // 영수증 OCR 결과 처리
@@ -677,7 +671,7 @@ export default function HomePage() {
     if (!setupName.trim() || !setupIndustry) return
     setSetupLoading(true)
 
-    // 1. 매장 정보 저장 (Supabase)
+    // 1. 매장 정보 저장 (Supabase) - shopInfo 상태도 함께 업데이트됨
     const newShopInfo: ShopInfo = { name: setupName.trim(), industry: setupIndustry, targetRate: 35 }
     await saveShopInfo(newShopInfo)
 
@@ -686,13 +680,10 @@ export default function HomePage() {
       await insertSampleData(user.id, setupIndustry)
     }
 
-    // 3. 온보딩 완료 표시
-    localStorage.setItem('godogi_onboarded', '1')
-
     setSetupLoading(false)
     setShowSetup(false)
 
-    // 4. 대시보드 데이터 로드
+    // 3. 대시보드 데이터 로드
     if (user) {
       loadSets(setupIndustry)
     }
