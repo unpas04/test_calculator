@@ -127,7 +127,6 @@ export default function Calculator({ menu, onChange, onOpenFridge, onSave }: Pro
   const [fridgeItems, setFridgeItems] = useState<any[]>([])
   const [suggestions, setSuggestions] = useState<{ [key: string]: any[] }>({})
   const [showSugg, setShowSugg] = useState<{ [key: string]: boolean }>({})
-  const [openRows, setOpenRows] = useState<Set<string>>(new Set())
   const [showSaved, setShowSaved] = useState(false)
   const [showOverheadModal, setShowOverheadModal] = useState(false)
   const [overheadForm, setOverheadForm] = useState({ fixed: '', days: '', count: '' })
@@ -199,13 +198,6 @@ export default function Calculator({ menu, onChange, onOpenFridge, onSave }: Pro
     setShowSugg(prev => ({ ...prev, [ingId]: false }))
   }
 
-  const toggleRow = (id: string) => {
-    setOpenRows(prev => {
-      const next = new Set(prev)
-      next.has(id) ? next.delete(id) : next.add(id)
-      return next
-    })
-  }
 
   const updateIng = (id: string, field: keyof Ingredient, val: any) => {
     onChange({
@@ -327,24 +319,16 @@ export default function Calculator({ menu, onChange, onOpenFridge, onSave }: Pro
 
       {/* 상단 바 */}
       <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 24 }}>
-        <input
-          value={menu.name}
-          onChange={e => onChange({ ...menu, name: e.target.value })}
-          placeholder={{
-            main:    '예: 제육볶음',
-            side:    '예: 공깃밥',
-            banchan: '예: 깍두기',
-            drink:   '예: 아메리카노',
-            extra:   '예: 원형 포장용기(소)',
-          }[menu.category || 'main'] ?? '메뉴 이름 입력'}
-          style={{
-            flex: 1, fontFamily: "'Noto Sans KR', sans-serif", fontWeight: 700, fontSize: '1.1rem',
-            color: 'var(--navy)', background: 'none',
-            border: 'none', borderBottom: '2px solid var(--border)',
-            outline: 'none', padding: '4px 0',
-            cursor: 'text', maxWidth: '100%', width: '100%'
-          }}
-        />
+        {/* 메뉴명: 읽기전용 (냉장고에서만 추가) */}
+        <div style={{
+          flex: 1, fontFamily: "'Noto Sans KR', sans-serif", fontWeight: 700, fontSize: '1.1rem',
+          color: 'var(--navy)', background: 'none',
+          borderBottom: '2px solid var(--border)',
+          padding: '4px 0',
+          maxWidth: '100%', width: '100%'
+        }}>
+          {menu.name}
+        </div>
         <button onClick={() => { onSave?.(); setShowSaved(true); setTimeout(() => setShowSaved(false), 1800) }} style={{
           background: showSaved ? 'var(--green)' : 'var(--silver-light)',
           color: showSaved ? 'white' : 'var(--text-mid)',
@@ -480,7 +464,7 @@ export default function Calculator({ menu, onChange, onOpenFridge, onSave }: Pro
                 <td colSpan={5} style={{ padding: 0 }}>
                   <table style={{ width: '100%', borderCollapse: 'collapse' }}>
                     <tbody>
-                      <tr style={{ borderBottom: openRows.has(ing.id) ? 'none' : '1px solid var(--silver-light)' }}>
+                      <tr style={{ borderBottom: '1px solid var(--silver-light)' }}>
                         <td style={{ padding: '5px 3px', width: '38%', position: 'relative' }}>
                           <input
                             style={{ ...inputStyle, textAlign: 'left', paddingLeft: 8 }}
@@ -522,100 +506,25 @@ export default function Calculator({ menu, onChange, onOpenFridge, onSave }: Pro
                             onChange={e => updateIng(ing.id, 'use_amount', fromComma(e.target.value))}
                           />
                         </td>
-                        <td style={{ padding: '5px 3px', width: '16%' }}>
-                          <select style={inputStyle} value={ing.unit}
-                            onChange={e => updateIng(ing.id, 'unit', e.target.value)}>
-                            {UNITS.map(u => <option key={u}>{u}</option>)}
-                          </select>
+                        <td style={{ padding: '5px 3px', width: '16%', textAlign: 'center', fontFamily: "'Noto Sans KR', sans-serif", fontWeight: 600, fontSize: '0.82rem', color: 'var(--text-mid)' }}>
+                          {ing.unit}
                         </td>
                         <td style={{ padding: '5px 3px', width: '20%', textAlign: 'right', fontFamily: "'Noto Sans KR', sans-serif", fontWeight: 700, fontSize: '0.82rem', color: 'var(--blue)' }}>
                           {calc.ingCosts[idx] > 0 ? fmt(calc.ingCosts[idx]) + '원' : '—'}
                         </td>
                         <td style={{ padding: '5px 3px', width: '8%', textAlign: 'center' }}>
-                          <button onClick={() => toggleRow(ing.id)} style={{
+                          <button onClick={() => deleteIng(ing.id)} style={{
                             background: 'none', border: 'none', cursor: 'pointer',
-                            color: 'var(--text-soft)', fontSize: '0.65rem',
+                            color: 'rgba(200,216,228,0.4)', fontSize: '0.8rem',
                             display: 'inline-block',
-                            transform: openRows.has(ing.id) ? 'rotate(180deg)' : 'none',
-                            transition: 'transform 0.2s'
-                          }}>▼</button>
+                            transition: 'color 0.2s',
+                            padding: '4px 6px'
+                          }}
+                          onMouseEnter={(e) => e.currentTarget.style.color = '#F08080'}
+                          onMouseLeave={(e) => e.currentTarget.style.color = 'rgba(200,216,228,0.4)'}
+                          >✕</button>
                         </td>
                       </tr>
-                      {openRows.has(ing.id) && (
-                        <tr>
-                          <td colSpan={5} style={{ padding: '0 2px 10px' }}>
-                            <div className="ing-detail-grid" style={{
-                              background: 'var(--silver-light)', borderRadius: 12,
-                              padding: '11px 12px', display: 'grid',
-                              gridTemplateColumns: '1fr 1fr 1fr auto', gap: 8, alignItems: 'end'
-                            }}>
-                              {/* 구매가 */}
-                              <div style={{ display: 'flex', flexDirection: 'column', gap: 4 }}>
-                                <span style={{ fontFamily: "'Noto Sans KR', sans-serif", fontWeight: 700, fontSize: '0.62rem', color: 'var(--text-soft)' }}>구매가(원)</span>
-                                <input
-                                  name="price"
-                                  style={{ ...inputStyle, background: 'rgba(255,255,255,0.06)', border: '1.5px solid rgba(74,127,165,0.2)' }}
-                                  value={toComma(ing.price)} inputMode="numeric"
-                                  onChange={e => {
-                                    const val = fromComma(e.target.value)
-                                    updateIng(ing.id, 'price', val)
-                                    debouncedSync(ing.id)
-                                  }}
-                                />
-                              </div>
-
-                              {/* 구매량 + 단위 */}
-                              <div style={{ display: 'flex', flexDirection: 'column', gap: 4 }}>
-                                <span style={{ fontFamily: "'Noto Sans KR', sans-serif", fontWeight: 700, fontSize: '0.62rem', color: 'var(--text-soft)' }}>구매량</span>
-                                <div style={{ display: 'flex', gap: 4 }}>
-                                  <input
-                                    name="qty"
-                                    style={{ ...inputStyle, background: 'rgba(255,255,255,0.06)', border: '1.5px solid rgba(74,127,165,0.2)', flex: 1 }}
-                                    value={toComma(ing.qty)} inputMode="numeric"
-                                    onChange={e => {
-                                      const val = fromComma(e.target.value)
-                                      updateIng(ing.id, 'qty', val)
-                                      debouncedSync(ing.id)
-                                    }}
-
-                                  />
-                                  <select
-                                    style={{ ...inputStyle, background: 'rgba(255,255,255,0.06)', border: '1.5px solid rgba(74,127,165,0.2)', width: 48, padding: '8px 2px' }}
-                                    value={ing.unit}
-                                    onChange={e => {
-                                      updateIng(ing.id, 'unit', e.target.value)
-                                      syncToFridge({ ...ing, unit: e.target.value })
-                                    }}
-                                  >
-                                    {UNITS.map(u => <option key={u}>{u}</option>)}
-                                  </select>
-                                </div>
-                              </div>
-
-                              {/* 수율 */}
-                              <div style={{ display: 'flex', flexDirection: 'column', gap: 4 }}>
-                                <span style={{ fontFamily: "'Noto Sans KR', sans-serif", fontWeight: 700, fontSize: '0.62rem', color: 'var(--text-soft)' }}>수율(%)</span>
-                                <input
-                                  name="yield_"
-                                  style={{ ...inputStyle, background: 'rgba(255,255,255,0.06)', border: '1.5px solid rgba(74,127,165,0.2)' }}
-                                  value={toComma(ing.yield_)} inputMode="numeric"
-                                  onChange={e => {
-                                    const val = fromComma(e.target.value)
-                                    updateIng(ing.id, 'yield_', val)
-                                    debouncedSync(ing.id)
-                                  }}
-                                />
-                              </div>
-                              <button onClick={() => deleteIng(ing.id)} style={{
-                                background: 'none', border: 'none', cursor: 'pointer',
-                                color: 'var(--red)', fontFamily: "'Noto Sans KR', sans-serif", fontWeight: 700,
-                                fontSize: '0.72rem', padding: '7px 8px',
-                                borderRadius: 8, alignSelf: 'end'
-                              }}>✕ 삭제</button>
-                            </div>
-                          </td>
-                        </tr>
-                      )}
                     </tbody>
                   </table>
                 </td>
@@ -623,21 +532,13 @@ export default function Calculator({ menu, onChange, onOpenFridge, onSave }: Pro
             ))}
           </tbody>
         </table>
-        {/* PC: 빈 행 추가 */}
-        <button onClick={addIng} className="add-ing-desktop" style={{
-          marginTop: 12, background: 'none',
-          border: '1.5px dashed var(--blue-light)', color: 'var(--blue)',
-          borderRadius: 10, padding: '8px 18px',
-          fontFamily: "'Noto Sans KR', sans-serif", fontWeight: 700, fontSize: '0.82rem', cursor: 'pointer'
-        }}>＋ 재료 추가</button>
-        {/* 모바일: 냉장고 바텀시트 열기 */}
-        <button onClick={() => onOpenFridge?.()} className="add-ing-mobile" style={{
+        {/* 냉장고에서 재료 추가 (PC/모바일 동일) */}
+        <button onClick={() => onOpenFridge?.()} className="add-ing" style={{
           marginTop: 12, width: '100%', background: 'none',
           border: '1.5px dashed rgba(74,127,165,0.4)', color: 'rgba(125,184,216,0.7)',
           borderRadius: 10, padding: '10px 0',
           fontFamily: "'Noto Sans KR', sans-serif", fontWeight: 700, fontSize: '0.82rem', cursor: 'pointer',
-          display: 'none',
-        }}>🧊 재료 추가</button>
+        }}>🧊 냉장고에서 추가</button>
       </>)}
 
       {/* 배치 수율 (반찬 / 음료 직접제조) */}
