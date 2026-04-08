@@ -465,25 +465,34 @@ export default function HomePage() {
 
   // Auth
   useEffect(() => {
-    supabase.auth.getSession().then(({ data: { session } }) => {
+    supabase.auth.getSession().then(async ({ data: { session } }) => {
       const u = session?.user ?? null
       setUser(u)
       if (u) {
         sessionStorage.removeItem('godogi_guest')
         setIsGuest(false)
+
+        // 매장 정보 Supabase에서 로드
+        const { data: shopData } = await supabase
+          .from('shop_profiles')
+          .select('shop_name, industry, target_rate')
+          .eq('user_id', u.id)
+          .single()
+
+        if (shopData) {
+          const shop: ShopInfo = {
+            name: shopData.shop_name,
+            industry: shopData.industry,
+            targetRate: shopData.target_rate
+          }
+          setShopInfo(shop)
+          setShopDraft(shop)
+        }
       } else {
         const guest = typeof window !== 'undefined' && !!sessionStorage.getItem('godogi_guest')
         setIsGuest(guest)
       }
-      // 매장 정보 localStorage 로드
-      const savedShop = typeof window !== 'undefined' ? localStorage.getItem(SHOP_INFO_KEY) : null
-      if (savedShop) {
-        try {
-          setShopInfo(JSON.parse(savedShop))
-          setShopDraft(JSON.parse(savedShop))
-        } catch { }
-      }
-      setLoading(false) // auth 확인 즉시 로딩 해제 (DB 대기 없음)
+      setLoading(false) // auth 확인 즉시 로딩 해제
     })
     const { data: { subscription } } = supabase.auth.onAuthStateChange((_e, session) => {
       setUser(session?.user ?? null)
@@ -592,9 +601,25 @@ export default function HomePage() {
     setAllMenus(Array.from(menuMap.values()).sort((a, b) => a.name.localeCompare(b.name)))
   }, [sets])
 
-  const saveShopInfo = (info: ShopInfo) => {
+  const saveShopInfo = async (info: ShopInfo) => {
     setShopInfo(info)
-    localStorage.setItem(SHOP_INFO_KEY, JSON.stringify(info))
+
+    // Supabase에 저장
+    if (user) {
+      const { error } = await supabase
+        .from('shop_profiles')
+        .upsert({
+          user_id: user.id,
+          shop_name: info.name,
+          industry: info.industry,
+          target_rate: info.targetRate
+        }, { onConflict: 'user_id' })
+
+      if (error) {
+        console.error('Shop info save error:', error)
+        alert('매장 정보 저장 실패')
+      }
+    }
   }
 
   // 로그아웃
@@ -652,9 +677,9 @@ export default function HomePage() {
     if (!setupName.trim() || !setupIndustry) return
     setSetupLoading(true)
 
-    // 1. 매장 정보 저장
+    // 1. 매장 정보 저장 (Supabase)
     const newShopInfo: ShopInfo = { name: setupName.trim(), industry: setupIndustry, targetRate: 35 }
-    saveShopInfo(newShopInfo)
+    await saveShopInfo(newShopInfo)
 
     // 2. 업종별 샘플 데이터 삽입
     if (user) {
@@ -1275,7 +1300,7 @@ export default function HomePage() {
                       style={{ flex: 1, padding: '8px', background: 'rgba(255,255,255,0.06)', border: 'none', borderRadius: 8, color: 'rgba(200,216,228,0.5)', cursor: 'pointer', fontFamily: "'Noto Sans KR',sans-serif", fontWeight: 700 }}>
                       취소
                     </button>
-                    <button onClick={() => { saveShopInfo(shopDraft); setEditingShop(false) }}
+                    <button onClick={async () => { await saveShopInfo(shopDraft); setEditingShop(false) }}
                       style={{ flex: 2, padding: '8px', background: '#4A7FA5', border: 'none', borderRadius: 8, color: 'white', fontWeight: 700, cursor: 'pointer', fontFamily: "'Noto Sans KR',sans-serif" }}>
                       저장
                     </button>
