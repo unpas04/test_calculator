@@ -10,9 +10,10 @@ interface Props {
   isOpen?: boolean
   onOpenChange?: (open: boolean) => void
   onNavigateMenu?: (target: 'sets' | 'menus') => void
+  onShowRecipes?: (show: boolean) => void
 }
 
-export default function DashboardSidebar({ user, onLogout, onReceiptUpload, receiptLoading = false, isOpen: externalIsOpen = false, onOpenChange, onNavigateMenu }: Props) {
+export default function DashboardSidebar({ user, onLogout, onReceiptUpload, receiptLoading = false, isOpen: externalIsOpen = false, onOpenChange, onNavigateMenu, onShowRecipes }: Props) {
   const [isOpen, setIsOpen] = useState(externalIsOpen)
 
   // 외부에서 제어되는 경우 동기화
@@ -53,10 +54,13 @@ export default function DashboardSidebar({ user, onLogout, onReceiptUpload, rece
 
     if (target === 'dashboard') {
       onNavigateMenu?.('sets')
+      onShowRecipes?.(false)
     } else if (target === 'menu-panel') {
       onNavigateMenu?.('sets')
+      onShowRecipes?.(false)
     } else if (target === 'recipes') {
-      onNavigateMenu?.('menus')
+      onNavigateMenu?.('sets')
+      onShowRecipes?.(true)
     } else if (target === 'fridge') {
       router.push('/fridge')
     } else if (target === 'suppliers' || target === 'employees') {

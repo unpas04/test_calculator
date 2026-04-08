@@ -93,12 +93,13 @@ export default function Calculator({ menu, onChange, onOpenFridge, onSave }: Pro
   const router = useRouter()
   const searchParams = useSearchParams()
   const exportRef = useRef<HTMLDivElement>(null)
+  const recipeShareRef = useRef<HTMLDivElement>(null)
   const isFromMenu = searchParams.get('source') === 'menu'
 
   const handleExport = async () => {
-    if (!exportRef.current) return
+    if (!recipeShareRef.current) return
     try {
-      const el = exportRef.current
+      const el = recipeShareRef.current
       // 캡처 전 뷰포트 안으로, 화면 최상단에 표시 (zIndex 최상위)
       el.style.position = 'fixed'
       el.style.left = '0'
@@ -116,7 +117,7 @@ export default function Calculator({ menu, onChange, onOpenFridge, onSave }: Pro
       el.style.zIndex = '-1'
       el.style.opacity = '0'
       const link = document.createElement('a')
-      link.download = `${menu.name || '메뉴'}_원가계산서.png`
+      link.download = `${menu.name || '메뉴'}_레시피.png`
       link.href = dataUrl
       link.click()
     } catch (err) {
@@ -1084,6 +1085,50 @@ export default function Calculator({ menu, onChange, onOpenFridge, onSave }: Pro
         <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginTop: 14, padding: '10px 14px', background: '#F4F8FB', borderRadius: 10 }}>
           <span style={{ fontSize: '1rem' }}>🐟</span>
           <span style={{ fontSize: '0.78rem', color: '#5A6E82' }}>{godogiComment()}</span>
+        </div>
+      </div>
+
+      {/* ── 숨겨진 레시피 공유용 (PNG 내보내기용) ── */}
+      <div ref={recipeShareRef} style={{
+        position: 'fixed', left: '-9999px', top: 0, zIndex: -1, opacity: 0,
+        width: 440, background: 'white', padding: '40px 36px',
+        fontFamily: "'Noto Sans KR', sans-serif",
+      }}>
+        {/* 메뉴명 + 이모지 */}
+        <div style={{ display: 'flex', alignItems: 'flex-end', gap: 12, marginBottom: 28 }}>
+          <span style={{ fontSize: '3rem' }}>{menu.emoji || '🍽️'}</span>
+          <div>
+            <div style={{ fontSize: '1.8rem', fontWeight: 800, color: '#1E2D40', fontFamily: 'Black Han Sans' }}>
+              {menu.name || '(메뉴명 없음)'}
+            </div>
+          </div>
+        </div>
+
+        {/* 구분선 */}
+        <div style={{ height: 2, background: '#EEF4F8', marginBottom: 28 }} />
+
+        {/* 재료 목록 */}
+        <div style={{ fontSize: '0.75rem', fontWeight: 700, color: '#8FA3B5', letterSpacing: '0.08em', marginBottom: 14, textTransform: 'uppercase' }}>재료</div>
+        <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
+          {menu.ingredients.map((ing: any, idx: number) => (
+            ing.name && ing.use_amount > 0 && (
+              <div key={ing.id} style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
+                <div style={{ width: 6, height: 6, borderRadius: '50%', background: '#4A7FA5', flexShrink: 0 }} />
+                <span style={{ fontSize: '0.95rem', color: '#2C3E50', fontWeight: 500, flex: 1 }}>{ing.name}</span>
+                <span style={{ fontSize: '0.85rem', color: '#8FA3B5', minWidth: 80, textAlign: 'right' }}>
+                  {ing.use_amount.toLocaleString()} {ing.unit}
+                </span>
+              </div>
+            )
+          ))}
+        </div>
+
+        {/* 하단 여백 + 출처 */}
+        <div style={{ marginTop: 32, paddingTop: 20, borderTop: '1px solid #EEF4F8', textAlign: 'center' }}>
+          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 6 }}>
+            <span style={{ fontSize: '0.9rem' }}>🐟</span>
+            <span style={{ fontSize: '0.75rem', color: '#8FA3B5', fontFamily: 'Black Han Sans' }}>고독이의 원가계산기</span>
+          </div>
         </div>
       </div>
     </div>

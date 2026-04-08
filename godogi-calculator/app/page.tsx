@@ -926,6 +926,7 @@ export default function HomePage() {
               }, 50)
             }
           }}
+          onShowRecipes={setShowRecipes}
         />
       )}
 

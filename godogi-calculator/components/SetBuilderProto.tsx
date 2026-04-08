@@ -829,34 +829,33 @@ export default function SetBuilderProto({ onOpenSidebar }: Props = {}) {
             >☰</motion.button>
 
             {/* 메뉴판 경로: 3행 레이아웃 */}
-            {editId && (
-              <>
-                {/* 2행: 뒤로가기 + 수정중 */}
-                <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
-                  <motion.button
-                    whileTap={{ scale: 0.93 }}
-                    onClick={() => {
-                      tryNavigate('/')
-                      setTimeout(() => {
-                        const menuPanel = document.querySelector('[data-tab-bar="true"]')
-                        if (menuPanel) menuPanel.scrollIntoView({ behavior: 'smooth' })
-                      }, 100)
-                    }}
-                    style={{
-                      background: 'rgba(74,127,165,0.15)', border: '1px solid rgba(74,127,165,0.3)',
-                      color: '#7DB8D8', borderRadius: 8, padding: '5px 12px',
-                      fontFamily: "'Noto Sans KR',sans-serif", fontSize: '0.78rem', cursor: 'pointer',
-                      flexShrink: 0, fontWeight: 700, display: 'inline-flex', alignItems: 'center', gap: 5,
-                    }}
-                  >← 메뉴판</motion.button>
-                  {/* 수정 중 표시 */}
-                  {editId && (
-                    <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
-                      <div style={{ width: 6, height: 6, borderRadius: '50%', background: '#F4A460', animation: 'pulse 1.5s infinite' }} />
-                      <span style={{ fontSize: '0.68rem', color: 'rgba(200,216,228,0.4)', fontFamily: "'Noto Sans KR',sans-serif" }}>수정 중</span>
-                    </div>
-                  )}
-                </div>
+            <>
+              {/* 2행: 뒤로가기 + 수정중 */}
+              <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+                <motion.button
+                  whileTap={{ scale: 0.93 }}
+                  onClick={() => {
+                    tryNavigate('/')
+                    setTimeout(() => {
+                      const menuPanel = document.querySelector('[data-tab-bar="true"]')
+                      if (menuPanel) menuPanel.scrollIntoView({ behavior: 'smooth' })
+                    }, 100)
+                  }}
+                  style={{
+                    background: 'rgba(74,127,165,0.15)', border: '1px solid rgba(74,127,165,0.3)',
+                    color: '#7DB8D8', borderRadius: 8, padding: '5px 12px',
+                    fontFamily: "'Noto Sans KR',sans-serif", fontSize: '0.78rem', cursor: 'pointer',
+                    flexShrink: 0, fontWeight: 700, display: 'inline-flex', alignItems: 'center', gap: 5,
+                  }}
+                >← 메뉴판</motion.button>
+                {/* 수정 중 표시 */}
+                {editId && (
+                  <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
+                    <div style={{ width: 6, height: 6, borderRadius: '50%', background: '#F4A460', animation: 'pulse 1.5s infinite' }} />
+                    <span style={{ fontSize: '0.68rem', color: 'rgba(200,216,228,0.4)', fontFamily: "'Noto Sans KR',sans-serif" }}>수정 중</span>
+                  </div>
+                )}
+              </div>
 
                 {/* 3행: 메뉴명 + 카테고리 + 저장 */}
                 <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
@@ -965,8 +964,7 @@ export default function SetBuilderProto({ onOpenSidebar }: Props = {}) {
                   >{saved ? '✓' : '저장'}<span className="sb-save-text">{saved ? ' 저장됨' : ''}</span></motion.button>
                 </div>
               </>
-            )}
-          </div>
+            </div>
 
           {/* 블록 캔버스 */}
           <div className="sb-canvas" style={{
