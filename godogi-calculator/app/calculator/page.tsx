@@ -543,7 +543,7 @@ function CalculatorContent() {
           onLogout={logout}
         />
       )}
-      <main className={`main-content ${fromRecipes ? 'from-recipes' : ''}`} style={{ marginLeft: fromRecipes ? 0 : 260, flex: 1, padding: fromRecipes ? '12px 28px 60px' : '32px 28px 60px', maxWidth: 760, position: 'relative' }}>
+      <main className={`main-content ${fromRecipes ? 'from-recipes' : ''}`} style={{ marginLeft: fromRecipes ? 0 : 240, flex: 1, padding: fromRecipes ? '12px 28px 60px' : '32px 28px 60px', maxWidth: 760, position: 'relative' }}>
         {/* 헤더: 햄버거 + 뒤로가기 + 경로 (fromRecipes일 때만) */}
         {fromRecipes && (
           <div style={{ display: 'flex', flexDirection: 'column', gap: 24, marginBottom: 24 }}>

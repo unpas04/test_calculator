@@ -103,7 +103,7 @@ export default function DashboardSidebar({ user, onLogout, onReceiptUpload, rece
         flexDirection: 'column',
         position: 'fixed',
         top: 0, left: 0,
-        zIndex: 20,
+        zIndex: 50,
         overflow: 'hidden',
         transition: 'transform 0.25s',
       }} className={`dashboard-sidebar ${isOpen ? 'dashboard-sidebar-open' : ''}`}>
