@@ -465,40 +465,8 @@ export default function Calculator({ menu, onChange, onOpenFridge, onSave }: Pro
                   <table style={{ width: '100%', borderCollapse: 'collapse' }}>
                     <tbody>
                       <tr style={{ borderBottom: '1px solid var(--silver-light)' }}>
-                        <td style={{ padding: '5px 3px', width: '38%', position: 'relative' }}>
-                          <input
-                            style={{ ...inputStyle, textAlign: 'left', paddingLeft: 8 }}
-                            value={ing.name} placeholder="재료명"
-                            onChange={e => handleNameInput(ing.id, e.target.value)}
-                            onFocus={() => {
-                              if (ing.name.length > 0) setShowSugg(prev => ({ ...prev, [ing.id]: true }))
-                            }}
-                            onBlur={() => setTimeout(() => setShowSugg(prev => ({ ...prev, [ing.id]: false })), 150)}
-                          />
-                          {showSugg[ing.id] && suggestions[ing.id]?.length > 0 && (
-                            <div style={{
-                              position: 'absolute', top: '100%', left: 0, right: 0,
-                              background: '#1A2840', border: '1.5px solid rgba(74,127,165,0.25)',
-                              borderRadius: 10, zIndex: 50,
-                              boxShadow: '0 4px 16px rgba(0,0,0,0.4)',
-                              maxHeight: 180, overflowY: 'auto'
-                            }}>
-                              {suggestions[ing.id].map(item => (
-                                <div key={item.id} onMouseDown={() => selectSuggestion(ing.id, item)} style={{
-                                  padding: '8px 12px', cursor: 'pointer',
-                                  borderBottom: '1px solid var(--silver-light)',
-                                  display: 'flex', justifyContent: 'space-between', alignItems: 'center'
-                                }}>
-                                  <span style={{ fontFamily: "'Noto Sans KR', sans-serif", fontWeight: 700, fontSize: '0.82rem', color: 'var(--text)' }}>
-                                    {item.name}
-                                  </span>
-                                  <span style={{ fontSize: '0.7rem', color: 'var(--text-soft)' }}>
-                                    {item.price.toLocaleString()}원/{item.per}{item.unit}
-                                  </span>
-                                </div>
-                              ))}
-                            </div>
-                          )}
+                        <td style={{ padding: '5px 3px', width: '38%', fontFamily: "'Noto Sans KR', sans-serif", fontWeight: 600, fontSize: '0.82rem', color: 'var(--text)', textAlign: 'left', paddingLeft: 8 }}>
+                          {ing.name || '—'}
                         </td>
                         <td style={{ padding: '5px 3px', width: '18%' }}>
                           <input style={inputStyle} value={toComma(ing.use_amount)} placeholder="0"

@@ -9,6 +9,7 @@ import { INDUSTRY_SAMPLES, ALL_SAMPLE_MENUS, SAMPLE_SET_DEFINITIONS, SampleMenu 
 import ShareButton from '../components/ShareButton'
 import Fridge from '../components/Fridge'
 import DashboardSidebar from '../components/DashboardSidebar'
+import Tutorial from '../components/Tutorial'
 
 const FEES_KEY = 'godogi_fees'
 const DEFAULT_FEES = { delivery_platform: 6.8, delivery_card: 1.5, hall_card: 1.5 }
@@ -420,6 +421,7 @@ export default function HomePage() {
 
   // 사이드바 상태
   const [sidebarOpen, setSidebarOpen] = useState(false)
+  const [showTutorial, setShowTutorial] = useState(false)
   const [receiptResult, setReceiptResult] = useState<any>(null)
   const [receiptOcrLoading, setReceiptOcrLoading] = useState(false)
   const [receiptSelected, setReceiptSelected] = useState<Set<number>>(new Set())
@@ -566,9 +568,10 @@ export default function HomePage() {
         .eq('user_id', user.id)
         .single()
 
-      // shopData가 없으면 신규 사용자 → SetupModal 표시
+      // shopData가 없으면 신규 사용자 → SetupModal + Tutorial 표시
       if (!shopData) {
         setShowSetup(true)
+        setShowTutorial(true)
       } else {
         // 기존 사용자 → 데이터 로드
         loadSets()
@@ -957,6 +960,7 @@ export default function HomePage() {
             }
           }}
           onShowRecipes={setShowRecipes}
+          onShowTutorial={() => setShowTutorial(true)}
         />
       )}
 
@@ -2103,6 +2107,9 @@ export default function HomePage() {
         )
       })()}
       </main>
+
+      {/* 사용설명서 모달 */}
+      <Tutorial isOpen={showTutorial} onClose={() => setShowTutorial(false)} />
     </div>
   )
 }

@@ -11,9 +11,10 @@ interface Props {
   onOpenChange?: (open: boolean) => void
   onNavigateMenu?: (target: 'sets' | 'menus') => void
   onShowRecipes?: (show: boolean) => void
+  onShowTutorial?: () => void
 }
 
-export default function DashboardSidebar({ user, onLogout, onReceiptUpload, receiptLoading = false, isOpen: externalIsOpen = false, onOpenChange, onNavigateMenu, onShowRecipes }: Props) {
+export default function DashboardSidebar({ user, onLogout, onReceiptUpload, receiptLoading = false, isOpen: externalIsOpen = false, onOpenChange, onNavigateMenu, onShowRecipes, onShowTutorial }: Props) {
   const [isOpen, setIsOpen] = useState(externalIsOpen)
 
   // 외부에서 제어되는 경우 동기화
@@ -334,8 +335,34 @@ export default function DashboardSidebar({ user, onLogout, onReceiptUpload, rece
           </div>
         </div>
 
-        {/* 로그아웃 버튼 */}
-        <div style={{ flexShrink: 0, borderTop: '1px solid rgba(255,255,255,0.1)', padding: '12px 16px' }}>
+        {/* 하단 버튼들 */}
+        <div style={{ flexShrink: 0, borderTop: '1px solid rgba(255,255,255,0.1)', padding: '12px 16px', display: 'flex', flexDirection: 'column', gap: 8 }}>
+          {/* 사용설명서 버튼 */}
+          <button
+            onClick={() => {
+              onShowTutorial?.()
+              setIsOpen(false)
+            }}
+            style={{
+              width: '100%', padding: '12px 16px',
+              background: 'rgba(74,127,165,0.2)', border: '1px solid rgba(74,127,165,0.3)',
+              borderRadius: 6, color: '#7DB8D8',
+              fontSize: '0.9rem', fontFamily: "'Noto Sans KR', sans-serif", fontWeight: 500,
+              cursor: 'pointer', transition: 'all 0.2s',
+            }}
+            onMouseEnter={e => {
+              (e.currentTarget as HTMLButtonElement).style.background = 'rgba(74,127,165,0.3)'
+              ;(e.currentTarget as HTMLButtonElement).style.borderColor = 'rgba(74,127,165,0.5)'
+            }}
+            onMouseLeave={e => {
+              (e.currentTarget as HTMLButtonElement).style.background = 'rgba(74,127,165,0.2)'
+              ;(e.currentTarget as HTMLButtonElement).style.borderColor = 'rgba(74,127,165,0.3)'
+            }}
+          >
+            📖 사용설명서
+          </button>
+
+          {/* 로그아웃 버튼 */}
           <button
             onClick={onLogout}
             style={{
@@ -352,7 +379,7 @@ export default function DashboardSidebar({ user, onLogout, onReceiptUpload, rece
               (e.currentTarget as HTMLButtonElement).style.background = '#C44A4A'
             }}
           >
-            로그아웃
+            🚪 로그아웃
           </button>
         </div>
       </aside>
