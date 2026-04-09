@@ -932,7 +932,7 @@ const CHICKEN_MENUS: SampleMenu[] = [
     ],
   },
   {
-    name: '핫윙', emoji: '🔥🍗', category: 'main',
+    name: '핫윙', emoji: '🍗', category: 'main',
     overhead: 900, packaging: 0, labor: 0, delivery_fee: 0, card_fee: 0,
     sale_price: 16000, batch_yield: 0, serving_size: 0,
     ingredients: [
