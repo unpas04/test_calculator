@@ -306,96 +306,6 @@ function SetupModal({ show, step, setStep, name, setName, industry, setIndustry,
   )
 }
 
-function OnboardingModal({ show, step, setStep, onClose }: {
-  show: boolean
-  step: number
-  setStep: (s: number | ((prev: number) => number)) => void
-  onClose: () => void
-}) {
-  const steps = [
-    {
-      icon: '✏️',
-      title: '원가 편집기에서 재료 입력',
-      desc: '왼쪽 사이드바에서 메뉴를 선택해요.\n재료 이름·가격·구매량·사용량을 입력하면\n1인분 원가가 자동으로 계산돼요.',
-    },
-    {
-      icon: '🧩',
-      title: '메뉴를 묶어 세트 구성',
-      desc: '하단 "＋ 새 원가 계산 만들기"를 눌러요.\n팔레트에서 메뉴 블록을 캔버스에 추가하면\n배달·홀 수수료 포함 원가율이 바로 나와요.',
-    },
-    {
-      icon: '📊',
-      title: '홈에서 수익 한눈에 확인',
-      desc: '홈에서 세트별 총원가와 원가율을 비교해요.\n원가율이 낮을수록 남는 장사예요!\n수익이 위험한 메뉴는 빨간색으로 표시돼요.',
-    },
-  ]
-  const isLast = step === steps.length - 1
-  const cur = steps[step]
-
-  return (
-    <AnimatePresence>
-      {show && (
-        <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}
-          style={{ position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.7)', zIndex: 200, display: 'flex', alignItems: 'center', justifyContent: 'center', padding: 24 }}>
-          <motion.div initial={{ scale: 0.9, opacity: 0 }} animate={{ scale: 1, opacity: 1 }} exit={{ scale: 0.9, opacity: 0 }}
-            style={{ background: '#1A2840', borderRadius: 24, padding: '36px 28px', width: '100%', maxWidth: 360, fontFamily: "'Noto Sans KR', sans-serif", textAlign: 'center' }}>
-
-            {/* 로고 */}
-            <svg width="48" height="48" viewBox="0 0 100 100" fill="none" style={{ marginBottom: 14 }}>
-              <ellipse cx="50" cy="55" rx="32" ry="22" fill="#4A7FA5"/>
-              <ellipse cx="50" cy="53" rx="30" ry="20" fill="#5B9EC9"/>
-              <polygon points="82,55 100,40 100,70" fill="#4A7FA5"/>
-              <ellipse cx="46" cy="58" rx="18" ry="12" fill="#C8E6F5"/>
-              <circle cx="35" cy="48" r="5" fill="white"/>
-              <circle cx="35" cy="48" r="3" fill="#1E2D40"/>
-              <circle cx="36" cy="47" r="1" fill="white"/>
-              <path d="M 28 56 Q 32 60 36 56" stroke="#1E2D40" strokeWidth="1.5" fill="none" strokeLinecap="round"/>
-              <ellipse cx="50" cy="33" rx="10" ry="6" fill="#4A7FA5" transform="rotate(-10 50 33)"/>
-              <ellipse cx="30" cy="52" rx="4" ry="2.5" fill="#F4A0A0" opacity="0.6"/>
-            </svg>
-
-            {step === 0 && (
-              <>
-                <div style={{ color: 'white', fontWeight: 700, fontSize: '1.1rem', marginBottom: 6 }}>고독이의 원가계산기 사용법</div>
-                <div style={{ color: 'rgba(200,216,228,0.45)', fontSize: '0.78rem', marginBottom: 22 }}>3단계면 충분해요 🐟</div>
-              </>
-            )}
-
-            {/* 스텝 인디케이터 */}
-            <div style={{ display: 'flex', justifyContent: 'center', gap: 6, marginBottom: 22 }}>
-              {steps.map((_, i) => (
-                <div key={i} style={{ width: i === step ? 20 : 6, height: 6, borderRadius: 3, background: i === step ? '#4A7FA5' : 'rgba(255,255,255,0.15)', transition: 'all 0.3s' }} />
-              ))}
-            </div>
-
-            {/* 스텝 내용 */}
-            <div style={{ background: 'rgba(255,255,255,0.04)', borderRadius: 16, padding: '22px 18px', marginBottom: 22 }}>
-              <div style={{ fontSize: '2.5rem', marginBottom: 12 }}>{cur.icon}</div>
-              <div style={{ color: 'white', fontWeight: 700, fontSize: '0.95rem', marginBottom: 10 }}>STEP {step + 1}. {cur.title}</div>
-              <div style={{ color: 'rgba(200,216,228,0.6)', fontSize: '0.8rem', lineHeight: 1.75, whiteSpace: 'pre-line' }}>{cur.desc}</div>
-            </div>
-
-            {/* 버튼 */}
-            <motion.button whileTap={{ scale: 0.97 }} onClick={() => {
-              if (isLast) { onClose() } else { setStep(s => s + 1) }
-            }} style={{
-              width: '100%', background: 'linear-gradient(135deg, #3A6FA5, #2A5080)',
-              color: 'white', border: 'none', borderRadius: 12, padding: '13px',
-              fontFamily: "'Noto Sans KR', sans-serif", fontWeight: 700, fontSize: '0.9rem', cursor: 'pointer',
-            }}>{isLast ? '시작하기 🐟' : '다음 →'}</motion.button>
-
-            {step === 0 && (
-              <button onClick={onClose}
-                style={{ background: 'none', border: 'none', color: 'rgba(200,216,228,0.3)', fontSize: '0.72rem', marginTop: 12, cursor: 'pointer', fontFamily: "'Noto Sans KR', sans-serif" }}>
-                건너뛰기
-              </button>
-            )}
-          </motion.div>
-        </motion.div>
-      )}
-    </AnimatePresence>
-  )
-}
 
 // user_id별로 캐시 분리
 const getSetsCacheKey = (userId: string) => `godogi_sets_cache_${userId}`
@@ -409,8 +319,6 @@ export default function HomePage() {
   const [sets, setSets] = useState<DisplaySet[]>([])
   const [menuStats, setMenuStats] = useState<{ total: number; avgRate: number | null; warnCount: number } | null>(null)
   const [deleteConfirmId, setDeleteConfirmId] = useState<string | null>(null)
-  const [showOnboarding, setShowOnboarding] = useState(false)
-  const [onboardingStep, setOnboardingStep] = useState(0)
 
   // Setup modal 상태
   const [showSetup, setShowSetup] = useState(false)
@@ -507,11 +415,9 @@ export default function HomePage() {
     return () => subscription.unsubscribe()
   }, [])
 
-  // 게스트 온보딩 + 샘플 세트
+  // 게스트 샘플 세트
   useEffect(() => {
     if (!isGuest) return
-
-    if (typeof window !== 'undefined' && !localStorage.getItem('godogi_onboarded')) setShowOnboarding(true)
 
     const menuMap: Record<string, SampleMenu> = {}
     ALL_SAMPLE_MENUS.forEach(m => { menuMap[m.name] = m })
@@ -580,9 +486,6 @@ export default function HomePage() {
       } else {
         // 기존 사용자 → 데이터 로드
         loadSets()
-        if (!localStorage.getItem('godogi_onboarded')) {
-          setShowOnboarding(true)
-        }
       }
     })()
   }, [user])
@@ -888,7 +791,6 @@ export default function HomePage() {
         loading={setupLoading}
         onComplete={handleSetupComplete}
       />
-      <OnboardingModal show={showOnboarding} step={onboardingStep} setStep={setOnboardingStep} onClose={() => { localStorage.setItem('godogi_onboarded', '1'); setShowOnboarding(false); setOnboardingStep(0) }} />
     </main>
   )
 
@@ -2013,13 +1915,6 @@ export default function HomePage() {
         )}
       </AnimatePresence>
 
-      {/* 온보딩 모달 */}
-      <OnboardingModal
-        show={showOnboarding}
-        step={onboardingStep}
-        setStep={setOnboardingStep}
-        onClose={() => { localStorage.setItem('godogi_onboarded', '1'); setShowOnboarding(false); setOnboardingStep(0) }}
-      />
 
       {/* 상품 상세 모달 */}
       <AnimatePresence>
