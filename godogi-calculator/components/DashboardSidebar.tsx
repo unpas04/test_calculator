@@ -74,9 +74,11 @@ export default function DashboardSidebar({ user, onLogout, onReceiptUpload, rece
 
   const managementItems = [
     { id: 'menu-panel', label: '메뉴판 관리', target: 'menu-panel', dividerAfter: false },
-    { id: 'recipes', label: '레시피 관리', target: 'recipes', dividerAfter: false, children: [
-      { id: 'fridge', label: '냉장고', target: 'fridge' },
-    ]},
+    {
+      id: 'recipes', label: '레시피 관리', target: 'recipes', dividerAfter: false, children: [
+        { id: 'fridge', label: '냉장고', target: 'fridge' },
+      ]
+    },
   ]
 
   const businessItems = [
@@ -120,16 +122,16 @@ export default function DashboardSidebar({ user, onLogout, onReceiptUpload, rece
           {/* 로고 + 제목 */}
           <div style={{ display: 'flex', alignItems: 'center', gap: 12, marginBottom: 16 }}>
             <svg width="40" height="40" viewBox="0 0 100 100" fill="none" xmlns="http://www.w3.org/2000/svg" style={{ flexShrink: 0 }}>
-              <ellipse cx="50" cy="55" rx="32" ry="22" fill="#4A7FA5"/>
-              <ellipse cx="50" cy="53" rx="30" ry="20" fill="#5B9EC9"/>
-              <polygon points="82,55 100,40 100,70" fill="#4A7FA5"/>
-              <ellipse cx="46" cy="58" rx="18" ry="12" fill="#C8E6F5"/>
-              <circle cx="35" cy="48" r="5" fill="white"/>
-              <circle cx="35" cy="48" r="3" fill="#1E2D40"/>
-              <circle cx="36" cy="47" r="1" fill="white"/>
-              <path d="M 28 56 Q 32 60 36 56" stroke="#1E2D40" strokeWidth="1.5" fill="none" strokeLinecap="round"/>
-              <ellipse cx="50" cy="33" rx="10" ry="6" fill="#4A7FA5" transform="rotate(-10 50 33)"/>
-              <ellipse cx="30" cy="52" rx="4" ry="2.5" fill="#F4A0A0" opacity="0.6"/>
+              <ellipse cx="50" cy="55" rx="32" ry="22" fill="#4A7FA5" />
+              <ellipse cx="50" cy="53" rx="30" ry="20" fill="#5B9EC9" />
+              <polygon points="82,55 100,40 100,70" fill="#4A7FA5" />
+              <ellipse cx="46" cy="58" rx="18" ry="12" fill="#C8E6F5" />
+              <circle cx="35" cy="48" r="5" fill="white" />
+              <circle cx="35" cy="48" r="3" fill="#1E2D40" />
+              <circle cx="36" cy="47" r="1" fill="white" />
+              <path d="M 28 56 Q 32 60 36 56" stroke="#1E2D40" strokeWidth="1.5" fill="none" strokeLinecap="round" />
+              <ellipse cx="50" cy="33" rx="10" ry="6" fill="#4A7FA5" transform="rotate(-10 50 33)" />
+              <ellipse cx="30" cy="52" rx="4" ry="2.5" fill="#F4A0A0" opacity="0.6" />
             </svg>
             <div style={{ flex: 1 }}>
               <div style={{ fontWeight: 800, fontSize: '1.1rem', color: 'white', letterSpacing: '-0.02em', lineHeight: 1.2 }}>
@@ -184,13 +186,13 @@ export default function DashboardSidebar({ user, onLogout, onReceiptUpload, rece
               }}
               onMouseEnter={e => {
                 (e.currentTarget as HTMLButtonElement).style.background = 'rgba(74,127,165,0.08)'
-                ;(e.currentTarget as HTMLButtonElement).style.color = 'white'
-                ;(e.currentTarget as HTMLButtonElement).style.boxShadow = '0 4px 12px rgba(74,127,165,0.2)'
+                  ; (e.currentTarget as HTMLButtonElement).style.color = 'white'
+                  ; (e.currentTarget as HTMLButtonElement).style.boxShadow = '0 4px 12px rgba(74,127,165,0.2)'
               }}
               onMouseLeave={e => {
                 (e.currentTarget as HTMLButtonElement).style.background = 'transparent'
-                ;(e.currentTarget as HTMLButtonElement).style.color = 'rgba(200,216,228,0.8)'
-                ;(e.currentTarget as HTMLButtonElement).style.boxShadow = '0 1px 3px rgba(0,0,0,0.1)'
+                  ; (e.currentTarget as HTMLButtonElement).style.color = 'rgba(200,216,228,0.8)'
+                  ; (e.currentTarget as HTMLButtonElement).style.boxShadow = '0 1px 3px rgba(0,0,0,0.1)'
               }}
             >
               {dashboardItem.label}
@@ -218,13 +220,13 @@ export default function DashboardSidebar({ user, onLogout, onReceiptUpload, rece
                   }}
                   onMouseEnter={e => {
                     (e.currentTarget as HTMLButtonElement).style.background = 'rgba(74,127,165,0.08)'
-                    ;(e.currentTarget as HTMLButtonElement).style.color = 'white'
-                    ;(e.currentTarget as HTMLButtonElement).style.boxShadow = '0 4px 12px rgba(74,127,165,0.2)'
+                      ; (e.currentTarget as HTMLButtonElement).style.color = 'white'
+                      ; (e.currentTarget as HTMLButtonElement).style.boxShadow = '0 4px 12px rgba(74,127,165,0.2)'
                   }}
                   onMouseLeave={e => {
                     (e.currentTarget as HTMLButtonElement).style.background = 'transparent'
-                    ;(e.currentTarget as HTMLButtonElement).style.color = 'rgba(200,216,228,0.8)'
-                    ;(e.currentTarget as HTMLButtonElement).style.boxShadow = '0 1px 3px rgba(0,0,0,0.1)'
+                      ; (e.currentTarget as HTMLButtonElement).style.color = 'rgba(200,216,228,0.8)'
+                      ; (e.currentTarget as HTMLButtonElement).style.boxShadow = '0 1px 3px rgba(0,0,0,0.1)'
                   }}
                 >
                   {item.label}
@@ -246,11 +248,11 @@ export default function DashboardSidebar({ user, onLogout, onReceiptUpload, rece
                         }}
                         onMouseEnter={e => {
                           (e.currentTarget as HTMLButtonElement).style.background = 'rgba(74,127,165,0.12)'
-                          ;(e.currentTarget as HTMLButtonElement).style.color = 'rgba(200,216,228,0.9)'
+                            ; (e.currentTarget as HTMLButtonElement).style.color = 'rgba(200,216,228,0.9)'
                         }}
                         onMouseLeave={e => {
                           (e.currentTarget as HTMLButtonElement).style.background = 'transparent'
-                          ;(e.currentTarget as HTMLButtonElement).style.color = 'rgba(200,216,228,0.6)'
+                            ; (e.currentTarget as HTMLButtonElement).style.color = 'rgba(200,216,228,0.6)'
                         }}
                       >
                         <span style={{ fontSize: '0.75rem', marginRight: '2px' }}>└</span>
@@ -284,13 +286,13 @@ export default function DashboardSidebar({ user, onLogout, onReceiptUpload, rece
                 }}
                 onMouseEnter={e => {
                   (e.currentTarget as HTMLButtonElement).style.background = 'rgba(74,127,165,0.08)'
-                  ;(e.currentTarget as HTMLButtonElement).style.color = 'white'
-                  ;(e.currentTarget as HTMLButtonElement).style.boxShadow = '0 4px 12px rgba(74,127,165,0.2)'
+                    ; (e.currentTarget as HTMLButtonElement).style.color = 'white'
+                    ; (e.currentTarget as HTMLButtonElement).style.boxShadow = '0 4px 12px rgba(74,127,165,0.2)'
                 }}
                 onMouseLeave={e => {
                   (e.currentTarget as HTMLButtonElement).style.background = 'transparent'
-                  ;(e.currentTarget as HTMLButtonElement).style.color = 'rgba(200,216,228,0.8)'
-                  ;(e.currentTarget as HTMLButtonElement).style.boxShadow = '0 1px 3px rgba(0,0,0,0.1)'
+                    ; (e.currentTarget as HTMLButtonElement).style.color = 'rgba(200,216,228,0.8)'
+                    ; (e.currentTarget as HTMLButtonElement).style.boxShadow = '0 1px 3px rgba(0,0,0,0.1)'
                 }}
               >
                 {item.label}
@@ -316,22 +318,22 @@ export default function DashboardSidebar({ user, onLogout, onReceiptUpload, rece
             onMouseEnter={e => {
               if (!receiptLoading) {
                 (e.currentTarget as HTMLButtonElement).style.background = 'rgba(74,127,165,0.25)'
-                ;(e.currentTarget as HTMLButtonElement).style.borderColor = 'rgba(74,127,165,0.5)'
+                  ; (e.currentTarget as HTMLButtonElement).style.borderColor = 'rgba(74,127,165,0.5)'
               }
             }}
             onMouseLeave={e => {
               (e.currentTarget as HTMLButtonElement).style.background = 'rgba(74,127,165,0.15)'
-              ;(e.currentTarget as HTMLButtonElement).style.borderColor = 'rgba(74,127,165,0.3)'
+                ; (e.currentTarget as HTMLButtonElement).style.borderColor = 'rgba(74,127,165,0.3)'
             }}
           >
             <svg width="16" height="16" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" style={{ flexShrink: 0 }}>
-              <path d="M12 15C13.6569 15 15 13.6569 15 12C15 10.3431 13.6569 9 12 9C10.3431 9 9 10.3431 9 12C9 13.6569 10.3431 15 12 15Z" fill="currentColor"/>
-              <path d="M20 4H16.82C16.4 2.84 15.3 2 14 2H10C8.7 2 7.6 2.84 7.18 4H4C2.9 4 2 4.9 2 6V20C2 21.1 2.9 22 4 22H20C21.1 22 22 21.1 22 20V6C22 4.9 21.1 4 20 4ZM12 17C9.24 17 7 14.76 7 12C7 9.24 9.24 7 12 7C14.76 7 17 9.24 17 12C17 14.76 14.76 17 12 17Z" fill="currentColor"/>
+              <path d="M12 15C13.6569 15 15 13.6569 15 12C15 10.3431 13.6569 9 12 9C10.3431 9 9 10.3431 9 12C9 13.6569 10.3431 15 12 15Z" fill="currentColor" />
+              <path d="M20 4H16.82C16.4 2.84 15.3 2 14 2H10C8.7 2 7.6 2.84 7.18 4H4C2.9 4 2 4.9 2 6V20C2 21.1 2.9 22 4 22H20C21.1 22 22 21.1 22 20V6C22 4.9 21.1 4 20 4ZM12 17C9.24 17 7 14.76 7 12C7 9.24 9.24 7 12 7C14.76 7 17 9.24 17 12C17 14.76 14.76 17 12 17Z" fill="currentColor" />
             </svg>
             {receiptLoading ? '처리 중...' : '영수증 촬영'}
           </button>
           <div style={{ marginTop: '10px', fontSize: '0.75rem', color: 'rgba(200,216,228,0.5)', lineHeight: 1.5 }}>
-            영수증을 촬영하면 재료 정보를 자동으로 인식해 냉장고에 추가할 수 있어요.<br/>거래처 정보도 함께 관리됩니다.
+            영수증을 촬영하면 재료 정보를 자동으로 인식해 냉장고에 추가할 수 있어요.<br />거래처 정보도 함께 관리됩니다.
           </div>
         </div>
 
@@ -352,11 +354,11 @@ export default function DashboardSidebar({ user, onLogout, onReceiptUpload, rece
             }}
             onMouseEnter={e => {
               (e.currentTarget as HTMLButtonElement).style.background = 'rgba(74,127,165,0.3)'
-              ;(e.currentTarget as HTMLButtonElement).style.borderColor = 'rgba(74,127,165,0.5)'
+                ; (e.currentTarget as HTMLButtonElement).style.borderColor = 'rgba(74,127,165,0.5)'
             }}
             onMouseLeave={e => {
               (e.currentTarget as HTMLButtonElement).style.background = 'rgba(74,127,165,0.2)'
-              ;(e.currentTarget as HTMLButtonElement).style.borderColor = 'rgba(74,127,165,0.3)'
+                ; (e.currentTarget as HTMLButtonElement).style.borderColor = 'rgba(74,127,165,0.3)'
             }}
           >
             📖 사용설명서
@@ -379,7 +381,7 @@ export default function DashboardSidebar({ user, onLogout, onReceiptUpload, rece
               (e.currentTarget as HTMLButtonElement).style.background = '#C44A4A'
             }}
           >
-            🚪 로그아웃
+            로그아웃
           </button>
         </div>
       </aside>

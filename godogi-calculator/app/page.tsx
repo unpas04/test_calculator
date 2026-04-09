@@ -453,7 +453,12 @@ export default function HomePage() {
   const router = useRouter()
   const searchParams = useSearchParams()
   useEffect(() => {
-    if (searchParams.get('tab') === 'menus') setHomeTab('menus')
+    const tab = searchParams.get('tab')
+    if (tab === 'menus') setHomeTab('menus')
+    if (tab === 'recipes') {
+      setHomeTab('recipes')
+      setShowRecipes(true)
+    }
   }, [searchParams])
   const supabase = createClient()
   const loadedForUser = useRef<string | null>(null)
@@ -1443,21 +1448,43 @@ export default function HomePage() {
           </>
         )}
 
-        {/* 타이틀 + 레시피관리 버튼 */}
-        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 16, marginTop: 16, flexShrink: 0 }}>
-          <h2 style={{ fontSize: '0.95rem', fontWeight: 700, color: 'white', margin: 0 }}>내 메뉴판</h2>
-          <button
-            onClick={() => setShowRecipes(!showRecipes)}
-            style={{
-              padding: '6px 12px', background: showRecipes ? '#4A7FA5' : 'rgba(255,255,255,0.06)',
-              border: 'none', borderRadius: 6, color: showRecipes ? 'white' : 'rgba(200,216,228,0.6)',
-              fontSize: '0.75rem', fontWeight: 600, fontFamily: "'Noto Sans KR',sans-serif",
-              cursor: 'pointer', transition: '0.2s',
-            }}
-          >
-            {showRecipes ? '메뉴판 보기' : '레시피관리'}
-          </button>
-        </div>
+        {/* 타이틀 + 버튼 */}
+        {!showRecipes ? (
+          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 16, marginTop: 16, flexShrink: 0 }}>
+            <h2 style={{ fontSize: '0.95rem', fontWeight: 700, color: 'white', margin: 0 }}>내 메뉴판</h2>
+            <button
+              onClick={() => setShowRecipes(true)}
+              style={{
+                padding: '6px 12px', background: 'rgba(255,255,255,0.06)',
+                border: 'none', borderRadius: 6, color: 'rgba(200,216,228,0.6)',
+                fontSize: '0.75rem', fontWeight: 600, fontFamily: "'Noto Sans KR',sans-serif",
+                cursor: 'pointer', transition: '0.2s',
+              }}
+            >
+              레시피관리
+            </button>
+          </div>
+        ) : (
+          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 16, marginTop: 16, flexShrink: 0 }}>
+            <button
+              onClick={() => setShowRecipes(false)}
+              style={{
+                display: 'inline-flex', alignItems: 'center', gap: 5,
+                padding: '6px 12px', background: 'rgba(74,127,165,0.15)', border: '1px solid rgba(74,127,165,0.3)',
+                borderRadius: 6, color: '#7DB8D8',
+                fontSize: '0.75rem', fontWeight: 600, fontFamily: "'Noto Sans KR',sans-serif",
+                cursor: 'pointer', transition: '0.2s',
+              }}
+            >
+              ← 대시보드
+            </button>
+            <div style={{ display: 'flex', alignItems: 'center', gap: 4, fontSize: '0.75rem', fontWeight: 600, fontFamily: "'Noto Sans KR',sans-serif" }}>
+              <span style={{ color: 'rgba(200,216,228,0.5)' }}>대시보드</span>
+              <span style={{ color: 'rgba(200,216,228,0.5)' }}>›</span>
+              <span style={{ color: 'rgba(200,216,228,0.8)' }}>레시피관리</span>
+            </div>
+          </div>
+        )}
 
         {/* 검색창 + 홀/배달 토글 (메뉴판 보기) */}
         {!showRecipes && (
@@ -1760,7 +1787,7 @@ export default function HomePage() {
                                     {/* 수정/삭제 버튼 (한 줄) */}
                                     <div style={{ display: 'flex', gap: 8 }}>
                                       {/* 수정 버튼 */}
-                                      <button onClick={e => { e.stopPropagation(); router.push(`/proto?id=${set.id}&source=menu`) }}
+                                      <button onClick={e => { e.stopPropagation(); router.push(`/menu-builder?id=${set.id}&source=menu`) }}
                                         style={{
                                           flex: 1, padding: '8px 0', background: 'rgba(74,127,165,0.2)',
                                           border: '1px solid rgba(74,127,165,0.3)', borderRadius: 8,
@@ -1917,7 +1944,7 @@ export default function HomePage() {
       {!showRecipes && (
         <motion.button
           whileHover={{ scale: 1.04 }} whileTap={{ scale: 0.96 }}
-          onClick={() => router.push('/proto')}
+          onClick={() => router.push('/menu-builder')}
           style={{
             position: 'fixed', bottom: 28, right: 24, zIndex: 20,
             background: 'linear-gradient(135deg, #3A6FA5, #2A5080)',

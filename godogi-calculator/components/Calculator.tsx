@@ -318,7 +318,7 @@ export default function Calculator({ menu, onChange, onOpenFridge, onSave }: Pro
       {/* 메뉴판 경로: 헤더 없음 - SetBuilderProto에서만 처리 */}
 
       {/* 상단 바 */}
-      <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 24 }}>
+      <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 4 }}>
         {/* 메뉴명: 읽기전용 (냉장고에서만 추가) */}
         <div style={{
           flex: 1, fontFamily: "'Noto Sans KR', sans-serif", fontWeight: 700, fontSize: '1.1rem',
@@ -445,7 +445,7 @@ export default function Calculator({ menu, onChange, onOpenFridge, onSave }: Pro
       {/* 재료 카드 */}
       {card(<>
         {cardTitle('재료 원가')}
-        <table style={{ width: '100%', borderCollapse: 'collapse', tableLayout: 'fixed' }}>
+        <table style={{ width: '100%', borderCollapse: 'collapse', tableLayout: 'auto' }}>
           <thead>
             <tr>
               {['재료명', '사용량', '단위', '원가', ''].map((h, i) => (
@@ -462,7 +462,7 @@ export default function Calculator({ menu, onChange, onOpenFridge, onSave }: Pro
             {menu.ingredients.map((ing, idx) => (
               <tr key={ing.id} className={!ing.name ? 'ing-row-empty' : ''}>
                 <td colSpan={5} style={{ padding: 0 }}>
-                  <table style={{ width: '100%', borderCollapse: 'collapse' }}>
+                  <table style={{ width: '100%', borderCollapse: 'collapse', tableLayout: 'auto' }}>
                     <tbody>
                       <tr style={{ borderBottom: '1px solid var(--silver-light)' }}>
                         <td style={{ padding: '5px 3px', width: '38%', fontFamily: "'Noto Sans KR', sans-serif", fontWeight: 600, fontSize: '0.82rem', color: 'var(--text)', textAlign: 'left', paddingLeft: 8 }}>

@@ -803,7 +803,7 @@ export default function SetBuilderProto({ onOpenSidebar }: Props = {}) {
 
         {/* 왼쪽 팔레트 (데스크탑) */}
         <div className="sb-palette" style={{
-          width: 210, background: '#111B27', borderRight: '1px solid rgba(255,255,255,0.05)',
+          width: 280, background: '#111B27', borderRight: '1px solid rgba(255,255,255,0.05)',
           flexShrink: 0, overflowY: 'auto',
         }}>
           <PalettePanel />
@@ -989,7 +989,7 @@ export default function SetBuilderProto({ onOpenSidebar }: Props = {}) {
                       onRemove={() => removeBlock(b.id)}
                       onMoveLeft={i > 0 ? () => moveBlock(i, -1) : undefined}
                       onMoveRight={i < blocks.length - 1 ? () => moveBlock(i, 1) : undefined}
-                      onEdit={() => tryNavigate(`/calculator?menuId=${b.menu_id}&source=menu${editId ? `&returnTo=/proto?id=${editId}` : '&returnTo=/proto'}`)}
+                      onEdit={() => tryNavigate(`/calculator?menuId=${b.menu_id}&source=menu${editId ? `&returnTo=/menu-builder?id=${editId}` : '&returnTo=/menu-builder'}`)}
                     />
                   </div>
                 ))

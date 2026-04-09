@@ -4,8 +4,8 @@ import { createClient } from '../../lib/supabase'
 import { FIRST_LOGIN_MENU_SAMPLES as FIRST_LOGIN_SAMPLES } from '@/lib/sampleData'
 import { useState, useEffect, useRef, Suspense } from 'react'
 import { ArrowLeft } from 'lucide-react'
-import { useSearchParams } from 'next/navigation'
-import AppSidebar from '../../components/AppSidebar'
+import { useSearchParams, useRouter } from 'next/navigation'
+import CalculatorSidebar from '../../components/CalculatorSidebar'
 import Calculator from '../../components/Calculator'
 import DashboardSidebar from '../../components/DashboardSidebar'
 
@@ -74,9 +74,10 @@ function calcSubLabel(menu: any): string {
 }
 
 function CalculatorContent() {
+  const router = useRouter()
   const searchParams = useSearchParams()
   const menuIdParam = searchParams.get('menuId')
-  const returnTo = searchParams.get('returnTo')
+  const returnTo = searchParams.get('returnTo') ?? '/?tab=recipes'
   const isNew = searchParams.get('new') === '1'
   const isFromMenu = searchParams.get('source') === 'menu'
   const fromRecipes = !isFromMenu && returnTo?.startsWith('/') && returnTo !== '/proto'
@@ -522,66 +523,34 @@ function CalculatorContent() {
 
   return (
     <div style={{ display: 'flex', minHeight: '100vh' }}>
-      {/* DashboardSidebar for fromRecipes */}
-      {fromRecipes && user && (
-        <DashboardSidebar
-          user={user}
-          onLogout={logout}
-          onReceiptUpload={() => {}}
-          isOpen={sidebarOpen}
-          onOpenChange={setSidebarOpen}
-        />
-      )}
-      {!fromRecipes && (
-        <AppSidebar
-          menus={menus.map(m => ({ ...m, costRate: calcCostRate(m), subLabel: calcSubLabel(m) }))}
-          currentId={currentId}
-          onSelect={setCurrentId}
-          onNew={handleNew}
-          onDelete={handleDelete}
-          user={user}
-          onLogout={logout}
-        />
-      )}
-      <main className={`main-content ${fromRecipes ? 'from-recipes' : ''}`} style={{ marginLeft: fromRecipes ? 0 : 240, flex: 1, padding: fromRecipes ? '12px 28px 60px' : '32px 28px 60px', maxWidth: 760, position: 'relative' }}>
-        {/* 헤더: 햄버거 + 뒤로가기 + 경로 (fromRecipes일 때만) */}
-        {fromRecipes && (
-          <div style={{ display: 'flex', flexDirection: 'column', gap: 24, marginBottom: 24 }}>
-            {/* 햄버거 버튼 */}
-            <button
-              onClick={() => setSidebarOpen(true)}
-              style={{
-                background: 'none',
-                border: 'none',
-                color: '#C8D4E0',
-                fontSize: '1.4rem',
-                cursor: 'pointer',
-                padding: '4px 8px',
-                display: 'inline-flex',
-                alignItems: 'center',
-                justifyContent: 'center',
-                width: 'fit-content',
-              }}
-              className="calc-hamburger-btn"
-            >
-              ☰
-            </button>
+      {/* CalculatorSidebar */}
+      <CalculatorSidebar
+        menus={menus.map(m => ({ ...m, costRate: calcCostRate(m), subLabel: calcSubLabel(m) }))}
+        currentId={currentId}
+        onSelect={setCurrentId}
+        onNew={handleNew}
+        onDelete={handleDelete}
+        user={user}
+        onLogout={logout}
+      />
 
-            {/* 뒤로가기 + 경로 */}
-            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', fontSize: '0.78rem', fontFamily: "'Noto Sans KR', sans-serif" }}>
-              <a href={returnTo ?? '/proto'} style={{
-                display: 'inline-flex', alignItems: 'center', gap: 5,
-                background: 'rgba(74,127,165,0.15)', border: '1px solid rgba(74,127,165,0.3)',
-                color: '#7DB8D8', textDecoration: 'none', fontWeight: 700,
-                borderRadius: 8, padding: '5px 12px', fontSize: '0.78rem',
-              }}><ArrowLeft size={13} style={{ flexShrink: 0 }} /> 레시피관리</a>
-              <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
-                <a href="/" style={{ color: 'var(--text-soft)', textDecoration: 'none', fontWeight: 500 }}>홈</a>
-                <span style={{ color: 'var(--text-soft)', opacity: 0.4 }}>›</span>
-                <a href="/" style={{ color: 'var(--text-soft)', textDecoration: 'none', fontWeight: 500 }}>레시피관리</a>
-                <span style={{ color: 'var(--text-soft)', opacity: 0.4 }}>›</span>
-                <span style={{ color: 'var(--text-mid)', fontWeight: 700 }}>{isNew ? '레시피추가' : '레시피수정'}</span>
-              </div>
+      <main className={`main-content ${fromRecipes ? 'from-recipes' : ''}`} style={{ marginLeft: 280, flex: 1, padding: '12px 16px 60px', position: 'relative', overflow: 'auto' }}>
+        {/* 헤더: 뒤로가기 + 경로 (레시피 편집일 때만) */}
+        {!returnTo?.startsWith('/menu-builder') && (
+          <div style={{ marginTop: 64, marginBottom: 32, display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+            <button onClick={() => router.push('/?tab=recipes')} style={{
+              display: 'inline-flex', alignItems: 'center', gap: 5,
+              background: 'rgba(74,127,165,0.15)', border: '1px solid rgba(74,127,165,0.3)',
+              color: '#7DB8D8', textDecoration: 'none', fontWeight: 700,
+              borderRadius: 8, padding: '5px 12px', fontSize: '0.78rem',
+              cursor: 'pointer', transition: 'all 0.2s'
+            }}><ArrowLeft size={13} style={{ flexShrink: 0 }} /> 레시피관리</button>
+            <div style={{ display: 'flex', alignItems: 'center', gap: 4, fontSize: '0.75rem', fontWeight: 600, fontFamily: "'Noto Sans KR',sans-serif" }}>
+              <span style={{ color: 'rgba(200,216,228,0.5)' }}>대시보드</span>
+              <span style={{ color: 'rgba(200,216,228,0.5)' }}>›</span>
+              <span style={{ color: 'rgba(200,216,228,0.5)' }}>레시피관리</span>
+              <span style={{ color: 'rgba(200,216,228,0.5)' }}>›</span>
+              <span style={{ color: 'rgba(200,216,228,0.8)' }}>레시피수정</span>
             </div>
           </div>
         )}

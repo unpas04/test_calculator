@@ -27,11 +27,14 @@ export default function Tutorial({ isOpen, onClose }: Props) {
           <p style={{ fontSize: '0.9rem', lineHeight: 1.8, color: 'rgba(200,216,228,0.7)', marginTop: 16 }}>
             배달 수수료, 카드 수수료, 인건비까지 모두 포함해서 원가를 계산해줘요.
           </p>
+          <div style={{ background: 'rgba(74,127,165,0.15)', borderRadius: 12, padding: 14, marginTop: 20, border: '1px solid rgba(125,184,216,0.3)' }}>
+            <p style={{ fontSize: '0.85rem', fontWeight: 700, color: '#7DB8D8' }}>지금부터 3단계로 나누어 설명해드릴게요!</p>
+          </div>
         </>
       ),
     },
     {
-      title: '한눈에 보는 수익성',
+      title: '1. 한눈에 보는 수익성',
       subtitle: '대시보드에서 시작하세요',
       content: (
         <>
@@ -60,7 +63,7 @@ export default function Tutorial({ isOpen, onClose }: Props) {
       ),
     },
     {
-      title: '레시피 관리',
+      title: '2. 레시피 관리',
       subtitle: '메뉴의 재료 구성을 등록하세요',
       content: (
         <>
@@ -73,10 +76,10 @@ export default function Tutorial({ isOpen, onClose }: Props) {
           <div style={{ background: '#1E2D40', borderRadius: 12, padding: 12, marginBottom: 12 }}>
             <p style={{ fontSize: '0.82rem', color: '#7DB8D8', fontWeight: 700, marginBottom: 8 }}>떡볶이 예시:</p>
             <p style={{ fontSize: '0.78rem', color: 'rgba(200,216,228,0.7)', lineHeight: 1.6 }}>
-              • 떡 100g<br/>
-              • 고추장 2큰술<br/>
-              • 계란 1개<br/>
-              • 파 한줌<br/>
+              • 떡 100g<br />
+              • 고추장 2큰술<br />
+              • 계란 1개<br />
+              • 파 한줌<br />
               • 버터 1큰술
             </p>
           </div>
@@ -87,39 +90,7 @@ export default function Tutorial({ isOpen, onClose }: Props) {
       ),
     },
     {
-      title: '영수증 촬영',
-      subtitle: '원재료 정보를 한번에 저장하세요',
-      content: (
-        <>
-          <p style={{ fontSize: '0.95rem', lineHeight: 1.8, color: 'rgba(200,216,228,0.8)', marginBottom: 16 }}>
-            🐟 이마트에서 떡 5kg을 15,000원에 샀다면?
-          </p>
-          <p style={{ fontSize: '0.9rem', lineHeight: 1.8, color: 'rgba(200,216,228,0.7)', marginBottom: 16 }}>
-            매번 수기로 입력하기는 너무 번거려요. 그래서 준비했어요!
-          </p>
-          <div style={{ background: 'rgba(125,184,216,0.15)', borderRadius: 12, padding: 14, marginBottom: 12, border: '1px solid rgba(125,184,216,0.3)' }}>
-            <p style={{ fontSize: '0.9rem', fontWeight: 700, color: '#7DB8D8', marginBottom: 8 }}>📸 영수증 사진 찍기</p>
-            <p style={{ fontSize: '0.82rem', lineHeight: 1.6, color: 'rgba(200,216,228,0.8)' }}>
-              냉장고의 "📸 영수증촬영" 버튼을 누르고 사진을 찍으면
-            </p>
-          </div>
-          <div style={{ background: 'rgba(125,184,216,0.15)', borderRadius: 12, padding: 14, border: '1px solid rgba(125,184,216,0.3)' }}>
-            <p style={{ fontSize: '0.9rem', fontWeight: 700, color: '#7DB8D8', marginBottom: 8 }}>✨ AI가 자동 인식</p>
-            <p style={{ fontSize: '0.82rem', lineHeight: 1.6, color: 'rgba(200,216,228,0.8)' }}>
-              영수증의 상품명, 가격, 수량을 AI가 자동으로 읽어줘요
-            </p>
-          </div>
-          <div style={{ background: 'rgba(125,184,216,0.15)', borderRadius: 12, padding: 14, border: '1px solid rgba(125,184,216,0.3)' }}>
-            <p style={{ fontSize: '0.9rem', fontWeight: 700, color: '#7DB8D8', marginBottom: 8 }}>💾 한번에 저장</p>
-            <p style={{ fontSize: '0.82rem', lineHeight: 1.6, color: 'rgba(200,216,228,0.8)' }}>
-              확인 후 저장 버튼만 누르면 끝!
-            </p>
-          </div>
-        </>
-      ),
-    },
-    {
-      title: '냉장고',
+      title: '3. 냉장고',
       subtitle: '원재료 정보를 체계적으로 관리하세요',
       content: (
         <>
@@ -135,17 +106,50 @@ export default function Tutorial({ isOpen, onClose }: Props) {
           <div style={{ background: 'rgba(74,127,165,0.1)', borderRadius: 12, padding: 14, marginBottom: 12 }}>
             <p style={{ fontSize: '0.85rem', fontWeight: 700, color: '#7DB8D8', marginBottom: 6 }}>가격과 중량 기록</p>
             <p style={{ fontSize: '0.8rem', color: 'rgba(200,216,228,0.6)' }}>
-              "버터 500g 12,000원" 처럼 상세하게 기록하면<br/>
+              "버터 500g 12,000원" 처럼 상세하게 기록하면<br />
               100g당 원가가 자동으로 계산돼요
             </p>
           </div>
           <div style={{ background: 'rgba(74,127,165,0.1)', borderRadius: 12, padding: 14 }}>
             <p style={{ fontSize: '0.85rem', fontWeight: 700, color: '#7DB8D8', marginBottom: 6 }}>🐟 레시피와 연결</p>
             <p style={{ fontSize: '0.8rem', color: 'rgba(200,216,228,0.6)' }}>
-              냉장고의 재료로 레시피를 만들면<br/>
+              냉장고의 재료로 레시피를 만들면<br />
               정확한 원가가 자동으로 계산됩니다!
             </p>
           </div>
+        </>
+      ),
+    },
+    {
+      title: '+ 영수증 촬영 (선택)',
+      subtitle: '원재료 정보를 한번에 저장하세요',
+      content: (
+        <>
+          <p style={{ fontSize: '0.95rem', lineHeight: 1.8, color: 'rgba(200,216,228,0.8)', marginBottom: 16 }}>
+            🐟 이마트에서 떡 5kg을 15,000원에 샀다면?
+          </p>
+          <p style={{ fontSize: '0.9rem', lineHeight: 1.8, color: 'rgba(200,216,228,0.7)', marginBottom: 16 }}>
+            매번 수기로 입력하기는 너무 번거로워요. 그래서 준비했어요!
+          </p>
+          <div style={{ background: 'rgba(125,184,216,0.15)', borderRadius: 12, padding: 14, marginBottom: 12, border: '1px solid rgba(125,184,216,0.3)' }}>
+            <p style={{ fontSize: '0.9rem', fontWeight: 700, color: '#7DB8D8', marginBottom: 8 }}>📸 영수증 사진 찍기</p>
+            <p style={{ fontSize: '0.82rem', lineHeight: 1.6, color: 'rgba(200,216,228,0.8)' }}>
+              냉장고의 "📸 영수증촬영" 버튼을 누르고 사진을 찍으면
+            </p>
+          </div>
+          <div style={{ background: 'rgba(125,184,216,0.15)', borderRadius: 12, padding: 14, marginBottom: 12, border: '1px solid rgba(125,184,216,0.3)' }}>
+            <p style={{ fontSize: '0.9rem', fontWeight: 700, color: '#7DB8D8', marginBottom: 8 }}>✨ AI가 자동 인식</p>
+            <p style={{ fontSize: '0.82rem', lineHeight: 1.6, color: 'rgba(200,216,228,0.8)' }}>
+              영수증의 상품명, 가격, 수량을 AI가 자동으로 읽어줘요
+            </p>
+          </div>
+          <div style={{ background: 'rgba(125,184,216,0.15)', borderRadius: 12, padding: 14, marginBottom: 12, border: '1px solid rgba(125,184,216,0.3)' }}>
+            <p style={{ fontSize: '0.9rem', fontWeight: 700, color: '#7DB8D8', marginBottom: 8 }}>💾 한번에 저장</p>
+            <p style={{ fontSize: '0.82rem', lineHeight: 1.6, color: 'rgba(200,216,228,0.8)' }}>
+              확인 후 저장 버튼만 누르면 끝!
+            </p>
+          </div>
+          <p style={{ fontSize: '0.85rem', fontWeight: 700, color: '#7DB8D8', marginTop: 12 }}>* 직접 수기로 등록도 가능해요.</p>
         </>
       ),
     },
@@ -245,132 +249,132 @@ export default function Tutorial({ isOpen, onClose }: Props) {
               overflowY: 'auto',
               pointerEvents: 'auto',
             }}
-          >
-            {/* 닫기 버튼 */}
-            <button
-              onClick={onClose}
-              style={{
-                position: 'absolute',
-                top: 12,
-                right: 12,
-                background: 'none',
-                border: 'none',
-                color: 'rgba(200,216,228,0.5)',
-                cursor: 'pointer',
-                fontSize: '1.2rem',
-                display: 'flex',
-                alignItems: 'center',
-                justifyContent: 'center',
-              }}
-              onMouseEnter={(e) => e.currentTarget.style.color = 'rgba(200,216,228,0.8)'}
-              onMouseLeave={(e) => e.currentTarget.style.color = 'rgba(200,216,228,0.5)'}
             >
-              <X size={24} />
-            </button>
-
-            {/* 진행도 */}
-            <div style={{ display: 'flex', gap: 4, marginBottom: 24, justifyContent: 'center' }}>
-              {steps.map((_, idx) => (
-                <div
-                  key={idx}
-                  style={{
-                    width: 8,
-                    height: 8,
-                    borderRadius: '50%',
-                    background: idx === step ? '#4A7FA5' : 'rgba(74,127,165,0.3)',
-                    transition: 'background 0.2s',
-                  }}
-                />
-              ))}
-            </div>
-
-            {/* 제목 */}
-            <h2 style={{ color: 'white', fontSize: '1.3rem', fontWeight: 700, marginBottom: 4, textAlign: 'center' }}>
-              {currentStep.title}
-            </h2>
-            <p style={{ color: 'rgba(200,216,228,0.5)', fontSize: '0.85rem', textAlign: 'center', marginBottom: 24 }}>
-              {currentStep.subtitle}
-            </p>
-
-            {/* 콘텐츠 */}
-            <div style={{ marginBottom: 28 }}>
-              {currentStep.content}
-            </div>
-
-            {/* 버튼 */}
-            <div style={{ display: 'flex', gap: 10, justifyContent: 'space-between' }}>
+              {/* 닫기 버튼 */}
               <button
-                onClick={() => setStep(Math.max(0, step - 1))}
-                disabled={step === 0}
+                onClick={onClose}
                 style={{
-                  flex: 1,
-                  padding: '12px 16px',
-                  background: step === 0 ? 'rgba(74,127,165,0.2)' : 'rgba(74,127,165,0.3)',
+                  position: 'absolute',
+                  top: 12,
+                  right: 12,
+                  background: 'none',
                   border: 'none',
-                  borderRadius: 10,
-                  color: step === 0 ? 'rgba(200,216,228,0.3)' : 'rgba(200,216,228,0.7)',
-                  fontFamily: "'Noto Sans KR', sans-serif",
-                  fontWeight: 700,
-                  fontSize: '0.85rem',
-                  cursor: step === 0 ? 'not-allowed' : 'pointer',
-                  transition: 'all 0.2s',
+                  color: 'rgba(200,216,228,0.5)',
+                  cursor: 'pointer',
+                  fontSize: '1.2rem',
                   display: 'flex',
                   alignItems: 'center',
                   justifyContent: 'center',
-                  gap: 6,
                 }}
+                onMouseEnter={(e) => e.currentTarget.style.color = 'rgba(200,216,228,0.8)'}
+                onMouseLeave={(e) => e.currentTarget.style.color = 'rgba(200,216,228,0.5)'}
               >
-                <ChevronLeft size={16} /> 이전
+                <X size={24} />
               </button>
 
-              {step === steps.length - 1 ? (
+              {/* 진행도 */}
+              <div style={{ display: 'flex', gap: 4, marginBottom: 24, justifyContent: 'center' }}>
+                {steps.map((_, idx) => (
+                  <div
+                    key={idx}
+                    style={{
+                      width: 8,
+                      height: 8,
+                      borderRadius: '50%',
+                      background: idx === step ? '#4A7FA5' : 'rgba(74,127,165,0.3)',
+                      transition: 'background 0.2s',
+                    }}
+                  />
+                ))}
+              </div>
+
+              {/* 제목 */}
+              <h2 style={{ color: 'white', fontSize: '1.3rem', fontWeight: 700, marginBottom: 4, textAlign: 'center' }}>
+                {currentStep.title}
+              </h2>
+              <p style={{ color: 'rgba(200,216,228,0.5)', fontSize: '0.85rem', textAlign: 'center', marginBottom: 24 }}>
+                {currentStep.subtitle}
+              </p>
+
+              {/* 콘텐츠 */}
+              <div style={{ marginBottom: 28 }}>
+                {currentStep.content}
+              </div>
+
+              {/* 버튼 */}
+              <div style={{ display: 'flex', gap: 10, justifyContent: 'space-between' }}>
                 <button
-                  onClick={onClose}
+                  onClick={() => setStep(Math.max(0, step - 1))}
+                  disabled={step === 0}
                   style={{
                     flex: 1,
                     padding: '12px 16px',
-                    background: 'linear-gradient(135deg, #4A7FA5 0%, #5A9BC0 100%)',
+                    background: step === 0 ? 'rgba(74,127,165,0.2)' : 'rgba(74,127,165,0.3)',
                     border: 'none',
                     borderRadius: 10,
-                    color: 'white',
+                    color: step === 0 ? 'rgba(200,216,228,0.3)' : 'rgba(200,216,228,0.7)',
                     fontFamily: "'Noto Sans KR', sans-serif",
                     fontWeight: 700,
                     fontSize: '0.85rem',
-                    cursor: 'pointer',
-                    transition: 'all 0.2s',
-                  }}
-                  onMouseEnter={(e) => e.currentTarget.style.opacity = '0.9'}
-                  onMouseLeave={(e) => e.currentTarget.style.opacity = '1'}
-                >
-                  시작하기 🐟
-                </button>
-              ) : (
-                <button
-                  onClick={() => setStep(Math.min(steps.length - 1, step + 1))}
-                  style={{
-                    flex: 1,
-                    padding: '12px 16px',
-                    background: 'linear-gradient(135deg, #4A7FA5 0%, #5A9BC0 100%)',
-                    border: 'none',
-                    borderRadius: 10,
-                    color: 'white',
-                    fontFamily: "'Noto Sans KR', sans-serif",
-                    fontWeight: 700,
-                    fontSize: '0.85rem',
-                    cursor: 'pointer',
+                    cursor: step === 0 ? 'not-allowed' : 'pointer',
                     transition: 'all 0.2s',
                     display: 'flex',
                     alignItems: 'center',
                     justifyContent: 'center',
                     gap: 6,
                   }}
-                  onMouseEnter={(e) => e.currentTarget.style.opacity = '0.9'}
-                  onMouseLeave={(e) => e.currentTarget.style.opacity = '1'}
                 >
-                  다음 <ChevronRight size={16} />
+                  <ChevronLeft size={16} /> 이전
                 </button>
-              )}
-            </div>
+
+                {step === steps.length - 1 ? (
+                  <button
+                    onClick={onClose}
+                    style={{
+                      flex: 1,
+                      padding: '12px 16px',
+                      background: 'linear-gradient(135deg, #4A7FA5 0%, #5A9BC0 100%)',
+                      border: 'none',
+                      borderRadius: 10,
+                      color: 'white',
+                      fontFamily: "'Noto Sans KR', sans-serif",
+                      fontWeight: 700,
+                      fontSize: '0.85rem',
+                      cursor: 'pointer',
+                      transition: 'all 0.2s',
+                    }}
+                    onMouseEnter={(e) => e.currentTarget.style.opacity = '0.9'}
+                    onMouseLeave={(e) => e.currentTarget.style.opacity = '1'}
+                  >
+                    시작하기 🐟
+                  </button>
+                ) : (
+                  <button
+                    onClick={() => setStep(Math.min(steps.length - 1, step + 1))}
+                    style={{
+                      flex: 1,
+                      padding: '12px 16px',
+                      background: 'linear-gradient(135deg, #4A7FA5 0%, #5A9BC0 100%)',
+                      border: 'none',
+                      borderRadius: 10,
+                      color: 'white',
+                      fontFamily: "'Noto Sans KR', sans-serif",
+                      fontWeight: 700,
+                      fontSize: '0.85rem',
+                      cursor: 'pointer',
+                      transition: 'all 0.2s',
+                      display: 'flex',
+                      alignItems: 'center',
+                      justifyContent: 'center',
+                      gap: 6,
+                    }}
+                    onMouseEnter={(e) => e.currentTarget.style.opacity = '0.9'}
+                    onMouseLeave={(e) => e.currentTarget.style.opacity = '1'}
+                  >
+                    다음 <ChevronRight size={16} />
+                  </button>
+                )}
+              </div>
             </div>
           </motion.div>
         </>
