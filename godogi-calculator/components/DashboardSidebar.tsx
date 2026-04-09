@@ -153,7 +153,7 @@ export default function DashboardSidebar({ user, onLogout, onReceiptUpload, rece
           </div>
 
           {/* 이메일 */}
-          {user && user.email ? (
+          {user?.email && (
             <div style={{
               padding: '10px 12px',
               background: 'rgba(255,255,255,0.05)',
@@ -167,7 +167,7 @@ export default function DashboardSidebar({ user, onLogout, onReceiptUpload, rece
             }}>
               {user.email}
             </div>
-          ) : null}
+          )}
         </div>
 
         {/* 메뉴 */}

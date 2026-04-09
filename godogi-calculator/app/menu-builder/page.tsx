@@ -2,12 +2,9 @@
 import { Suspense, useState, useEffect } from 'react'
 import SetBuilderProto from '@/components/SetBuilderProto'
 import DashboardSidebar from '@/components/DashboardSidebar'
-import { createClient } from '@supabase/supabase-js'
+import { createClient } from '@/lib/supabase'
 
-const supabase = createClient(
-  process.env.NEXT_PUBLIC_SUPABASE_URL!,
-  process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
-)
+const supabase = createClient()
 
 export default function ProtoPage() {
   const [sidebarOpen, setSidebarOpen] = useState(false)
