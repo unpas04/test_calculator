@@ -86,6 +86,10 @@ export default function Tutorial({ isOpen, onClose }: Props) {
           <p style={{ fontSize: '0.85rem', color: 'rgba(200,216,228,0.6)' }}>
             🧊 냉장고에서 재료를 선택하고, 사용량을 입력하면 된답니다!
           </p>
+          <div style={{ background: 'rgba(74,127,165,0.15)', borderRadius: 12, padding: 14, marginTop: 16, border: '1px solid rgba(125,184,216,0.3)' }}>
+            <p style={{ fontSize: '0.82rem', fontWeight: 700, color: '#7DB8D8', marginBottom: 4 }}>🔒 안심하세요!</p>
+            <p style={{ fontSize: '0.78rem', color: 'rgba(200,216,228,0.7)' }}>레시피 정보는 절대 남지 않으니 안심하셔도 괜찮아요!</p>
+          </div>
         </>
       ),
     },
