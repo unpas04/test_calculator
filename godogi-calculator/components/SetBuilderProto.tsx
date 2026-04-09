@@ -814,7 +814,7 @@ export default function SetBuilderProto({ onOpenSidebar }: Props = {}) {
 
           {/* 헤더: 뒤로가기 + 세트 이름 + 버튼들 */}
           <div style={{ display: 'flex', flexDirection: 'column', gap: 24 }}>
-            {/* 1행: 햄버거 버튼 - 사이드바 열기 */}
+            {/* 1행: 햄버거 버튼 - 모바일에서만 보여 */}
             <motion.button
               whileTap={{ scale: 0.9 }}
               onClick={() => {
@@ -826,6 +826,7 @@ export default function SetBuilderProto({ onOpenSidebar }: Props = {}) {
                 display: 'inline-flex', alignItems: 'center', justifyContent: 'center',
                 width: 'fit-content',
               }}
+              className="hamburger-btn"
             >☰</motion.button>
 
             {/* 메뉴판 경로: 3행 레이아웃 */}

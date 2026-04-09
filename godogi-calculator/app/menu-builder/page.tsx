@@ -12,6 +12,7 @@ const supabase = createClient(
 export default function ProtoPage() {
   const [sidebarOpen, setSidebarOpen] = useState(false)
   const [user, setUser] = useState<any>(null)
+  const [isMobile, setIsMobile] = useState(false)
 
   useEffect(() => {
     supabase.auth.getSession().then(({ data: { session } }) => {
@@ -26,6 +27,13 @@ export default function ProtoPage() {
     return () => subscription?.unsubscribe()
   }, [])
 
+  useEffect(() => {
+    const checkMobile = () => setIsMobile(window.innerWidth < 769)
+    checkMobile()
+    window.addEventListener('resize', checkMobile)
+    return () => window.removeEventListener('resize', checkMobile)
+  }, [])
+
   const handleLogout = async () => {
     await supabase.auth.signOut()
     setUser(null)
@@ -33,13 +41,20 @@ export default function ProtoPage() {
 
   return (
     <>
-      <DashboardSidebar
-        user={user}
-        onLogout={handleLogout}
-        onReceiptUpload={() => {}}
-        isOpen={sidebarOpen}
-        onOpenChange={setSidebarOpen}
-      />
+      <style>{`
+        @media (min-width: 769px) {
+          .hamburger-btn { display: none !important; }
+        }
+      `}</style>
+      {isMobile && (
+        <DashboardSidebar
+          user={user}
+          onLogout={handleLogout}
+          onReceiptUpload={() => {}}
+          isOpen={sidebarOpen}
+          onOpenChange={setSidebarOpen}
+        />
+      )}
       <main style={{ flex: 1, overflow: 'auto' }}>
         <Suspense fallback={
           <div style={{ minHeight: '100vh', background: '#0F1923', display: 'flex', alignItems: 'center', justifyContent: 'center', color: 'rgba(200,216,228,0.5)', fontFamily: "'Noto Sans KR',sans-serif", fontSize: '0.9rem' }}>
