@@ -44,17 +44,16 @@ export default function ProtoPage() {
       <style>{`
         @media (min-width: 769px) {
           .hamburger-btn { display: none !important; }
+          .dashboard-sidebar { display: none !important; }
         }
       `}</style>
-      {isMobile && (
-        <DashboardSidebar
-          user={user}
-          onLogout={handleLogout}
-          onReceiptUpload={() => {}}
-          isOpen={sidebarOpen}
-          onOpenChange={setSidebarOpen}
-        />
-      )}
+      <DashboardSidebar
+        user={user}
+        onLogout={handleLogout}
+        onReceiptUpload={() => {}}
+        isOpen={sidebarOpen}
+        onOpenChange={setSidebarOpen}
+      />
       <main style={{ flex: 1, overflow: 'auto' }}>
         <Suspense fallback={
           <div style={{ minHeight: '100vh', background: '#0F1923', display: 'flex', alignItems: 'center', justifyContent: 'center', color: 'rgba(200,216,228,0.5)', fontFamily: "'Noto Sans KR',sans-serif", fontSize: '0.9rem' }}>

@@ -19,6 +19,7 @@ export default function DashboardSidebar({ user, onLogout, onReceiptUpload, rece
 
   // 외부에서 제어되는 경우 동기화
   useEffect(() => {
+    console.log('[DashboardSidebar] externalIsOpen changed:', externalIsOpen)
     setIsOpen(externalIsOpen)
   }, [externalIsOpen])
 
