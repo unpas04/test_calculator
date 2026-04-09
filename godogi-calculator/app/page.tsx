@@ -697,6 +697,7 @@ export default function HomePage() {
 
     setSetupLoading(false)
     setShowSetup(false)
+    setShowTutorial(true)
 
     // 3. 대시보드 데이터 로드
     if (user) {
