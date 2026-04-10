@@ -4,6 +4,7 @@ import { useRouter } from 'next/navigation'
 
 interface Props {
   user: any
+  isGuest?: boolean
   onLogout: () => void
   onReceiptUpload: (result: any) => void
   receiptLoading?: boolean
@@ -14,7 +15,7 @@ interface Props {
   onShowTutorial?: () => void
 }
 
-export default function DashboardSidebar({ user, onLogout, onReceiptUpload, receiptLoading = false, isOpen: externalIsOpen = false, onOpenChange, onNavigateMenu, onShowRecipes, onShowTutorial }: Props) {
+export default function DashboardSidebar({ user, isGuest = false, onLogout, onReceiptUpload, receiptLoading = false, isOpen: externalIsOpen = false, onOpenChange, onNavigateMenu, onShowRecipes, onShowTutorial }: Props) {
   const [isOpen, setIsOpen] = useState(externalIsOpen)
 
   // 외부에서 제어되는 경우 동기화
@@ -305,7 +306,13 @@ export default function DashboardSidebar({ user, onLogout, onReceiptUpload, rece
         {/* 영수증 촬영 섹션 */}
         <div style={{ flexShrink: 0, borderTop: '1px solid rgba(255,255,255,0.1)', padding: '16px' }}>
           <button
-            onClick={() => receiptInputRef.current?.click()}
+            onClick={() => {
+              if (isGuest) {
+                onReceiptUpload({ showLoginModal: true })
+                return
+              }
+              receiptInputRef.current?.click()
+            }}
             disabled={receiptLoading}
             style={{
               width: '100%', padding: '12px 16px',
