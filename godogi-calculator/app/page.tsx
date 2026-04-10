@@ -483,10 +483,9 @@ export default function HomePage() {
       if (!shopData) {
         setShowSetup(true)
         setShowTutorial(true)
-      } else {
-        // 기존 사용자 → 데이터 로드
-        loadSets()
       }
+      // 신규/기존 모두 데이터 로드
+      loadSets()
     })()
   }, [user])
 
@@ -1105,8 +1104,10 @@ export default function HomePage() {
           groupedBySets[cat].push(set)
         })
 
-        // 카테고리 순서대로 정렬 (activeCategories만 사용)
-        const orderedCategories = activeCategories.filter(c => groupedBySets[c])
+        // 카테고리 순서대로 정렬: activeCategories 먼저, 그 다음 신규 카테고리
+        const knownCategories = activeCategories.filter(c => groupedBySets[c])
+        const newCategories = Object.keys(groupedBySets).filter(c => !activeCategories.includes(c))
+        const orderedCategories = [...knownCategories, ...newCategories]
 
         const filteredMenus = allMenus
           .filter(m => menuCategory === 'all' || m.category === menuCategory)
