@@ -344,7 +344,7 @@ export default function HomePage() {
   const [sortBy, setSortBy] = useState<'newest' | 'costRate'>('newest')
   const [channelFilter, setChannelFilter] = useState<'all' | 'hall' | 'delivery'>('all')
   const [expandedSetId, setExpandedSetId] = useState<string | null>(null)
-  const [menuCategory, setMenuCategory] = useState('all')
+  const [menuCategory, setMenuCategory] = useState('all') // UI 선택 표시용만
   const [menuSearch, setMenuSearch] = useState('')
   const [allMenus, setAllMenus] = useState<any[]>([])
   // 매장 정보 상태
@@ -1229,7 +1229,6 @@ export default function HomePage() {
         const setsWithCategory = sets
 
         const filteredSets = setsWithCategory
-          .filter(s => setFilter === '전체' || s.product_category === setFilter)
           .filter(s => channelFilter === 'all' || s.channel === channelFilter)
           .filter(s => s.name.includes(setSearch) || s.blocks.some(b => b.name.includes(setSearch)))
           .sort((a, b) =>
@@ -1252,7 +1251,6 @@ export default function HomePage() {
         const orderedCategories = [...knownCategories, ...newCategories]
 
         const filteredMenus = allMenus
-          .filter(m => menuCategory === 'all' || m.category === menuCategory)
           .filter(m => m.name.toLowerCase().includes(menuSearch.toLowerCase()))
 
         console.log('[filteredMenus 렌더링 시점]', showRecipes ? 'recipes' : 'sets', 'allMenus:', allMenus.length, 'filtered:', filteredMenus.length)
@@ -1651,7 +1649,7 @@ export default function HomePage() {
               </motion.div>
             ) : (
               <div>
-                {orderedCategories.map((categoryName, catIdx) => (
+                {orderedCategories.filter(cat => setFilter === '전체' || cat === setFilter).map((categoryName, catIdx) => (
                   <section key={categoryName} style={{ marginBottom: 24 }}>
                     <div style={{ display: 'flex', alignItems: 'center', gap: 6, marginBottom: 10, paddingLeft: 4 }}>
                       <h3 style={{ margin: 0, fontSize: '0.92rem', fontWeight: 700, color: 'rgba(200,216,228,0.8)' }}>
