@@ -562,6 +562,10 @@ export default function SetBuilderProto({ onOpenSidebar }: Props = {}) {
       }
       setSaved(true)
       setIsDirty(false)
+      // 홈화면에서 새로 로드하도록 캐시 제거
+      if (userId) {
+        localStorage.removeItem(`godogi_sets_cache_${userId}`)
+      }
       setTimeout(() => router.push('/'), 600)
     } catch (err) {
       console.error('Save error:', err)
