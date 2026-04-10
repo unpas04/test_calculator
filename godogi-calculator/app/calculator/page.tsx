@@ -97,6 +97,8 @@ function CalculatorContent() {
   const [showFridgeForm, setShowFridgeForm] = useState(false)
   const [fridgeEditItem, setFridgeEditItem] = useState<any | null>(null)
   const [fridgeForm, setFridgeForm] = useState({ name: '', price: '', per: '', unit: 'g', yield_: '100', category: '기타' })
+  const [openUnitDropdown, setOpenUnitDropdown] = useState(false)
+  const [openCategoryDropdown, setOpenCategoryDropdown] = useState(false)
   const [showOcrResults, setShowOcrResults] = useState(false)
   const [ocrProcessing, setOcrProcessing] = useState(false)
   const [ocrResults, setOcrResults] = useState<any[]>([])
@@ -846,24 +848,70 @@ function CalculatorContent() {
                 <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 10 }}>
                   <div>
                     <label style={{ fontSize: '0.7rem', color: 'rgba(200,216,228,0.5)', fontWeight: 700, marginBottom: 4, display: 'block' }}>단위</label>
-                    <select style={{ width: '100%', padding: '8px 10px', background: 'rgba(255,255,255,0.07)', border: '1px solid rgba(200,216,228,0.15)', borderRadius: 8, color: 'white', fontFamily: "'Noto Sans KR',sans-serif", fontWeight: 400, fontSize: '0.85rem', outline: 'none' }}
-                      value={fridgeForm.unit} onChange={e => setFridgeForm(f => ({ ...f, unit: e.target.value }))}>
-                      {FRIDGE_UNITS.map(u => <option key={u} style={{ background: '#1E2D40' }}>{u}</option>)}
-                    </select>
+                    <div style={{ position: 'relative' }}>
+                      <button onClick={() => setOpenUnitDropdown(!openUnitDropdown)} style={{ width: '100%', padding: '10px 12px', background: 'rgba(255,255,255,0.06)', border: '1px solid rgba(200,216,228,0.2)', borderRadius: 10, color: 'white', fontFamily: "'Noto Sans KR',sans-serif", fontWeight: 500, fontSize: '0.9rem', outline: 'none', cursor: 'pointer', display: 'flex', justifyContent: 'space-between', alignItems: 'center', transition: 'all 0.2s' }} onMouseEnter={e => { (e.currentTarget as HTMLButtonElement).style.background = 'rgba(255,255,255,0.1)'; (e.currentTarget as HTMLButtonElement).style.borderColor = 'rgba(200,216,228,0.4)' }} onMouseLeave={e => { (e.currentTarget as HTMLButtonElement).style.background = 'rgba(255,255,255,0.06)'; (e.currentTarget as HTMLButtonElement).style.borderColor = 'rgba(200,216,228,0.2)' }}>
+                        <span>{fridgeForm.unit}</span>
+                        <span style={{ fontSize: '0.7rem', transform: openUnitDropdown ? 'rotate(180deg)' : 'rotate(0deg)', transition: 'transform 0.2s' }}>▼</span>
+                      </button>
+                      {openUnitDropdown && (
+                        <>
+                          <div onClick={() => setOpenUnitDropdown(false)} style={{ position: 'fixed', inset: 0, zIndex: 100 }} />
+                          <div style={{ position: 'absolute', top: '100%', left: 0, right: 0, background: '#1A2840', border: '1px solid rgba(200,216,228,0.3)', borderRadius: 10, marginTop: 4, zIndex: 101, boxShadow: '0 8px 24px rgba(0,0,0,0.4)', overflow: 'hidden' }}>
+                            {FRIDGE_UNITS.map(u => (
+                              <button key={u} onClick={() => { setFridgeForm(f => ({ ...f, unit: u })); setOpenUnitDropdown(false) }} style={{ width: '100%', padding: '12px 16px', background: fridgeForm.unit === u ? 'rgba(74,127,165,0.3)' : 'transparent', color: fridgeForm.unit === u ? '#7DB8D8' : 'rgba(200,216,228,0.8)', fontFamily: "'Noto Sans KR',sans-serif", fontSize: '0.9rem', fontWeight: fridgeForm.unit === u ? 600 : 400, border: 'none', cursor: 'pointer', textAlign: 'left', transition: 'all 0.2s', borderLeft: fridgeForm.unit === u ? '3px solid #7DB8D8' : '3px solid transparent' }} onMouseEnter={e => { (e.currentTarget as HTMLButtonElement).style.background = 'rgba(74,127,165,0.2)' }} onMouseLeave={e => { (e.currentTarget as HTMLButtonElement).style.background = fridgeForm.unit === u ? 'rgba(74,127,165,0.3)' : 'transparent' }}>
+                                {u}
+                              </button>
+                            ))}
+                          </div>
+                        </>
+                      )}
+                    </div>
                   </div>
                   <div>
                     <label style={{ fontSize: '0.7rem', color: 'rgba(200,216,228,0.5)', fontWeight: 700, marginBottom: 4, display: 'block' }}>수율 (%)</label>
-                    <input style={{ width: '100%', padding: '8px 10px', background: 'rgba(255,255,255,0.07)', border: '1px solid rgba(200,216,228,0.15)', borderRadius: 8, color: 'white', fontFamily: "'Noto Sans KR',sans-serif", fontWeight: 400, fontSize: '0.85rem', outline: 'none', boxSizing: 'border-box' as const }}
+                    <input style={{ width: '100%', padding: '10px 12px', background: 'rgba(255,255,255,0.06)', border: '1px solid rgba(200,216,228,0.2)', borderRadius: 10, color: 'white', fontFamily: "'Noto Sans KR',sans-serif", fontWeight: 500, fontSize: '0.9rem', outline: 'none', boxSizing: 'border-box' as const, transition: 'all 0.2s' }}
                       value={fridgeForm.yield_} inputMode="numeric" placeholder="100"
+                      onMouseEnter={e => {
+                        e.currentTarget.style.background = 'rgba(255,255,255,0.1)'
+                        e.currentTarget.style.borderColor = 'rgba(200,216,228,0.4)'
+                      }}
+                      onMouseLeave={e => {
+                        e.currentTarget.style.background = 'rgba(255,255,255,0.06)'
+                        e.currentTarget.style.borderColor = 'rgba(200,216,228,0.2)'
+                      }}
+                      onFocus={e => {
+                        e.currentTarget.style.background = 'rgba(255,255,255,0.12)'
+                        e.currentTarget.style.borderColor = 'rgba(74,127,165,0.5)'
+                        e.currentTarget.style.boxShadow = '0 0 0 2px rgba(74,127,165,0.15)'
+                      }}
+                      onBlur={e => {
+                        e.currentTarget.style.background = 'rgba(255,255,255,0.06)'
+                        e.currentTarget.style.borderColor = 'rgba(200,216,228,0.2)'
+                        e.currentTarget.style.boxShadow = 'none'
+                      }}
                       onChange={e => setFridgeForm(f => ({ ...f, yield_: e.target.value }))} />
                   </div>
                 </div>
                 <div>
                   <label style={{ fontSize: '0.7rem', color: 'rgba(200,216,228,0.5)', fontWeight: 700, marginBottom: 4, display: 'block' }}>카테고리</label>
-                  <select style={{ width: '100%', padding: '8px 10px', background: 'rgba(255,255,255,0.07)', border: '1px solid rgba(200,216,228,0.15)', borderRadius: 8, color: 'white', fontFamily: "'Noto Sans KR',sans-serif", fontWeight: 400, fontSize: '0.85rem', outline: 'none' }}
-                    value={fridgeForm.category} onChange={e => setFridgeForm(f => ({ ...f, category: e.target.value }))}>
-                    {FRIDGE_CATEGORIES.filter(c => c !== '전체').map(c => <option key={c} style={{ background: '#1E2D40' }}>{c}</option>)}
-                  </select>
+                  <div style={{ position: 'relative' }}>
+                    <button onClick={() => setOpenCategoryDropdown(!openCategoryDropdown)} style={{ width: '100%', padding: '10px 12px', background: 'rgba(255,255,255,0.06)', border: '1px solid rgba(200,216,228,0.2)', borderRadius: 10, color: 'white', fontFamily: "'Noto Sans KR',sans-serif", fontWeight: 500, fontSize: '0.9rem', outline: 'none', cursor: 'pointer', display: 'flex', justifyContent: 'space-between', alignItems: 'center', transition: 'all 0.2s' }} onMouseEnter={e => { (e.currentTarget as HTMLButtonElement).style.background = 'rgba(255,255,255,0.1)'; (e.currentTarget as HTMLButtonElement).style.borderColor = 'rgba(200,216,228,0.4)' }} onMouseLeave={e => { (e.currentTarget as HTMLButtonElement).style.background = 'rgba(255,255,255,0.06)'; (e.currentTarget as HTMLButtonElement).style.borderColor = 'rgba(200,216,228,0.2)' }}>
+                      <span>{fridgeForm.category}</span>
+                      <span style={{ fontSize: '0.7rem', transform: openCategoryDropdown ? 'rotate(180deg)' : 'rotate(0deg)', transition: 'transform 0.2s' }}>▼</span>
+                    </button>
+                    {openCategoryDropdown && (
+                      <>
+                        <div onClick={() => setOpenCategoryDropdown(false)} style={{ position: 'fixed', inset: 0, zIndex: 100 }} />
+                        <div style={{ position: 'absolute', top: '100%', left: 0, right: 0, background: '#1A2840', border: '1px solid rgba(200,216,228,0.3)', borderRadius: 10, marginTop: 4, zIndex: 101, boxShadow: '0 8px 24px rgba(0,0,0,0.4)', overflow: 'hidden', maxHeight: '240px', overflowY: 'auto' }}>
+                          {FRIDGE_CATEGORIES.filter(c => c !== '전체').map(c => (
+                            <button key={c} onClick={() => { setFridgeForm(f => ({ ...f, category: c })); setOpenCategoryDropdown(false) }} style={{ width: '100%', padding: '12px 16px', background: fridgeForm.category === c ? 'rgba(74,127,165,0.3)' : 'transparent', color: fridgeForm.category === c ? '#7DB8D8' : 'rgba(200,216,228,0.8)', fontFamily: "'Noto Sans KR',sans-serif", fontSize: '0.9rem', fontWeight: fridgeForm.category === c ? 600 : 400, border: 'none', cursor: 'pointer', textAlign: 'left', transition: 'all 0.2s', borderLeft: fridgeForm.category === c ? '3px solid #7DB8D8' : '3px solid transparent' }} onMouseEnter={e => { (e.currentTarget as HTMLButtonElement).style.background = 'rgba(74,127,165,0.2)' }} onMouseLeave={e => { (e.currentTarget as HTMLButtonElement).style.background = fridgeForm.category === c ? 'rgba(74,127,165,0.3)' : 'transparent' }}>
+                              {c}
+                            </button>
+                          ))}
+                        </div>
+                      </>
+                    )}
+                  </div>
                 </div>
                 <div style={{ display: 'flex', gap: 8, marginTop: 4 }}>
                   <button onClick={() => setShowFridgeForm(false)} style={{ flex: 1, padding: '10px 0', background: 'rgba(255,255,255,0.07)', border: 'none', borderRadius: 10, color: 'rgba(200,216,228,0.5)', fontFamily: "'Noto Sans KR',sans-serif", fontWeight: 700, fontSize: '0.82rem', cursor: 'pointer' }}>취소</button>
