@@ -901,19 +901,21 @@ export default function SetBuilderProto({ onOpenSidebar }: Props = {}) {
                       {setCategory ? (setCategory.length > 8 ? setCategory.slice(0, 8) + '...' : setCategory) : '카테고리'} ▼
                     </motion.button>
                     {showCategoryDropdown && (
-                      <motion.div
-                        initial={{ opacity: 0, y: -4 }}
-                        animate={{ opacity: 1, y: 0 }}
-                        exit={{ opacity: 0, y: -4 }}
-                        onClick={e => e.stopPropagation()}
-                        style={{
-                          position: 'fixed', zIndex: 100,
-                          background: '#0F1923', border: '1px solid rgba(74,127,165,0.3)', borderRadius: 10,
-                          overflow: 'hidden', width: 200, boxShadow: '0 4px 12px rgba(0,0,0,0.4)',
-                          bottom: 'auto', top: '50px', right: 20,
-                          display: 'flex', flexDirection: 'column',
-                        }}
-                      >
+                      <>
+                        <div onClick={() => setShowCategoryDropdown(false)} style={{ position: 'fixed', inset: 0, zIndex: 99 }} />
+                        <motion.div
+                          initial={{ opacity: 0, y: -4 }}
+                          animate={{ opacity: 1, y: 0 }}
+                          exit={{ opacity: 0, y: -4 }}
+                          onClick={e => e.stopPropagation()}
+                          style={{
+                            position: 'fixed', zIndex: 100,
+                            background: '#0F1923', border: '1px solid rgba(74,127,165,0.3)', borderRadius: 10,
+                            overflow: 'hidden', width: 200, boxShadow: '0 4px 12px rgba(0,0,0,0.4)',
+                            bottom: 'auto', top: '50px', right: 20,
+                            display: 'flex', flexDirection: 'column',
+                          }}
+                        >
                         {/* 검색 입력 */}
                         <input
                           type="text"
@@ -961,6 +963,7 @@ export default function SetBuilderProto({ onOpenSidebar }: Props = {}) {
                           </motion.button>
                         </div>
                       </motion.div>
+                      </>
                     )}
                   </div>
                   <motion.button
