@@ -106,6 +106,7 @@ function CalculatorContent() {
   const [sidebarOpen, setSidebarOpen] = useState(false)
   const supabase = createClient()
   const autoSaveTimer = useRef<any>(null)
+
   const loadedForUser = useRef<string | null>(null)
   const pendingSave = useRef<any>(null)
   const saveMenuRef = useRef<any>(null)
@@ -1054,10 +1055,7 @@ function CalculatorContent() {
               </p>
             </div>
 
-            <button onClick={() => {
-              setShowGuestModal(false)
-              router.push('/')
-            }} style={{
+            <button onClick={loginWithGoogle} style={{
               width: '100%', padding: '14px 0',
               background: 'linear-gradient(135deg, #4A7FA5 0%, #2D5A7B 100%)',
               border: '1px solid rgba(74,127,165,0.5)',
