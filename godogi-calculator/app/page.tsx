@@ -1062,7 +1062,7 @@ export default function HomePage() {
             position: 'fixed', top: '50%', left: '50%', transform: 'translate(-50%, -50%)',
             background: 'linear-gradient(135deg, #1A2840 0%, #0F1923 100%)',
             borderRadius: 20, padding: '32px 28px', zIndex: 50,
-            maxWidth: 500, boxSizing: 'border-box',
+            width: '90%', maxWidth: 460, boxSizing: 'border-box',
             boxShadow: '0 20px 60px rgba(0,0,0,0.5), 0 0 1px rgba(74,127,165,0.3)',
             border: '1px solid rgba(74,127,165,0.15)',
           }}>
