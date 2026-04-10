@@ -5,7 +5,7 @@ import { useRouter, useSearchParams } from 'next/navigation'
 import { motion, AnimatePresence } from 'framer-motion'
 import { Plus, Pencil, X, ChevronUp, ChevronDown, ChevronLeft, ChevronRight, Settings } from 'lucide-react'
 import { createClient } from '@/lib/supabase'
-import { FIRST_LOGIN_MENU_SAMPLES, SAMPLE_SET_DEFINITIONS } from '@/lib/sampleData'
+import { FIRST_LOGIN_MENU_SAMPLES, SAMPLE_SET_DEFINITIONS, INDUSTRY_SAMPLES } from '@/lib/sampleData'
 
 const FEES_KEY = 'godogi_fees'
 
@@ -338,10 +338,11 @@ export default function SetBuilderProto({ onOpenSidebar }: Props = {}) {
     // 게스트 샘플 세트 로드
     if (editId.startsWith('guest_set_')) {
       const idx = parseInt(editId.replace('guest_set_', ''))
-      const def = SAMPLE_SET_DEFINITIONS[idx]
+      const cafeSets = INDUSTRY_SAMPLES['카페/디저트'].sets
+      const def = cafeSets[idx]
       if (!def) return
-      const menuMap: Record<string, typeof FIRST_LOGIN_MENU_SAMPLES[0]> = {}
-      FIRST_LOGIN_MENU_SAMPLES.forEach(m => { menuMap[m.name] = m })
+      const menuMap: Record<string, any> = {}
+      INDUSTRY_SAMPLES['카페/디저트'].menus.forEach(m => { menuMap[m.name] = m })
       setSetName(def.name)
       setSalePrice(def.sale_price > 0 ? def.sale_price.toLocaleString('ko-KR') : '')
       setChannel(def.channel)
@@ -405,7 +406,8 @@ export default function SetBuilderProto({ onOpenSidebar }: Props = {}) {
       const supabase = createClient()
       const { data: { session } } = await supabase.auth.getSession()
       if (!session) {
-        setPaletteBlocks(FIRST_LOGIN_MENU_SAMPLES.map(m => {
+        const cafeMenus = INDUSTRY_SAMPLES['카페/디저트'].menus
+        setPaletteBlocks(cafeMenus.map(m => {
           const ingTotal = (m.ingredients || []).reduce((sum: number, ing: any) => {
             const qty = ing.qty || 1
             const yld = (ing.yield_ || 100) / 100
@@ -422,6 +424,7 @@ export default function SetBuilderProto({ onOpenSidebar }: Props = {}) {
             emoji: m.emoji || '🍽️',
           }
         }))
+        setSetCategory('카페/디저트')
         setIsGuestMode(true)
         setAuthLoading(false)
         return

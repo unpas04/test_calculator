@@ -8,10 +8,20 @@ import Fridge from '@/components/Fridge'
 export default function FridgePage() {
   const router = useRouter()
   const [user, setUser] = useState<any>(null)
-  const [loading, setLoading] = useState(true)
+  const [loading, setLoading] = useState(false)
+  const [isGuest, setIsGuest] = useState(false)
   const supabase = createClient()
 
   useEffect(() => {
+    // 게스트 모드 확인
+    const guest = typeof window !== 'undefined' && sessionStorage.getItem('godogi_guest')
+    console.log('[FridgePage] guest:', guest, 'isGuest:', !!guest)
+    setIsGuest(!!guest)
+    if (guest) {
+      setLoading(false)
+      return
+    }
+
     supabase.auth.getSession().then(({ data: { session } }) => {
       setUser(session?.user ?? null)
       setLoading(false)
@@ -23,7 +33,7 @@ export default function FridgePage() {
     return () => subscription.unsubscribe()
   }, [])
 
-  if (loading) {
+  if (loading && !isGuest) {
     return (
       <main style={{ minHeight: '100vh', background: '#0F1923', display: 'flex', alignItems: 'center', justifyContent: 'center', color: 'rgba(200,216,228,0.5)', fontFamily: "'Noto Sans KR',sans-serif", fontSize: '0.9rem' }}>
         🐟 불러오는 중...
@@ -31,7 +41,7 @@ export default function FridgePage() {
     )
   }
 
-  if (!user) {
+  if (!user && !isGuest) {
     return (
       <main style={{ minHeight: '100vh', background: '#0F1923', color: 'white', fontFamily: "'Noto Sans KR', sans-serif", display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', padding: '40px 24px' }}>
         <div style={{ fontSize: '2.5rem', marginBottom: 16 }}>🐟</div>
@@ -66,7 +76,7 @@ export default function FridgePage() {
 
       {/* 냉장고 컴포넌트 */}
       <div style={{ maxWidth: 680, margin: '0 auto', paddingTop: 16 }}>
-        <Fridge user={user} />
+        <Fridge user={user ?? undefined} />
       </div>
     </main>
   )

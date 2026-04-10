@@ -420,10 +420,12 @@ export default function HomePage() {
     if (!isGuest) return
 
     const menuMap: Record<string, SampleMenu> = {}
-    ALL_SAMPLE_MENUS.forEach(m => { menuMap[m.name] = m })
+    const cafeMenus = INDUSTRY_SAMPLES['카페/디저트'].menus
+    cafeMenus.forEach(m => { menuMap[m.name] = m })
     const DEFAULT_FEES = { delivery_platform: 6.8, delivery_card: 1.5, hall_card: 1.5 }
 
-    const guestSets: DisplaySet[] = SAMPLE_SET_DEFINITIONS.map((def, i) => {
+    const cafeSets = INDUSTRY_SAMPLES['카페/디저트'].sets
+    const guestSets: DisplaySet[] = cafeSets.map((def, i) => {
       const blocks = def.menuNames.map((name, j) => {
         const m = menuMap[name]
         if (!m) return null
@@ -451,6 +453,7 @@ export default function HomePage() {
       return {
         id: `guest_set_${i}`,
         name: def.name,
+        product_category: def.category,
         channel: def.channel as 'delivery' | 'hall',
         sale_price: def.sale_price,
         totalCost,
@@ -460,6 +463,24 @@ export default function HomePage() {
       }
     })
     setSets(guestSets)
+
+    // allMenus에 게스트 메뉴 추가
+    const guestMenus = Object.entries(menuMap).map(([name, m]) => {
+      console.log('[원본 메뉴]', name, '원본 ingredients:', m.ingredients)
+      const ings = (m.ingredients || []).map((ing: any) => ing.name).filter(Boolean)
+      console.log('[게스트 메뉴]', name, 'ingredients:', ings)
+      return {
+        id: `guest_menu_${name}`,
+        name: m.name,
+        emoji: m.emoji,
+        category: m.category,
+        cost: 0,
+        ingredients: ings,
+      }
+    })
+    console.log('[게스트 allMenus]', guestMenus)
+    setAllMenus(guestMenus)
+
     const rates = guestSets.filter(s => s.costRate > 0).map(s => s.costRate)
     const avgRate = rates.length > 0 ? rates.reduce((a, b) => a + b, 0) / rates.length : null
     setMenuStats({ total: guestSets.length, avgRate, warnCount: rates.filter(r => r > 60).length })
@@ -491,6 +512,9 @@ export default function HomePage() {
 
   // 세트 로드 후 메뉴 목록 추출 + 모든 메뉴 직접 로드
   useEffect(() => {
+    // 게스트 모드에서는 실행하지 않음 (setAllMenus가 이미 게스트 메뉴로 설정됨)
+    if (isGuest) return
+
     const loadAllMenus = async () => {
       const menuMap = new Map<string, any>()
 
@@ -545,7 +569,7 @@ export default function HomePage() {
     }
 
     loadAllMenus()
-  }, [sets, user])
+  }, [sets, user, isGuest])
 
   const saveShopInfo = async (info: ShopInfo) => {
     setShopInfo(info)
@@ -1147,6 +1171,11 @@ export default function HomePage() {
         const filteredMenus = allMenus
           .filter(m => menuCategory === 'all' || m.category === menuCategory)
           .filter(m => m.name.toLowerCase().includes(menuSearch.toLowerCase()))
+
+        console.log('[filteredMenus 렌더링 시점]', showRecipes ? 'recipes' : 'sets', 'allMenus:', allMenus.length, 'filtered:', filteredMenus.length)
+        if (filteredMenus.length > 0) {
+          console.log('[첫 번째 메뉴]', filteredMenus[0])
+        }
 
         // TOP 5 수익성 좋은 상품 (costRate 낮은 순)
         const top5Sets = [...filteredSets].sort((a, b) => a.costRate - b.costRate).slice(0, 5)

@@ -35,15 +35,24 @@ export default forwardRef<FridgeHandle, Props>(function Fridge({ user }, ref) {
   const [ocrResults, setOcrResults] = useState<any[]>([])
   const [ocrSelected, setOcrSelected] = useState<Set<number>>(new Set())
   const [showOcrResults, setShowOcrResults] = useState(false)
+  const [isGuest, setIsGuest] = useState(false)
+  const [showGuestModal, setShowGuestModal] = useState(false)
   const ocrInputRef = useRef<HTMLInputElement>(null)
   const supabase = createClient()
 
   useEffect(() => {
-    if (!user) return
-    loadItems()
-    // syncToFridge debounce(800ms) 이후 반영 위해 1.2초 후 한 번 더 로드
-    const timer = setTimeout(loadItems, 1200)
-    return () => clearTimeout(timer)
+    // 게스트 모드: sessionStorage에서 godogi_guest 확인
+    const guest = typeof window !== 'undefined' && sessionStorage.getItem('godogi_guest')
+    setIsGuest(!!guest)
+
+    if (!user && !guest) return
+    if (user) {
+      loadItems()
+      // syncToFridge debounce(800ms) 이후 반영 위해 1.2초 후 한 번 더 로드
+      const timer = setTimeout(loadItems, 1200)
+      return () => clearTimeout(timer)
+    }
+    // 게스트 모드: 아무것도 로드하지 않음 (INGREDIENT_DB만 표시)
   }, [user])
 
   const loadItems = async () => {
@@ -77,19 +86,26 @@ export default forwardRef<FridgeHandle, Props>(function Fridge({ user }, ref) {
     const dbItems = INGREDIENT_DB
       .filter(d => !fridgeNames.includes(d.name))
       .map(d => ({ ...d, id: 'db_' + d.name, per: d.per, isDB: true }))
+    console.log('[Fridge mergedItems] items:', items.length, 'dbItems:', dbItems.length, 'total:', items.length + dbItems.length)
     return [...items, ...dbItems]
   }
 
   const filtered = () => {
     const all = mergedItems()
-    return all.filter(i => {
+    const result = all.filter(i => {
       const matchCat = selectedCategory === '전체' || i.category === selectedCategory
       const matchSearch = i.name.includes(search)
       return matchCat && matchSearch
     })
+    console.log('[Fridge filtered]', 'selectedCategory:', selectedCategory, 'search:', search, 'result:', result.length)
+    return result
   }
 
   const openAdd = () => {
+    if (isGuest) {
+      setShowGuestModal(true)
+      return
+    }
     setEditItem(null)
     setForm({ name: '', price: '', per: '', unit: 'g', yield_: '100', category: '기타' })
     setShowModal(true)
@@ -188,6 +204,7 @@ export default forwardRef<FridgeHandle, Props>(function Fridge({ user }, ref) {
     marginBottom: 4, display: 'block'
   }
 
+  console.log('[Fridge] rendering...', 'user:', !!user, 'items:', items.length)
   return (
     <div style={{ flex: 1, display: 'flex', flexDirection: 'column', overflow: 'hidden' }}>
       <style>{`
@@ -216,7 +233,13 @@ export default forwardRef<FridgeHandle, Props>(function Fridge({ user }, ref) {
           }}
         />
         <button
-          onClick={() => ocrInputRef.current?.click()}
+          onClick={() => {
+            if (isGuest) {
+              setShowGuestModal(true)
+              return
+            }
+            ocrInputRef.current?.click()
+          }}
           disabled={ocrProcessing}
           style={{
             flexShrink: 0, padding: '8px 12px',
@@ -396,6 +419,40 @@ export default forwardRef<FridgeHandle, Props>(function Fridge({ user }, ref) {
                 border: 'none', borderRadius: 10, color: 'white',
                 fontFamily: "'Noto Sans KR', sans-serif", fontWeight: 700, fontSize: '0.82rem', cursor: 'pointer'
               }}>저장</button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* 게스트 모드 로그인 모달 */}
+      {showGuestModal && (
+        <div style={{
+          position: 'fixed', inset: 0, zIndex: 100,
+          background: 'rgba(0,0,0,0.6)',
+          display: 'flex', alignItems: 'center', justifyContent: 'center'
+        }}>
+          <div style={{
+            background: '#1A2840', borderRadius: 20, padding: 28,
+            width: 280, display: 'flex', flexDirection: 'column', gap: 16, textAlign: 'center'
+          }}>
+            <div style={{ fontSize: '2rem', marginBottom: 8 }}>🐟</div>
+            <div style={{ fontFamily: "'Noto Sans KR', sans-serif", fontWeight: 700, color: 'white', fontSize: '0.95rem', lineHeight: 1.4 }}>
+              냉장고를 저장하려면<br />로그인이 필요해요
+            </div>
+            <p style={{ fontSize: '0.75rem', color: 'rgba(200,216,228,0.5)', margin: 0 }}>
+              로그인하면 재료를 저장하고,<br />영수증 사진으로도 쉽게 저장할 수 있어요
+            </p>
+            <div style={{ display: 'flex', gap: 8, marginTop: 8 }}>
+              <button onClick={() => setShowGuestModal(false)} style={{
+                flex: 1, padding: '10px 0', background: 'rgba(255,255,255,0.07)',
+                border: 'none', borderRadius: 10, color: 'rgba(200,216,228,0.6)',
+                fontFamily: "'Noto Sans KR', sans-serif", fontWeight: 700, fontSize: '0.8rem', cursor: 'pointer'
+              }}>닫기</button>
+              <button onClick={() => window.location.href = '/'} style={{
+                flex: 1, padding: '10px 0', background: '#4A7FA5',
+                border: 'none', borderRadius: 10, color: 'white',
+                fontFamily: "'Noto Sans KR', sans-serif", fontWeight: 700, fontSize: '0.8rem', cursor: 'pointer'
+              }}>로그인하기</button>
             </div>
           </div>
         </div>
