@@ -376,7 +376,11 @@ export default function HomePage() {
   useEffect(() => {
     if (typeof window !== 'undefined' && sessionStorage.getItem('godogi_guest')) {
       setIsGuest(true)
-      setShowTutorial(true)
+      // 사용설명서는 1회만 표시
+      if (!localStorage.getItem('godogi_guest_tutorial_shown')) {
+        setShowTutorial(true)
+        localStorage.setItem('godogi_guest_tutorial_shown', '1')
+      }
     }
   }, [])
 
@@ -599,11 +603,14 @@ export default function HomePage() {
     await supabase.auth.signOut()
     localStorage.removeItem('godogi_sets_cache')
     localStorage.removeItem('godogi_backfill_done')
+    localStorage.removeItem('godogi_guest_tutorial_shown')
+    sessionStorage.removeItem('godogi_guest')
     // 캐시만 제거 - 매장 정보는 Supabase에서 관리
     setUser(null)
     setSets([])
     setMenuStats(null)
     setShopInfo({ name: '', industry: '', targetRate: 35 })
+    setIsGuest(false)
   }
 
   // 영수증 OCR 결과 처리
@@ -892,7 +899,7 @@ export default function HomePage() {
       </div>
 
       <div style={{ display: 'flex', flexDirection: 'column', gap: 10, width: '100%', maxWidth: 320 }}>
-        <motion.button whileTap={{ scale: 0.97 }} onClick={() => { sessionStorage.setItem('godogi_guest', '1'); setIsGuest(true) }} style={{
+        <motion.button whileTap={{ scale: 0.97 }} onClick={() => { sessionStorage.setItem('godogi_guest', '1'); setIsGuest(true); setShowTutorial(true) }} style={{
           background: 'linear-gradient(135deg, #3A6FA5, #2A5080)', color: 'white', border: 'none',
           borderRadius: 14, padding: '14px', fontFamily: "'Noto Sans KR', sans-serif",
           fontWeight: 700, fontSize: '0.95rem', cursor: 'pointer',
@@ -1062,7 +1069,7 @@ export default function HomePage() {
             position: 'fixed', top: '50%', left: '50%', transform: 'translate(-50%, -50%)',
             background: 'linear-gradient(135deg, #1A2840 0%, #0F1923 100%)',
             borderRadius: 20, padding: '32px 28px', zIndex: 50,
-            width: '90%', maxWidth: 460, boxSizing: 'border-box',
+            width: '80%', maxWidth: 420, boxSizing: 'border-box',
             boxShadow: '0 20px 60px rgba(0,0,0,0.5), 0 0 1px rgba(74,127,165,0.3)',
             border: '1px solid rgba(74,127,165,0.15)',
           }}>

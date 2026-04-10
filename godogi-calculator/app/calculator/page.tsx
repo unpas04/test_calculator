@@ -536,9 +536,28 @@ function CalculatorContent() {
     </main>
   )
 
+  const handleReceiptResult = (data: any) => {
+    if (data?.showLoginModal) {
+      setShowGuestModal(true)
+      return
+    }
+  }
+
   return (
     <div style={{ display: 'flex', minHeight: '100vh' }}>
-      {/* CalculatorSidebar */}
+      {/* 게스트 모드: DashboardSidebar */}
+      {isGuest && (
+        <DashboardSidebar
+          user={user}
+          isGuest={isGuest}
+          onLogout={logout}
+          onReceiptUpload={handleReceiptResult}
+          isOpen={sidebarOpen}
+          onOpenChange={setSidebarOpen}
+        />
+      )}
+
+      {/* CalculatorSidebar (항상 표시) */}
       <CalculatorSidebar
         menus={menus.map(m => ({ ...m, costRate: calcCostRate(m), subLabel: calcSubLabel(m) }))}
         currentId={currentId}
