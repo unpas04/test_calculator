@@ -820,14 +820,28 @@ function CalculatorContent() {
                   </div>
                 ))}
                 <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 10 }}>
-                  {[{ label: '구매가 (원)', key: 'price' }, { label: '구매량', key: 'per' }].map(({ label, key }) => (
-                    <div key={key}>
-                      <label style={{ fontSize: '0.7rem', color: 'rgba(200,216,228,0.5)', fontWeight: 700, marginBottom: 4, display: 'block' }}>{label}</label>
-                      <input style={{ width: '100%', padding: '8px 10px', background: 'rgba(255,255,255,0.07)', border: '1px solid rgba(200,216,228,0.15)', borderRadius: 8, color: 'white', fontFamily: "'Noto Sans KR',sans-serif", fontWeight: 400, fontSize: '0.85rem', outline: 'none', boxSizing: 'border-box' as const }}
-                        value={fridgeForm[key as keyof typeof fridgeForm]} inputMode="numeric" placeholder="0"
-                        onChange={e => setFridgeForm(f => ({ ...f, [key]: e.target.value }))} />
-                    </div>
-                  ))}
+                  <div>
+                    <label style={{ fontSize: '0.7rem', color: 'rgba(200,216,228,0.5)', fontWeight: 700, marginBottom: 4, display: 'block' }}>매입가 (원)</label>
+                    <input style={{ width: '100%', padding: '8px 10px', background: 'rgba(255,255,255,0.07)', border: '1px solid rgba(200,216,228,0.15)', borderRadius: 8, color: 'white', fontFamily: "'Noto Sans KR',sans-serif", fontWeight: 400, fontSize: '0.85rem', outline: 'none', boxSizing: 'border-box' as const, textAlign: 'right' }}
+                      value={fridgeForm.price ? parseInt(fridgeForm.price).toLocaleString('ko-KR') : ''} inputMode="numeric" placeholder="0"
+                      onChange={e => {
+                        const numStr = e.target.value.replace(/,/g, '')
+                        if (/^\d*$/.test(numStr)) {
+                          setFridgeForm(f => ({ ...f, price: numStr }))
+                        }
+                      }} />
+                  </div>
+                  <div>
+                    <label style={{ fontSize: '0.7rem', color: 'rgba(200,216,228,0.5)', fontWeight: 700, marginBottom: 4, display: 'block' }}>구매량</label>
+                    <input style={{ width: '100%', padding: '8px 10px', background: 'rgba(255,255,255,0.07)', border: '1px solid rgba(200,216,228,0.15)', borderRadius: 8, color: 'white', fontFamily: "'Noto Sans KR',sans-serif", fontWeight: 400, fontSize: '0.85rem', outline: 'none', boxSizing: 'border-box' as const, textAlign: 'right' }}
+                      value={fridgeForm.per ? parseInt(fridgeForm.per).toLocaleString('ko-KR') : ''} inputMode="numeric" placeholder="0"
+                      onChange={e => {
+                        const numStr = e.target.value.replace(/,/g, '')
+                        if (/^\d*$/.test(numStr)) {
+                          setFridgeForm(f => ({ ...f, per: numStr }))
+                        }
+                      }} />
+                  </div>
                 </div>
                 <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 10 }}>
                   <div>
