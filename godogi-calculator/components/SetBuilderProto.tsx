@@ -675,7 +675,10 @@ export default function SetBuilderProto({ onOpenSidebar }: Props = {}) {
       {/* 추가 버튼 */}
       <div style={{ marginTop: 20, paddingTop: 14, borderTop: '1px solid rgba(255,255,255,0.06)' }}>
         <button
-          onClick={() => tryNavigate('/calculator?new=1&returnTo=/menu-builder')}
+          onClick={() => {
+            const returnTo = editId ? '/menu-builder?id=' + editId : '/menu-builder'
+            tryNavigate('/calculator?new=1&returnTo=' + returnTo)
+          }}
           style={{
             width: '100%', padding: '10px 0',
             background: 'rgba(74,127,165,0.15)', border: '1.5px dashed rgba(74,127,165,0.4)',

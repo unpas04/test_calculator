@@ -80,7 +80,7 @@ function CalculatorContent() {
   const returnTo = searchParams.get('returnTo') ?? '/?tab=recipes'
   const isNew = searchParams.get('new') === '1'
   const source = searchParams.get('source')
-  const fromMenuBuilder = source === 'menu' || returnTo === '/menu-builder'
+  const fromMenuBuilder = source === 'menu' || returnTo?.startsWith('/menu-builder')
   const fromRecipes = !fromMenuBuilder && (returnTo === '/' || returnTo?.startsWith('/?'))
   const [user, setUser] = useState<any>(null)
   const [loading, setLoading] = useState(true)
@@ -131,10 +131,28 @@ function CalculatorContent() {
     return () => subscription.unsubscribe()
   }, [])
 
-  // 비로그인 게스트: 샘플 메뉴로 시작
+  // 비로그인 게스트: 샘플 메뉴로 시작 (new=1이면 빈 새 메뉴 추가)
   useEffect(() => {
     if (loading || user) return
-    if (menus.length === 0) {
+    if (isNew) {
+      // +추가 버튼으로 진입: 샘플 메뉴 목록 + 빈 새 메뉴 생성
+      const cafeMenus = INDUSTRY_SAMPLES['카페/디저트'].menus
+      const sampleMenus = cafeMenus.map(s => ({
+        ...defaultMenu(),
+        id: `guest_menu_${s.name}`,
+        name: s.name,
+        emoji: s.emoji,
+        category: s.category,
+        labor: s.labor,
+        overhead: s.overhead,
+        batch_yield: s.batch_yield,
+        serving_size: s.serving_size,
+        ingredients: (s.ingredients || []).map((ing: any) => ({ ...ing, id: genId() })),
+      }))
+      const newMenu = defaultMenu()
+      setMenus([...sampleMenus, newMenu])
+      setCurrentId(newMenu.id) // 빈 새 메뉴 화면으로 바로 이동
+    } else if (menus.length === 0) {
       const cafeMenus = INDUSTRY_SAMPLES['카페/디저트'].menus
       const sampleMenus = cafeMenus.map(s => ({
         ...defaultMenu(),
@@ -611,7 +629,7 @@ function CalculatorContent() {
               <span style={{ color: 'var(--text-soft)', opacity: 0.4 }}>›</span>
               <a href="/menu-builder" style={{ color: 'var(--text-soft)', textDecoration: 'none', fontWeight: 500 }}>메뉴구성</a>
               <span style={{ color: 'var(--text-soft)', opacity: 0.4 }}>›</span>
-              <span style={{ color: 'var(--text-mid)', fontWeight: 700 }}>레시피수정</span>
+              <span style={{ color: 'var(--text-mid)', fontWeight: 700 }}>{isNew ? '레시피추가' : '레시피수정'}</span>
             </div>
           </div>
         )}
