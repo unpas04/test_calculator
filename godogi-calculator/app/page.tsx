@@ -506,13 +506,14 @@ export default function HomePage() {
         .eq('user_id', user.id)
         .single()
 
-      // shopData가 없으면 신규 사용자 → SetupModal + Tutorial 표시
+      // shopData가 없으면 신규 사용자 → SetupModal + Tutorial 표시 (세트 로드 안 함)
       if (!shopData) {
         setShowSetup(true)
         setShowTutorial(true)
+        return // 신규 유저는 SetupModal 완료 후 handleSetupComplete에서 로드
       }
-      // 신규/기존 모두 데이터 로드
-      loadSets()
+      // 기존 사용자만 업종 정보와 함께 세트 로드
+      loadSets(shopData.industry)
     })()
   }, [user])
 
@@ -716,16 +717,9 @@ export default function HomePage() {
     if (error) { console.error(error); setSetsLoading(false); return }
 
     if (!data || data.length === 0) {
-      await insertSampleData(user.id, industry)
-      // 삽입 후 재로드
-      const { data: data2 } = await supabase
-        .from('sets')
-        .select(`id, name, sale_price, channel, category, created_at, set_items(id, sort_order, menu_id, menus(id, name, category, emoji, labor, overhead, batch_yield, serving_size, ingredients(id, price, qty, unit, yield_, use_amount)))`)
-        .eq('user_id', user.id).order('created_at', { ascending: false })
-      const computed2 = (data2 || []).map(s => computeSetDisplay(s, feeSettings))
-      setSets(computed2)
-      const rates2 = computed2.filter(s => s.costRate > 0).map(s => s.costRate)
-      setMenuStats({ total: computed2.length, avgRate: rates2.length > 0 ? rates2.reduce((a, b) => a + b, 0) / rates2.length : null, warnCount: rates2.filter(r => r > 60).length })
+      // 데이터가 없으면 빈 상태로 설정 (샘플 삽입은 handleSetupComplete에서만)
+      setSets([])
+      setMenuStats(null)
     } else {
       const computed = data.map(s => computeSetDisplay(s, feeSettings))
       console.log('[HomePage] 마지막 set:', { name: computed[computed.length - 1]?.name, product_category: computed[computed.length - 1]?.product_category })
@@ -776,14 +770,22 @@ export default function HomePage() {
     let menuByName: Record<string, string> = {}
 
     if (!existingMenus || existingMenus.length === 0) {
+      // 중복 메뉴 제거 (같은 이름의 메뉴는 첫 번째만 사용)
+      const seenMenus = new Set<string>()
+      const uniqueMenus = menusSource.filter((m: any) => {
+        if (seenMenus.has(m.name)) return false
+        seenMenus.add(m.name)
+        return true
+      })
+
       const { data: insertedMenus } = await supabase.from('menus').insert(
-        menusSource.map(({ ingredients: _ing, ...s }: any) => ({ user_id: userId, ...s }))
+        uniqueMenus.map(({ ingredients: _ing, ...s }: any) => ({ user_id: userId, ...s }))
       ).select()
       if (insertedMenus) {
         menuByName = Object.fromEntries(insertedMenus.map((m: any) => [m.name, m.id]))
         const ingredientInserts: any[] = []
         for (const [menuName, menuId] of Object.entries(menuByName)) {
-          const source = menusSource.find((m: any) => m.name === menuName)
+          const source = uniqueMenus.find((m: any) => m.name === menuName)
           if (source?.ingredients?.length) {
             source.ingredients.forEach((ing: any) => {
               ingredientInserts.push({ menu_id: menuId, ...ing })
@@ -804,8 +806,14 @@ export default function HomePage() {
       sessionStorage.removeItem('godogi_guest')
     }
 
-    // 샘플 세트 삽입
+    // 샘플 세트 삽입 (중복 체크)
+    const { data: existingSets } = await supabase.from('sets').select('name').eq('user_id', userId)
+    const existingSetNames = new Set((existingSets || []).map((s: any) => s.name))
+
     for (const def of industrySets) {
+      // 같은 이름의 세트가 이미 있으면 스킵
+      if (existingSetNames.has(def.name)) continue
+
       const menuIds = def.menuNames.map(n => menuByName[n]).filter(Boolean)
       if (menuIds.length === 0) continue
       const { data: newSet } = await supabase.from('sets').insert({
