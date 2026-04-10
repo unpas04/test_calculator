@@ -975,15 +975,23 @@ export default function SetBuilderProto({ onOpenSidebar }: Props = {}) {
                     style={{
                       background: saved ? 'linear-gradient(135deg, #4A8C6F, #3A7C5F)' : blocks.length > 0 && setCategory ? 'linear-gradient(135deg, #4A7FA5, #2D5A7B)' : 'rgba(255,255,255,0.05)',
                       border: saved ? '1px solid rgba(74,140,111,0.5)' : blocks.length > 0 && setCategory ? '1px solid rgba(74,127,165,0.4)' : '1px solid rgba(255,255,255,0.1)',
-                      borderRadius: 12, padding: '12px 20px',
+                      borderRadius: 10, padding: '8px 16px',
                       color: blocks.length > 0 && setCategory ? 'white' : 'rgba(200,216,228,0.3)',
-                      fontFamily: "'Noto Sans KR',sans-serif", fontWeight: 700, fontSize: '0.9rem',
+                      fontFamily: "'Noto Sans KR',sans-serif", fontWeight: 700, fontSize: '0.82rem',
                       cursor: blocks.length > 0 && setCategory ? 'pointer' : 'default',
                       flexShrink: 0, transition: 'all 0.2s ease',
                       boxShadow: blocks.length > 0 && setCategory ? '0 4px 16px rgba(74,127,165,0.25)' : 'none',
                       opacity: blocks.length > 0 && setCategory ? 1 : 0.6,
+                      display: 'flex', alignItems: 'center', gap: 6,
                     }}
-                  >{saved ? '저장됨' : '저장'}</motion.button>
+                  >
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                      <path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z" />
+                      <polyline points="17 21 17 13 7 13 7 21" />
+                      <polyline points="7 3 7 8 15 8" />
+                    </svg>
+                    {saved ? '저장됨' : '저장'}
+                  </motion.button>
                 </div>
               </>
             </div>

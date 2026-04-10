@@ -337,12 +337,21 @@ export default function Calculator({ menu, onChange, onOpenFridge, onSave }: Pro
           } as React.CSSProperties}
         />
         <button onClick={() => { onSave?.(); setShowSaved(true); setTimeout(() => setShowSaved(false), 1800) }} style={{
-          background: showSaved ? 'var(--green)' : 'var(--silver-light)',
-          color: showSaved ? 'white' : 'var(--text-mid)',
-          border: 'none', borderRadius: 12, padding: '10px 16px',
+          background: showSaved ? 'linear-gradient(135deg, #4A8C6F, #3A7C5F)' : 'linear-gradient(135deg, #4A7FA5, #2D5A7B)',
+          color: 'white',
+          border: showSaved ? '1px solid rgba(74,140,111,0.5)' : '1px solid rgba(74,127,165,0.4)',
+          borderRadius: 10, padding: '8px 16px',
           fontFamily: "'Noto Sans KR', sans-serif", fontWeight: 700, fontSize: '0.82rem',
-          cursor: 'pointer', transition: 'all 0.2s', whiteSpace: 'nowrap'
-        }}>{showSaved ? '✓ 저장됨' : '💾 저장'}</button>
+          cursor: 'pointer', transition: 'all 0.2s', whiteSpace: 'nowrap',
+          display: 'flex', alignItems: 'center', gap: 6, boxShadow: '0 4px 12px rgba(74,127,165,0.25)',
+        }}>
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+            <path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z" />
+            <polyline points="17 21 17 13 7 13 7 21" />
+            <polyline points="7 3 7 8 15 8" />
+          </svg>
+          {showSaved ? '저장됨' : '저장'}
+        </button>
       </div>
 
       {/* 카테고리 + 이모지 */}
@@ -673,12 +682,28 @@ export default function Calculator({ menu, onChange, onOpenFridge, onSave }: Pro
       {/* 우하단 플로팅 내보내기 버튼 */}
       <button onClick={handleExport} style={{
         position: 'fixed', bottom: 24, right: 24, zIndex: 50,
-        width: 48, height: 48, borderRadius: '50%',
-        background: '#4A7FA5', color: 'white',
-        border: 'none', fontSize: '1.2rem',
-        cursor: 'pointer', boxShadow: '0 4px 14px rgba(30,45,64,0.3)',
+        width: 52, height: 52, borderRadius: '50%',
+        background: 'linear-gradient(135deg, #4A7FA5, #2D5A7B)',
+        color: 'white',
+        border: '1px solid rgba(74,127,165,0.4)',
+        cursor: 'pointer', boxShadow: '0 6px 20px rgba(74,127,165,0.3)',
         display: 'flex', alignItems: 'center', justifyContent: 'center',
-      }} title="이미지로 내보내기">📷</button>
+        transition: 'all 0.2s ease',
+      }}
+      onMouseEnter={(e: React.MouseEvent<HTMLButtonElement>) => {
+        e.currentTarget.style.transform = 'scale(1.1)'
+        e.currentTarget.style.boxShadow = '0 8px 28px rgba(74,127,165,0.4)'
+      }}
+      onMouseLeave={(e: React.MouseEvent<HTMLButtonElement>) => {
+        e.currentTarget.style.transform = 'scale(1)'
+        e.currentTarget.style.boxShadow = '0 6px 20px rgba(74,127,165,0.3)'
+      }}
+      title="이미지로 내보내기">
+        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+          <path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z" />
+          <circle cx="12" cy="13" r="4" />
+        </svg>
+      </button>
 
       {/* ── 인건비 계산 모달 ── */}
       {showLaborModal && (
