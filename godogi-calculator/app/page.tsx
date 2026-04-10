@@ -489,29 +489,63 @@ export default function HomePage() {
     })()
   }, [user])
 
-  // 세트 로드 후 메뉴 목록 추출
+  // 세트 로드 후 메뉴 목록 추출 + 모든 메뉴 직접 로드
   useEffect(() => {
-    const menuMap = new Map<string, any>()
-    for (const set of sets) {
-      for (const block of set.blocks) {
-        if (!menuMap.has(block.menu_id)) {
-          // 재료명 배열로 변환
-          const ingredientNames = block.ingredients && Array.isArray(block.ingredients)
-            ? block.ingredients.map((ing: any) => typeof ing === 'string' ? ing : ing.name).filter(Boolean)
-            : []
-          menuMap.set(block.menu_id, {
-            id: block.menu_id,
-            name: block.name,
-            emoji: block.emoji,
-            category: block.category,
-            cost: block.cost,
-            ingredients: ingredientNames,
-          })
+    const loadAllMenus = async () => {
+      const menuMap = new Map<string, any>()
+
+      // 1. 세트에서 메뉴 추출
+      for (const set of sets) {
+        for (const block of set.blocks) {
+          if (!menuMap.has(block.menu_id)) {
+            // 재료명 배열로 변환
+            const ingredientNames = block.ingredients && Array.isArray(block.ingredients)
+              ? block.ingredients.map((ing: any) => typeof ing === 'string' ? ing : ing.name).filter(Boolean)
+              : []
+            menuMap.set(block.menu_id, {
+              id: block.menu_id,
+              name: block.name,
+              emoji: block.emoji,
+              category: block.category,
+              cost: block.cost,
+              ingredients: ingredientNames,
+            })
+          }
         }
       }
+
+      // 2. menus 테이블에서 모든 메뉴 직접 로드 (세트에 없는 것까지 포함)
+      if (user) {
+        const { data: allDbMenus } = await supabase
+          .from('menus')
+          .select('id, name, emoji, category, ingredients(name)')
+          .eq('user_id', user.id)
+        if (allDbMenus) {
+          for (const dbMenu of allDbMenus) {
+            if (!menuMap.has(dbMenu.id)) {
+              const ingredientNames = dbMenu.ingredients && Array.isArray(dbMenu.ingredients)
+                ? dbMenu.ingredients.map((ing: any) => ing.name).filter(Boolean)
+                : []
+              menuMap.set(dbMenu.id, {
+                id: dbMenu.id,
+                name: dbMenu.name,
+                emoji: dbMenu.emoji,
+                category: dbMenu.category,
+                cost: 0,
+                ingredients: ingredientNames,
+              })
+            }
+          }
+        }
+      }
+
+      const allMenusArray = Array.from(menuMap.values()).sort((a, b) => a.name.localeCompare(b.name))
+      console.log('[allMenus] 로드된 메뉴 수:', allMenusArray.length, '반찬:', allMenusArray.filter(m => m.category === 'banchan').length)
+      setAllMenus(allMenusArray)
     }
-    setAllMenus(Array.from(menuMap.values()).sort((a, b) => a.name.localeCompare(b.name)))
-  }, [sets])
+
+    loadAllMenus()
+  }, [sets, user])
 
   const saveShopInfo = async (info: ShopInfo) => {
     setShopInfo(info)
@@ -657,6 +691,7 @@ export default function HomePage() {
       setMenuStats({ total: computed2.length, avgRate: rates2.length > 0 ? rates2.reduce((a, b) => a + b, 0) / rates2.length : null, warnCount: rates2.filter(r => r > 60).length })
     } else {
       const computed = data.map(s => computeSetDisplay(s, feeSettings))
+      console.log('[HomePage] 마지막 set:', { name: computed[computed.length - 1]?.name, product_category: computed[computed.length - 1]?.product_category })
       const rates = computed.filter(s => s.costRate > 0).map(s => s.costRate)
       const stats = { total: computed.length, avgRate: rates.length > 0 ? rates.reduce((a, b) => a + b, 0) / rates.length : null, warnCount: rates.filter(r => r > 60).length }
       setSets(computed)
@@ -1449,7 +1484,7 @@ export default function HomePage() {
 
             {/* 카테고리 필터 (메뉴판) */}
             <div style={{ display: 'flex', gap: 4, overflowX: 'auto', marginBottom: 12, scrollbarWidth: 'none', msOverflowStyle: 'none', width: '100%' }}>
-              {['전체', ...activeCategories].map((cat) => (
+              {['전체', ...orderedCategories].map((cat) => (
                   <button key={cat} onClick={() => setSetFilter(cat as any)}
                     style={{
                       padding: '8px 16px', borderRadius: 20, border: '1px solid rgba(74,127,165,0.3)', cursor: 'pointer',
@@ -1690,22 +1725,6 @@ export default function HomePage() {
 
                                     {/* 수정/삭제 버튼 (한 줄) */}
                                     <div style={{ display: 'flex', gap: 8 }}>
-                                      {/* 수정 버튼 */}
-                                      <button onClick={e => { e.stopPropagation(); router.push(`/menu-builder?id=${set.id}&source=menu`) }}
-                                        style={{
-                                          flex: 1, padding: '8px 0', background: 'rgba(74,127,165,0.2)',
-                                          border: '1px solid rgba(74,127,165,0.3)', borderRadius: 8,
-                                          color: '#7DB8D8', fontSize: '0.78rem', fontWeight: 600,
-                                          fontFamily: "'Noto Sans KR',sans-serif", cursor: 'pointer',
-                                          display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 6,
-                                        }}>
-                                        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                                          <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/>
-                                          <path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/>
-                                        </svg>
-                                        수정하기
-                                      </button>
-
                                       {/* 삭제 버튼 */}
                                       <button
                                         onClick={e => { e.stopPropagation(); setDeleteConfirmId(set.id) }}
@@ -1723,6 +1742,22 @@ export default function HomePage() {
                                           <path d="M9 6V4a1 1 0 0 1 1-1h4a1 1 0 0 1 1 1v2"/>
                                         </svg>
                                         삭제하기
+                                      </button>
+
+                                      {/* 수정 버튼 */}
+                                      <button onClick={e => { e.stopPropagation(); router.push(`/menu-builder?id=${set.id}&source=menu`) }}
+                                        style={{
+                                          flex: 1, padding: '8px 0', background: 'rgba(74,127,165,0.2)',
+                                          border: '1px solid rgba(74,127,165,0.3)', borderRadius: 8,
+                                          color: '#7DB8D8', fontSize: '0.78rem', fontWeight: 600,
+                                          fontFamily: "'Noto Sans KR',sans-serif", cursor: 'pointer',
+                                          display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 6,
+                                        }}>
+                                        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                                          <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/>
+                                          <path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/>
+                                        </svg>
+                                        수정하기
                                       </button>
                                     </div>
                                   </motion.div>

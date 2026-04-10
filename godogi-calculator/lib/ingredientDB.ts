@@ -208,4 +208,6 @@ export const INGREDIENT_DB: DBIngredient[] = [
   { name: '젤라틴', price: 5000, per: 50, unit: 'g', yield_: 100, category: '기타' },
   { name: '코코넛밀크', price: 4000, per: 400, unit: 'ml', yield_: 100, category: '기타' },
   { name: '두유', price: 2500, per: 750, unit: 'ml', yield_: 100, category: '기타' },
+  { name: '에스프레소 원두', price: 30000, per: 1000, unit: 'g', yield_: 100, category: '기타' },
+  { name: '스페셜 원두', price: 45000, per: 1000, unit: 'g', yield_: 100, category: '기타' },
 ]

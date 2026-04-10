@@ -17,7 +17,7 @@ interface FeeSettings {
 const DEFAULT_FEES: FeeSettings = { delivery_platform: 6.8, delivery_card: 1.5, hall_card: 1.5 }
 
 // ── 타입 ────────────────────────────────────────
-type BlockCategory = 'main' | 'side' | 'banchan' | 'drink' | 'extra'
+type BlockCategory = 'main' | 'side' | 'banchan' | 'dessert' | 'drink' | 'extra'
 
 interface Block {
   id: string       // React key (temp: menu_id + timestamp, or set_item id from DB)
@@ -43,7 +43,7 @@ function calcMenuTotalCost(menu: any): number {
 }
 
 const CATEGORY_LABELS: Record<BlockCategory, string> = {
-  main: '메인메뉴', side: '사이드메뉴', banchan: '반찬', drink: '음료', extra: '기타 (포장·수수료 등)',
+  main: '메인메뉴', side: '사이드메뉴', banchan: '반찬', dessert: '디저트', drink: '음료', extra: '기타 (포장·수수료 등)',
 }
 
 function fmt(n: number) { return Math.round(n).toLocaleString('ko-KR') }
@@ -53,11 +53,12 @@ const CS: Record<BlockCategory, { bg: string; border: string; label: string; bar
   main:    { bg: 'linear-gradient(135deg,#1E2D40,#2A4060)', border: '#4A7FA5', label: '메인',    barColor: '#4A7FA5', shape: '14px',  shadow: '0 6px 20px rgba(74,127,165,0.3)' },
   side:    { bg: 'linear-gradient(135deg,#2D4A2D,#3A6040)', border: '#4A8C6F', label: '사이드',  barColor: '#4A8C6F', shape: '999px', shadow: '0 6px 20px rgba(74,140,111,0.3)' },
   banchan: { bg: 'linear-gradient(135deg,#3A1A1A,#5A2020)', border: '#C44A4A', label: '반찬',    barColor: '#C44A4A', shape: '999px', shadow: '0 6px 20px rgba(196,74,74,0.3)' },
+  dessert: { bg: 'linear-gradient(135deg,#4A3A2A,#6A5A4A)', border: '#D4A5A5', label: '디저트',  barColor: '#D4A5A5', shape: '999px', shadow: '0 6px 20px rgba(212,165,165,0.3)' },
   drink:   { bg: 'linear-gradient(135deg,#4A2D4A,#6A3A6A)', border: '#9B6B9B', label: '음료',    barColor: '#9B6B9B', shape: '999px', shadow: '0 6px 20px rgba(155,107,155,0.3)' },
   extra:   { bg: 'linear-gradient(135deg,#3A2A1A,#5A3A20)', border: '#C8843A', label: '기타',    barColor: '#C8843A', shape: '8px',   shadow: '0 6px 20px rgba(200,132,58,0.3)' },
 }
 
-const CATEGORY_ORDER: BlockCategory[] = ['main', 'side', 'banchan', 'drink', 'extra']
+const CATEGORY_ORDER: BlockCategory[] = ['main', 'side', 'banchan', 'dessert', 'drink', 'extra']
 
 // ── 팔레트 블록 ──────────────────────────────────
 function PaletteBlock({ block, onAdd }: { block: Block; onAdd: () => void }) {
@@ -305,7 +306,7 @@ export default function SetBuilderProto({ onOpenSidebar }: Props = {}) {
   const [userId, setUserId] = useState<string | null>(null)
   const [isGuestMode, setIsGuestMode] = useState(false)
   const [paletteBlocks, setPaletteBlocks] = useState<Block[]>([])
-  const [channel, setChannel] = useState<'delivery' | 'hall'>('delivery')
+  const [channel, setChannel] = useState<'delivery' | 'hall'>('hall')
   const [feeSettings, setFeeSettings] = useState<FeeSettings>(DEFAULT_FEES)
   const [showFeeModal, setShowFeeModal] = useState(false)
   const [showLoginModal, setShowLoginModal] = useState(false)
@@ -427,18 +428,15 @@ export default function SetBuilderProto({ onOpenSidebar }: Props = {}) {
       }
       setUserId(session.user.id)
 
-      // 캐시 있으면 즉시 표시
+      // 매번 새로 로드 (캐시 사용 안 함)
       const MENU_CACHE_KEY = `godogi_menus_${session.user.id}`
-      const cached = localStorage.getItem(MENU_CACHE_KEY)
-      if (cached) {
-        try { setPaletteBlocks(JSON.parse(cached)); setAuthLoading(false) } catch {}
-      }
 
-      const { data } = await supabase
+      const { data, error } = await supabase
         .from('menus')
         .select('*, ingredients(*)')
         .eq('user_id', session.user.id)
         .order('created_at', { ascending: true })
+      console.log('[SetBuilderProto] menus 로드:', { count: data?.length, error })
       if (data) {
         const blocks = data.map((m: any) => {
           // 중복 재료 dedup
@@ -450,11 +448,12 @@ export default function SetBuilderProto({ onOpenSidebar }: Props = {}) {
           return {
             id: m.id, menu_id: m.id, name: m.name,
             cost: Math.round(calcMenuTotalCost({ ...m, ingredients: deduped })),
-            category: (['main', 'side', 'banchan', 'drink', 'extra'].includes(m.category) ? m.category : 'main') as BlockCategory,
+            category: (['main', 'side', 'banchan', 'dessert', 'drink', 'extra'].includes(m.category) ? m.category : 'main') as BlockCategory,
             emoji: m.emoji || '🍽️',
           }
         })
         setPaletteBlocks(blocks)
+        console.log('[SetBuilderProto] paletteBlocks 설정:', blocks.length, 'blocks')
         localStorage.setItem(MENU_CACHE_KEY, JSON.stringify(blocks))
       }
       setAuthLoading(false)
@@ -534,6 +533,7 @@ export default function SetBuilderProto({ onOpenSidebar }: Props = {}) {
     if (!userId) { setShowLoginModal(true); return }
     const supabase = createClient()
     try {
+      // 세트 저장
       let setId = editId
       if (editId) {
         await supabase.from('sets').update({
@@ -544,20 +544,26 @@ export default function SetBuilderProto({ onOpenSidebar }: Props = {}) {
           updated_at: new Date().toISOString(),
         }).eq('id', editId)
       } else {
-        const { data, error } = await supabase.from('sets').insert({
+        const { data } = await supabase.from('sets').insert({
           user_id: userId,
           name: setName || '메뉴 구성',
           sale_price: salePriceNum,
           channel,
           category: setCategory,
         }).select().single()
-        if (error || !data) { console.error(error); return }
+        if (!data) return
         setId = data.id
       }
+
+      // 3. 블록 저장 (임시 ID는 실제 ID로 변환)
       await supabase.from('set_items').delete().eq('set_id', setId)
       if (blocks.length > 0) {
         await supabase.from('set_items').insert(
-          blocks.map((b, i) => ({ set_id: setId, menu_id: b.menu_id, sort_order: i }))
+          blocks.map((b, i) => ({
+            set_id: setId,
+            menu_id: b.menu_id,
+            sort_order: i
+          }))
         )
       }
       setSaved(true)
@@ -577,6 +583,7 @@ export default function SetBuilderProto({ onOpenSidebar }: Props = {}) {
     const matchSearch = b.name.toLowerCase().includes(paletteSearch.toLowerCase())
     return matchCat && matchSearch
   })
+  console.log('[SetBuilderProto] filteredPalette:', { palette: paletteBlocks.length, filtered: filteredPalette.length, category: paletteCategory })
 
   const CATEGORY_CHIPS: { key: 'all' | BlockCategory; label: string }[] = [
     { key: 'all', label: '전체' },
@@ -659,10 +666,10 @@ export default function SetBuilderProto({ onOpenSidebar }: Props = {}) {
             })
           : filteredPalette.map(b => <PaletteBlock key={b.id} block={b} onAdd={() => addBlock(b)} />)
       )}
-      {/* 원가 편집기 이동 버튼 */}
+      {/* 추가 버튼 */}
       <div style={{ marginTop: 20, paddingTop: 14, borderTop: '1px solid rgba(255,255,255,0.06)' }}>
         <button
-          onClick={() => tryNavigate('/calculator')}
+          onClick={() => tryNavigate('/calculator?new=1&returnTo=/menu-builder')}
           style={{
             width: '100%', padding: '10px 0',
             background: 'rgba(74,127,165,0.15)', border: '1.5px dashed rgba(74,127,165,0.4)',
@@ -1012,7 +1019,7 @@ export default function SetBuilderProto({ onOpenSidebar }: Props = {}) {
               >
                 {/* 채널 선택 + 수수료 설정 */}
                 <div style={{ display: 'flex', alignItems: 'center', gap: 6, marginBottom: 16 }}>
-                  {(['delivery', 'hall'] as const).map(ch => (
+                  {(['hall', 'delivery'] as const).map(ch => (
                     <button key={ch} onClick={() => { setChannel(ch); setIsDirty(true) }} style={{
                       padding: '5px 14px', borderRadius: 20, border: 'none', cursor: 'pointer',
                       fontFamily: "'Noto Sans KR',sans-serif", fontWeight: 700, fontSize: '0.75rem',

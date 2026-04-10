@@ -25,7 +25,7 @@ function defaultMenu() {
     id: genId(),
     name: '',
     category: 'main',
-    emoji: '',
+    emoji: '🍽️',
     batch_yield: 0,
     serving_size: 0,
     ingredients: [defaultIngredient()],
@@ -79,8 +79,9 @@ function CalculatorContent() {
   const menuIdParam = searchParams.get('menuId')
   const returnTo = searchParams.get('returnTo') ?? '/?tab=recipes'
   const isNew = searchParams.get('new') === '1'
-  const isFromMenu = searchParams.get('source') === 'menu'
-  const fromRecipes = !isFromMenu && returnTo?.startsWith('/') && returnTo !== '/proto'
+  const source = searchParams.get('source')
+  const fromMenuBuilder = source === 'menu' || returnTo === '/menu-builder'
+  const fromRecipes = !fromMenuBuilder && (returnTo === '/' || returnTo?.startsWith('/?'))
   const [user, setUser] = useState<any>(null)
   const [loading, setLoading] = useState(true)
   const [menus, setMenus] = useState<any[]>([])
@@ -145,7 +146,7 @@ function CalculatorContent() {
 
   useEffect(() => {
     if (!user) { loadedForUser.current = null; return }
-    if (loadedForUser.current === user.id) return
+    if (loadedForUser.current === user.id && !isNew) return
     loadedForUser.current = user.id
 
     const loadMenus = async () => {
@@ -159,33 +160,32 @@ function CalculatorContent() {
       setMenusLoading(false)
       if (error) { console.error(error); return }
 
-      if (menuList && menuList.length > 0) {
-        const formatted = menuList.map((m: any) => {
-          const sorted = (m.ingredients || []).sort((a: any, b: any) => a.sort_order - b.sort_order)
-          // 중복 재료 dedup (이름 기준) — 버그로 생긴 중복 자동 정리
-          const seen = new Set<string>()
-          const deduped = sorted.filter((ing: any) => {
-            if (!ing.name) return false
-            if (seen.has(ing.name)) { dirtyMenus.current.add(m.id); return false }
-            seen.add(ing.name)
-            return true
-          })
-          return { ...m, delivery_fee: m.delivery_fee, card_fee: m.card_fee, ingredients: deduped }
+      const formatted = (menuList || []).map((m: any) => {
+        const sorted = (m.ingredients || []).sort((a: any, b: any) => a.sort_order - b.sort_order)
+        // 중복 재료 dedup (이름 기준) — 버그로 생긴 중복 자동 정리
+        const seen = new Set<string>()
+        const deduped = sorted.filter((ing: any) => {
+          if (!ing.name) return false
+          if (seen.has(ing.name)) { dirtyMenus.current.add(m.id); return false }
+          seen.add(ing.name)
+          return true
         })
-        if (isNew) {
-          const newMenu = defaultMenu()
-          setMenus([...formatted, newMenu])
-          setCurrentId(newMenu.id)
-        } else {
-          setMenus(formatted)
-          const target = menuIdParam ? formatted.find((m: any) => m.id === menuIdParam) : null
-          setCurrentId(target ? target.id : formatted[0].id)
-        }
+        return { ...m, delivery_fee: m.delivery_fee, card_fee: m.card_fee, ingredients: deduped }
+      })
+
+      if (isNew) {
+        const newMenu = defaultMenu()
+        setMenus([...formatted, newMenu])
+        setCurrentId(newMenu.id)
+      } else {
+        setMenus(formatted)
+        const target = menuIdParam ? formatted.find((m: any) => m.id === menuIdParam) : null
+        setCurrentId(target ? target.id : formatted.length > 0 ? formatted[0].id : null)
       }
     }
 
     loadMenus()
-  }, [user])
+  }, [user, isNew])
 
   // 게스트 메뉴 변경사항 localStorage 자동 저장 (로그인 후 이전용)
   useEffect(() => {
@@ -426,13 +426,14 @@ function CalculatorContent() {
     if (!user || !menu) return
     if (!menu.created_at && !menu.name) return
     try {
+      console.log('[saveMenu] 저장할 메뉴:', { name: menu.name, category: menu.category })
       let menuId = menu.id
       if (!menu.created_at) {
         const { data, error } = await supabase.from('menus').insert({
           user_id: user.id,
           name: menu.name,
-          category: menu.category || 'main',
-          emoji: menu.emoji || '',
+          category: menu.category,
+          emoji: menu.emoji || '🍽️',
           batch_yield: menu.batch_yield || 0,
           serving_size: menu.serving_size || 0,
           packaging: menu.packaging,
@@ -443,7 +444,11 @@ function CalculatorContent() {
           sale_price: menu.sale_price,
           memo: menu.memo || '',
         }).select().single()
-        if (error || !data) return
+        if (error) {
+          console.error('[saveMenu] 저장 에러:', error)
+          return
+        }
+        if (!data) return
         menuId = data.id
         setMenus(prev => prev.map(m =>
           m.id === menu.id ? { ...m, id: data.id, created_at: data.created_at } : m
@@ -453,7 +458,7 @@ function CalculatorContent() {
         await supabase.from('menus').update({
           name: menu.name,
           category: menu.category || 'main',
-          emoji: menu.emoji || '',
+          emoji: menu.emoji || '🍽️',
           batch_yield: menu.batch_yield || 0,
           serving_size: menu.serving_size || 0,
           packaging: menu.packaging,
@@ -550,7 +555,7 @@ function CalculatorContent() {
               <span style={{ color: 'rgba(200,216,228,0.5)' }}>›</span>
               <span style={{ color: 'rgba(200,216,228,0.5)' }}>레시피관리</span>
               <span style={{ color: 'rgba(200,216,228,0.5)' }}>›</span>
-              <span style={{ color: 'rgba(200,216,228,0.8)' }}>레시피수정</span>
+              <span style={{ color: 'rgba(200,216,228,0.8)' }}>{isNew ? '레시피추가' : '레시피수정'}</span>
             </div>
           </div>
         )}
@@ -563,24 +568,25 @@ function CalculatorContent() {
           </div>
         )}
 
-        {/* 메뉴구성 화면의 뒤로가기 + 경로 (fromRecipes 아닐 때) */}
-        {!fromRecipes && (
-          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 24, fontSize: '0.78rem', fontFamily: "'Noto Sans KR', sans-serif" }}>
-            <a href={returnTo ?? '/proto'} style={{
+        {/* 메뉴구성 화면의 뒤로가기 + breadcrumb */}
+        {fromMenuBuilder && (
+          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 8 }}>
+            <a href={returnTo} style={{
               display: 'inline-flex', alignItems: 'center', gap: 5,
               background: 'rgba(74,127,165,0.15)', border: '1px solid rgba(74,127,165,0.3)',
               color: '#7DB8D8', textDecoration: 'none', fontWeight: 700,
               borderRadius: 8, padding: '5px 12px', fontSize: '0.78rem',
             }}><ArrowLeft size={13} style={{ flexShrink: 0 }} /> 메뉴구성</a>
-            <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
-              <a href="/" style={{ color: 'var(--text-soft)', textDecoration: 'none', fontWeight: 500 }}>홈</a>
+            <div style={{ display: 'flex', alignItems: 'center', gap: 6, fontSize: '0.78rem', fontFamily: "'Noto Sans KR', sans-serif" }}>
+              <a href="/" style={{ color: 'var(--text-soft)', textDecoration: 'none', fontWeight: 500 }}>대시보드</a>
               <span style={{ color: 'var(--text-soft)', opacity: 0.4 }}>›</span>
-              <a href="/proto" style={{ color: 'var(--text-soft)', textDecoration: 'none', fontWeight: 500 }}>메뉴구성</a>
+              <a href="/menu-builder" style={{ color: 'var(--text-soft)', textDecoration: 'none', fontWeight: 500 }}>메뉴구성</a>
               <span style={{ color: 'var(--text-soft)', opacity: 0.4 }}>›</span>
               <span style={{ color: 'var(--text-mid)', fontWeight: 700 }}>레시피수정</span>
             </div>
           </div>
         )}
+
         {currentMenu ? (
           <Calculator
             menu={currentMenu}

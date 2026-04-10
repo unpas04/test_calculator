@@ -68,11 +68,12 @@ function fromComma(val: string) {
 const UNITS = ['g', 'ml', '개', '팩', 'kg', 'L']
 
 const EMOJI_OPTIONS: Record<string, string[]> = {
-  main:    ['🍖', '🍗', '🥩', '🍲', '🫕', '🍜', '🍝', '🍛', '🍱', '🍣', '🥘', '🌮', '🫔', '🥗', '🍤', '🫙'],
-  side:    ['🍚', '🍳', '🥚', '🥞', '🫔', '🌯', '🥙', '🫓', '🍱', '🧆', '🥗', '🍘'],
-  banchan: ['🥬', '🥦', '🥕', '🌱', '🫑', '🥒', '🧅', '🫘', '🍄', '🫒', '🧄', '🌿', '🥜', '🍠', '🧂', '🥗'],
-  drink:   ['🥤', '🧃', '🍵', '☕', '🧋', '🍺', '🍶', '🥛', '🍹', '🧊', '🫖', '🍊'],
-  extra:   ['📦', '🛍️', '🥢', '🛵', '🧾', '🏷️', '💳', '🔖', '🪣', '📫', '🎁', '🗂️'],
+  main:    ['🍖', '🍗', '🥩', '🍲', '🫕', '🍜', '🍝', '🍛', '🍱', '🍣', '🥘', '🌮', '🫔', '🥗', '🍤', '🫙', '🥟', '🍙', '🍢', '🥓', '🌭', '🍔', '🍟', '🍕', '🥪', '🥙', '🧆', '🌯', '🥣', '🍳', '🥞', '🥚', '🦞', '🦐', '🦪'],
+  side:    ['🍚', '🍳', '🥚', '🥞', '🫓', '🍱', '🍘', '🥔', '🍠', '🥐', '🥯', '🍞', '🥖', '🥨', '🧀', '🥒', '🌶️', '🫑', '🥬', '🥦', '🌽', '🥕', '🫒', '🧅', '🍄', '🥜', '🌰', '🥓', '🧈', '🍅'],
+  banchan: ['🥬', '🥦', '🥕', '🌱', '🫑', '🥒', '🧅', '🫘', '🍄', '🫒', '🧄', '🌿', '🥜', '🍠', '🧂', '🥔', '🌽', '🌾', '🍅', '🌶️'],
+  dessert: ['🍰', '🎂', '🧁', '🍪', '🍩', '🍫', '🍬', '🍭', '🍮', '🍯', '🍼', '🥧', '🍨', '🍦', '🍧', '🍡', '🍓', '🍒', '🍑', '🥭', '🍌', '🍉', '🍊', '🍋', '🍍', '🥥', '🥝'],
+  drink:   ['🥤', '🧃', '🍵', '☕', '🧋', '🍺', '🍶', '🥛', '🍹', '🧊', '🫖', '🍾', '🍷', '🍸', '🍻', '🥂', '🧉', '☕', '🫘'],
+  extra:   ['📦', '🛍️', '🥢', '🛵', '🧾', '🏷️', '💳', '🔖', '🪣', '📫', '🎁', '🗂️', '🥡', '🥄', '🔪', '🍴', '⚙️', '🔧', '📋', '📝', '💰', '💵', '🏪', '🏬'],
 }
 
 function genId() { return crypto.randomUUID() }
@@ -315,20 +316,26 @@ export default function Calculator({ menu, onChange, onOpenFridge, onSave }: Pro
 
   return (
     <div>
-      {/* 메뉴판 경로: 헤더 없음 - SetBuilderProto에서만 처리 */}
-
       {/* 상단 바 */}
-      <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 4 }}>
-        {/* 메뉴명: 읽기전용 (냉장고에서만 추가) */}
-        <div style={{
-          flex: 1, fontFamily: "'Noto Sans KR', sans-serif", fontWeight: 700, fontSize: '1.1rem',
-          color: 'var(--navy)', background: 'none',
-          borderBottom: '2px solid var(--border)',
-          padding: '4px 0',
-          maxWidth: '100%', width: '100%'
-        }}>
-          {menu.name}
-        </div>
+      <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginTop: 32, marginBottom: 4 }}>
+        {/* 메뉴명 입력 */}
+        <input
+          type="text"
+          value={menu.name}
+          onChange={e => onChange({ ...menu, name: e.target.value })}
+          placeholder="메뉴명"
+          style={{
+            flex: 1, fontFamily: "'Noto Sans KR', sans-serif", fontWeight: 700, fontSize: '1.1rem',
+            color: 'white', background: 'none',
+            padding: '4px 0',
+            maxWidth: '100%', width: '100%',
+            outline: 'none',
+            borderTop: 'none',
+            borderLeft: 'none',
+            borderRight: 'none',
+            borderBottom: '2px solid rgba(125,184,216,0.8)'
+          } as React.CSSProperties}
+        />
         <button onClick={() => { onSave?.(); setShowSaved(true); setTimeout(() => setShowSaved(false), 1800) }} style={{
           background: showSaved ? 'var(--green)' : 'var(--silver-light)',
           color: showSaved ? 'white' : 'var(--text-mid)',
