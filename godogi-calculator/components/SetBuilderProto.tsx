@@ -968,18 +968,22 @@ export default function SetBuilderProto({ onOpenSidebar }: Props = {}) {
                   </div>
                   <motion.button
                     className="sb-save-btn"
-                    whileTap={{ scale: 0.93 }}
+                    whileHover={blocks.length > 0 && setCategory ? { scale: 1.05, boxShadow: '0 8px 24px rgba(74,127,165,0.4)' } : {}}
+                    whileTap={{ scale: 0.95 }}
                     onClick={handleSave}
                     animate={saved ? { scale: [1, 1.08, 1] } : {}}
                     style={{
-                      background: saved ? '#4A8C6F' : blocks.length > 0 && setCategory ? 'linear-gradient(135deg, #3A6FA5, #2A5080)' : 'rgba(255,255,255,0.06)',
-                      border: 'none', borderRadius: 10, padding: '8px 14px',
+                      background: saved ? 'linear-gradient(135deg, #4A8C6F, #3A7C5F)' : blocks.length > 0 && setCategory ? 'linear-gradient(135deg, #4A7FA5, #2D5A7B)' : 'rgba(255,255,255,0.05)',
+                      border: saved ? '1px solid rgba(74,140,111,0.5)' : blocks.length > 0 && setCategory ? '1px solid rgba(74,127,165,0.4)' : '1px solid rgba(255,255,255,0.1)',
+                      borderRadius: 12, padding: '12px 20px',
                       color: blocks.length > 0 && setCategory ? 'white' : 'rgba(200,216,228,0.3)',
-                      fontFamily: "'Noto Sans KR',sans-serif", fontWeight: 700, fontSize: '0.82rem',
+                      fontFamily: "'Noto Sans KR',sans-serif", fontWeight: 700, fontSize: '0.9rem',
                       cursor: blocks.length > 0 && setCategory ? 'pointer' : 'default',
-                      flexShrink: 0, transition: 'background 0.2s',
+                      flexShrink: 0, transition: 'all 0.2s ease',
+                      boxShadow: blocks.length > 0 && setCategory ? '0 4px 16px rgba(74,127,165,0.25)' : 'none',
+                      opacity: blocks.length > 0 && setCategory ? 1 : 0.6,
                     }}
-                  >{saved ? '✓' : '저장'}<span className="sb-save-text">{saved ? ' 저장됨' : ''}</span></motion.button>
+                  >{saved ? '저장됨' : '저장'}</motion.button>
                 </div>
               </>
             </div>
