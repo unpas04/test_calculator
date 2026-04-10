@@ -1374,7 +1374,12 @@ export default function HomePage() {
                 border: '1px solid rgba(74,127,165,0.2)',
                 borderRadius: 12, padding: '14px 12px', textAlign: 'center'
               }}>
-                <div style={{ fontSize: '0.6rem', color: 'rgba(200,216,228,0.4)', marginBottom: 4, fontWeight: 600 }}>📋 메뉴</div>
+                <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 6, fontSize: '0.6rem', color: 'rgba(200,216,228,0.4)', marginBottom: 4, fontWeight: 600 }}>
+                  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                    <path d="M8 6h13M8 12h13M8 18h13M3 6h.01M3 12h.01M3 18h.01"></path>
+                  </svg>
+                  메뉴
+                </div>
                 <div style={{ fontSize: '1.3rem', fontWeight: 800, color: '#4A7FA5' }}>{filteredSets.length}개</div>
               </div>
               {/* 평균 원가율 */}
@@ -1385,7 +1390,14 @@ export default function HomePage() {
                 border: `1px solid ${menuStats?.avgRate != null && menuStats.avgRate > 60 ? 'rgba(240,128,128,0.25)' : 'rgba(126,200,160,0.25)'}`,
                 borderRadius: 12, padding: '14px 12px', textAlign: 'center'
               }}>
-                <div style={{ fontSize: '0.6rem', color: 'rgba(200,216,228,0.4)', marginBottom: 4, fontWeight: 600 }}>📊 평균원가율</div>
+                <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 6, fontSize: '0.6rem', color: 'rgba(200,216,228,0.4)', marginBottom: 4, fontWeight: 600 }}>
+                  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                    <line x1="3" y1="3" x2="3" y2="21"></line>
+                    <line x1="3" y1="21" x2="21" y2="21"></line>
+                    <path d="M7 18v-5M11 18v-3M15 18v-6M19 18v-4"></path>
+                  </svg>
+                  평균원가율
+                </div>
                 <div style={{ fontSize: '1.3rem', fontWeight: 800, color: menuStats?.avgRate != null && menuStats.avgRate > 60 ? '#F08080' : '#7EC8A0' }}>
                   {menuStats?.avgRate != null ? `${Math.round(menuStats.avgRate)}%` : '—'}
                 </div>
@@ -1396,7 +1408,13 @@ export default function HomePage() {
                 border: '1px solid rgba(240,128,128,0.2)',
                 borderRadius: 12, padding: '14px 12px', textAlign: 'center'
               }}>
-                <div style={{ fontSize: '0.6rem', color: 'rgba(200,216,228,0.4)', marginBottom: 4, fontWeight: 600 }}>⚠️ 주의</div>
+                <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 6, fontSize: '0.6rem', color: 'rgba(200,216,228,0.4)', marginBottom: 4, fontWeight: 600 }}>
+                  <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor">
+                    <circle cx="12" cy="19" r="1"/>
+                    <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm1 15h-2v-2h2v2zm0-4h-2V7h2v6z"/>
+                  </svg>
+                  주의
+                </div>
                 <div style={{ fontSize: '1.3rem', fontWeight: 800, color: menuStats?.warnCount ? '#F08080' : 'rgba(200,216,228,0.3)' }}>
                   {menuStats?.warnCount ?? 0}개
                 </div>

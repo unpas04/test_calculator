@@ -321,6 +321,7 @@ export default function SetBuilderProto({ onOpenSidebar }: Props = {}) {
   const [showCategoryModal, setShowCategoryModal] = useState(false)
   const [customCategoryInput, setCustomCategoryInput] = useState('')
   const [categorySearch, setCategorySearch] = useState('')
+  const [alertModal, setAlertModal] = useState<{ show: boolean; message: string }>({ show: false, message: '' })
 
   useEffect(() => {
     const stored = localStorage.getItem(FEES_KEY)
@@ -532,7 +533,9 @@ export default function SetBuilderProto({ onOpenSidebar }: Props = {}) {
 
   const handleSave = async () => {
     if (blocks.length === 0) return
-    if (!setCategory) { alert('카테고리를 선택해주세요'); return }
+    if (!setName.trim()) { setAlertModal({ show: true, message: '메뉴명을 입력해주세요' }); return }
+    if (!setCategory) { setAlertModal({ show: true, message: '카테고리를 선택해주세요' }); return }
+    if (!salePriceNum) { setAlertModal({ show: true, message: '판매가를 입력해주세요' }); return }
     if (!userId) { setShowLoginModal(true); return }
     const supabase = createClient()
     try {
@@ -703,6 +706,36 @@ export default function SetBuilderProto({ onOpenSidebar }: Props = {}) {
 
   return (
     <>
+      <AnimatePresence>
+        {alertModal.show && (
+          <>
+            <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}
+              onClick={() => setAlertModal({ show: false, message: '' })}
+              style={{ position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.6)', zIndex: 60,
+                display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '0 24px' }}
+            >
+              <motion.div
+                initial={{ opacity: 0, scale: 0.95, y: 10 }} animate={{ opacity: 1, scale: 1, y: 0 }} exit={{ opacity: 0 }}
+                onClick={e => e.stopPropagation()}
+                style={{ background: '#1A2840', borderRadius: 20, padding: '24px 22px',
+                  width: '100%', maxWidth: 320, border: '1px solid rgba(74,127,165,0.25)' }}
+              >
+                <div style={{ fontSize: '2rem', marginBottom: 12 }}>⚠️</div>
+                <div style={{ fontFamily: "'Noto Sans KR',sans-serif", fontWeight: 700, fontSize: '0.95rem', color: 'white', marginBottom: 16 }}>
+                  {alertModal.message}
+                </div>
+                <button onClick={() => setAlertModal({ show: false, message: '' })} style={{
+                  width: '100%', padding: '10px 0', background: 'rgba(74,127,165,0.3)',
+                  border: '1px solid rgba(74,127,165,0.3)', borderRadius: 10,
+                  color: 'white', fontFamily: "'Noto Sans KR',sans-serif",
+                  fontWeight: 700, fontSize: '0.82rem', cursor: 'pointer',
+                }}>확인</button>
+              </motion.div>
+            </motion.div>
+          </>
+        )}
+      </AnimatePresence>
+
       <style>{`
         @keyframes pulse { 0%,100% { opacity:1; } 50% { opacity:0.3; } }
         .sb-summary-row { scrollbar-width: none; }
@@ -1430,6 +1463,7 @@ export default function SetBuilderProto({ onOpenSidebar }: Props = {}) {
             </>
           )}
         </AnimatePresence>
+
       </div>
     </>
   )
