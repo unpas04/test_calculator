@@ -197,28 +197,37 @@ async function callGoogleVision(base64Image: string): Promise<{ fullText: string
   return { fullText, words }
 }
 
-// 단위 정규화 함수
+// 단위 정규화 함수 (거래명세서 단위 전종 대응)
 function normalizeUnit(unit: string): string {
-  const unitMap: { [key: string]: string } = {
-    'kg': 'g', 'K': 'g', 'Kg': 'g', 'KG': 'g',
-    'L': 'ml', 'l': 'ml',
-    '개': '개', '마리': '개', '마': '개',
-    'g': 'g', 'G': 'g',
-    'ml': 'ml', 'Ml': 'ml', 'ML': 'ml',
-    'cc': 'ml',
-    '팩': '팩', '병': '팩', '봉': '팩', '입': '개', '컵': '개', '스푼': '개',
+  const unitMap: Record<string, string> = {
+    // 무게
+    'K': 'kg', 'k': 'kg', 'KG': 'kg', 'Kg': 'kg', 'kg': 'kg',
+    'G': 'g', 'g': 'g',
+    // 부피
+    'L': 'L', 'l': 'L', 'ℓ': 'L',
+    'ML': 'ml', 'ml': 'ml', 'Ml': 'ml', 'cc': 'ml', 'CC': 'ml',
+    // 개수 계열
+    'EA': '개', 'ea': '개', 'Ea': '개', 'E/A': '개', 'ea.': '개',
+    '개': '개', '마리': '개', '마': '개', '입': '개', '컵': '개',
+    // 묶음 계열
+    'BOX': '박스', 'Box': '박스', 'box': '박스', 'BX': '박스',
+    '단': '단', '망': '망', '묶': '묶', '봉': '봉', '팩': '팩', '병': '병', '캔': '개',
   }
-  return unitMap[unit] || unit
+  return unitMap[unit.trim()] || unit.trim()
 }
 
-// 단위별 수량 변환 (kg → g, L → ml)
-function convertQuantity(per: number, unit: string): { per: number; unit: string } {
-  if (unit === 'kg') return { per: per * 1000, unit: 'g' }
-  if (unit === 'L' || unit === 'l') return { per: per * 1000, unit: 'ml' }
-  return { per, unit }
-}
+// 알려진 단위 목록 (행에서 단독 단어로 인식할 것들)
+const KNOWN_UNITS = new Set([
+  'K', 'k', 'KG', 'Kg', 'kg',
+  'G', 'g',
+  'L', 'l', 'ℓ',
+  'ML', 'ml', 'Ml', 'cc', 'CC',
+  'EA', 'ea', 'Ea', 'E/A',
+  'BOX', 'Box', 'box', 'BX',
+  '단', '망', '묶', '봉', '팩', '병', '캔', '개', '마리',
+])
 
-// 테이블 형식 파싱 (거래명세서, 구조화된 표)
+// 테이블 형식 파싱 (거래명세서 전용 - 수량×단가=합계 관계 이용)
 function parseTableFormat(words: Word[]): ParsedItem[] {
   if (words.length === 0) return []
 
@@ -227,15 +236,12 @@ function parseTableFormat(words: Word[]): ParsedItem[] {
 
   // 단어들을 Y 좌표로 그룹화 (같은 행)
   const rows: TextRow[] = []
-  const yTolerance = 20 // 20px 이내는 같은 행 (tolerance 증가)
+  const yTolerance = 18
 
   for (const word of words) {
     if (!word.boundingBox?.vertices || word.boundingBox.vertices.length === 0) continue
-
     const y = word.boundingBox.vertices[0]?.y ?? 0
     let found = false
-
-    // 기존 행에 추가
     for (const row of rows) {
       if (Math.abs(row.y - y) < yTolerance) {
         row.words.push(word.text)
@@ -243,81 +249,113 @@ function parseTableFormat(words: Word[]): ParsedItem[] {
         break
       }
     }
-
-    // 새 행 생성
-    if (!found) {
-      rows.push({ words: [word.text], y })
-    }
+    if (!found) rows.push({ words: [word.text], y })
   }
 
-  // 각 행 파싱
   for (const row of rows) {
-    const lineText = row.words.join(' ')
+    const wordList = row.words.filter(w => w.trim())
+    const lineText = wordList.join(' ')
+
     if (lineText.length < 3) continue
-
-    // 한글 포함 확인
-    if (!/[\p{L}]/u.test(lineText)) continue
-
-    // 숫자 포함 확인
+    if (!/[가-힣]/.test(lineText)) continue  // 한글 없으면 스킵
     if (!/\d/.test(lineText)) continue
 
-    // 헤더/카테고리 행 스킵
-    if (/^[가-힣\s]+$/.test(lineText) && lineText.length > 20) continue
-    if (/할인|금액|합계|소계|부가세|총|VAT|번호|날짜|상호/i.test(lineText)) continue
+    // 헤더/합계 행 스킵
+    if (/품명|단위|수량|단가|금액|합계|부가세|공급가|소계|VAT|번호|날짜|상호|거래처|주소|합\s*계/i.test(lineText)) continue
 
-    // 가격 추출: 가장 오른쪽의 4~6자리 숫자
-    let price = 0
-    const allNumbers = lineText.match(/(\d{1,3}(?:[,]\d{3})*|\d+)/g) || []
-
-    // 오른쪽에서부터 확인
-    for (let i = allNumbers.length - 1; i >= 0; i--) {
-      const num = parseInt(allNumbers[i].replace(/,/g, ''), 10)
-      // 합리적인 가격 범위: 100원 ~ 1000만원
-      if (num >= 100 && num <= 10000000) {
-        price = num
+    // ── 1. 단위 추출 (단독 단어로 나타나는 단위 우선) ──────────────
+    let detectedUnit = '개'
+    for (const w of wordList) {
+      if (KNOWN_UNITS.has(w.trim())) {
+        detectedUnit = normalizeUnit(w.trim())
         break
       }
     }
-    if (price === 0) continue
-
-    // 수량+단위 추출
-    let per = 1
-    let unit = '개'
-    let confidence = 0.7
-
-    const qtyPattern = /(\d+(?:\.\d+)?)\s*(kg|k|g|G|L|l|ml|cc|개|마리|팩|병|봉|입|컵|스푼)/i
-    const qtyMatch = lineText.match(qtyPattern)
-
-    if (qtyMatch) {
-      per = parseFloat(qtyMatch[1])
-      const rawUnit = qtyMatch[2]
-      unit = normalizeUnit(rawUnit)
-      const converted = convertQuantity(per, rawUnit)
-      per = converted.per
-      unit = converted.unit
-      confidence = 0.85
+    // 인라인 단위 패턴도 보조 탐색 (예: "5kg", "2EA")
+    const inlineUnitMatch = lineText.match(/([\d.]+)\s*(K|kg|KG|G|g|L|l|ml|ML|EA|ea|BOX|box|단|망|봉|팩|병|개|마리)(?=[\s,\d]|$)/i)
+    if (inlineUnitMatch && !KNOWN_UNITS.has(inlineUnitMatch[2].trim() === detectedUnit ? '' : inlineUnitMatch[2])) {
+      // 별도 단위가 없으면 인라인 단위 사용
     }
 
-    // 재료명: 연속된 한글 추출 (가장 긴 것)
-    const koreanMatches = lineText.match(/[\p{L}]+/gu) || []
-    let name = ''
-    for (const match of koreanMatches) {
-      if (match.length >= 2 && match.length <= 30) {
-        if (match.length > name.length) name = match
+    // ── 2. 모든 숫자 추출 (순서 유지) ───────────────────────────────
+    const rawNums: number[] = []
+    for (const w of wordList) {
+      const cleaned = w.replace(/,/g, '')
+      const n = parseFloat(cleaned)
+      if (!isNaN(n) && n > 0) rawNums.push(n)
+    }
+    if (rawNums.length < 2) continue
+
+    // ── 3. 수량 추출 (소수 or 100 미만 정수) ─────────────────────────
+    let qty = 1
+    let qtyIdx = -1
+    for (let i = 0; i < rawNums.length; i++) {
+      const n = rawNums[i]
+      if (n % 1 !== 0 || (n > 0 && n < 100)) {
+        qty = n
+        qtyIdx = i
+        break
       }
     }
 
+    // ── 4. 단가 추출 (수량×단가 ≈ 합계 관계 이용) ─────────────────────
+    const largeNums = rawNums.filter((n, i) => i !== qtyIdx && n >= 100)
+    let unitPrice = 0
+    let confidence = 0.65
+
+    // 수량과 곱했을 때 다른 숫자 중 하나와 일치하는 것이 단가
+    for (const candidate of largeNums) {
+      const expectedTotal = Math.round(qty * candidate)
+      const matched = largeNums.some(n => Math.abs(n - expectedTotal) <= expectedTotal * 0.02)
+      if (matched && candidate !== expectedTotal) {
+        unitPrice = candidate
+        confidence = 0.9
+        break
+      }
+    }
+
+    // 매칭 실패 시: 첫 번째 큰 숫자를 단가로 (fallback)
+    if (unitPrice === 0 && largeNums.length > 0) {
+      unitPrice = largeNums[0]
+      confidence = 0.6
+    }
+    if (unitPrice === 0) continue
+
+    // ── 5. 재료명 추출 ───────────────────────────────────────────────
+    // 한글 단어들 중 의미 있는 것들 연결 (괄호 안 내용 포함)
+    const koreanTokens: string[] = []
+    let capturing = false
+    for (const w of wordList) {
+      if (KNOWN_UNITS.has(w.trim())) break  // 단위 나오면 이름 끝
+      if (/[가-힣]/.test(w)) {
+        koreanTokens.push(w.replace(/[()（）]/g, ''))
+        capturing = true
+      } else if (capturing && /[()（）]/.test(w)) {
+        // 괄호만 있는 단어는 무시
+      } else if (capturing && /^\d+$/.test(w)) {
+        break  // 순수 숫자 나오면 이름 끝
+      }
+    }
+
+    let name = koreanTokens.join('').trim()
+    // 너무 짧으면 lineText에서 가장 긴 한글 덩어리 사용
+    if (name.length < 2) {
+      const matches = lineText.match(/[가-힣]+/g) || []
+      name = matches.sort((a, b) => b.length - a.length)[0] || ''
+    }
     if (name.length < 2) continue
 
     const nameLower = name.toLowerCase()
     if (seenNames.has(nameLower)) continue
     seenNames.add(nameLower)
 
-    if (qtyMatch) confidence += 0.1
-    if (price >= 1000 && price <= 500000) confidence += 0.1 // 가격이 합리적이면 신뢰도 UP
+    // ── 6. 단가 합리성 체크 ─────────────────────────────────────────
+    if (unitPrice >= 100 && unitPrice <= 10000000) confidence += 0.05
     confidence = Math.min(confidence, 1)
 
-    items.push({ name, price, per, unit, confidence })
+    // 단가 + 수량 그대로 저장 (price=단가/단위, per=1)
+    // 예: 양파 K 5.00 1250 → price=1250, per=1, unit=kg
+    items.push({ name, price: unitPrice, per: 1, unit: detectedUnit, confidence })
   }
 
   return items.sort((a, b) => b.confidence - a.confidence)
@@ -370,12 +408,17 @@ function parseIngredients(text: string): ParsedItem[] {
       qtyMatch = line.match(volumePattern)
 
       if (qtyMatch) {
-        const rawUnit = qtyMatch[2]
+        const rawUnit = qtyMatch[2].trim()
         unit = normalizeUnit(rawUnit)
-        const converted = convertQuantity(parseFloat(qtyMatch[1]), rawUnit)
-        per = converted.per
-        unit = converted.unit
-        // 부피 단위는 신뢰도 낮춤 (실제 수량이 아니라 패키지 크기)
+        const rawPer = parseFloat(qtyMatch[1])
+        // kg→g, L→ml 변환
+        if (rawUnit.toLowerCase() === 'kg' || rawUnit === 'K' || rawUnit === 'k') {
+          per = rawPer * 1000; unit = 'g'
+        } else if (rawUnit === 'L' || rawUnit === 'l') {
+          per = rawPer * 1000; unit = 'ml'
+        } else {
+          per = rawPer
+        }
         confidence = 0.60
       }
     }
