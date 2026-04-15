@@ -331,6 +331,12 @@ export default function HomePage() {
   const [sidebarOpen, setSidebarOpen] = useState(false)
   const [showTutorial, setShowTutorial] = useState(false)
   const [showReceiptLoginModal, setShowReceiptLoginModal] = useState(false)
+  const [previewSlide, setPreviewSlide] = useState(0)
+  useEffect(() => {
+    if (user || isGuest) return
+    const timer = setInterval(() => setPreviewSlide(i => (i + 1) % 4), 4500)
+    return () => clearInterval(timer)
+  }, [user, isGuest])
   const [receiptResult, setReceiptResult] = useState<any>(null)
   const [receiptOcrLoading, setReceiptOcrLoading] = useState(false)
   const [receiptSelected, setReceiptSelected] = useState<Set<number>>(new Set())
@@ -874,50 +880,179 @@ export default function HomePage() {
   )
 
   if (!user && !isGuest) return (
-    <main style={{ minHeight: '100vh', background: '#0F1923', color: 'white', fontFamily: "'Noto Sans KR', sans-serif", display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', padding: '40px 24px' }}>
-      <motion.div animate={{ rotate: [0, -8, 8, -4, 0] }} transition={{ duration: 2.5, repeat: Infinity, repeatDelay: 4 }} style={{ marginBottom: 20 }}>
-        <svg width="64" height="64" viewBox="0 0 100 100" fill="none">
-          <ellipse cx="50" cy="55" rx="32" ry="22" fill="#4A7FA5"/>
-          <ellipse cx="50" cy="53" rx="30" ry="20" fill="#5B9EC9"/>
-          <polygon points="82,55 100,40 100,70" fill="#4A7FA5"/>
-          <ellipse cx="46" cy="58" rx="18" ry="12" fill="#C8E6F5"/>
-          <circle cx="35" cy="48" r="5" fill="white"/>
-          <circle cx="35" cy="48" r="3" fill="#1E2D40"/>
-          <circle cx="36" cy="47" r="1" fill="white"/>
-          <path d="M 28 56 Q 32 60 36 56" stroke="#1E2D40" strokeWidth="1.5" fill="none" strokeLinecap="round"/>
-          <ellipse cx="50" cy="33" rx="10" ry="6" fill="#4A7FA5" transform="rotate(-10 50 33)"/>
-          <ellipse cx="30" cy="52" rx="4" ry="2.5" fill="#F4A0A0" opacity="0.6"/>
-        </svg>
-      </motion.div>
+    <main style={{ minHeight: '100vh', background: '#0F1923', color: 'white', fontFamily: "'Noto Sans KR', sans-serif", display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', padding: '40px 24px', gap: 0, position: 'relative', overflow: 'hidden' }}>
 
-      <h1 style={{ fontSize: '1.6rem', fontWeight: 700, margin: '0 0 8px', textAlign: 'center' }}>고독이의 원가계산기</h1>
-      <p style={{ fontSize: '0.9rem', color: 'rgba(200,216,228,0.5)', margin: '0 0 36px', textAlign: 'center' }}>우리 메뉴, 진짜로 남는 장사일까요?</p>
+      {/* 콘텐츠 */}
+      <div style={{ position: 'relative', zIndex: 1, display: 'flex', flexDirection: 'column', alignItems: 'center', width: '100%', maxWidth: 320 }}>
 
-      <div style={{ display: 'flex', flexDirection: 'column', gap: 10, marginBottom: 40, width: '100%', maxWidth: 320 }}>
-        {[
-          { icon: '🧮', text: '재료비 · 인건비 · 간접비 자동 계산' },
-          { icon: '🛵', text: '배달·카드 수수료 포함 실수익 계산' },
-          { icon: '📊', text: '세트 메뉴 원가율 한눈에 비교' },
-        ].map(({ icon, text }) => (
-          <div key={text} style={{ display: 'flex', alignItems: 'center', gap: 12, background: 'rgba(255,255,255,0.04)', borderRadius: 12, padding: '12px 16px' }}>
-            <span style={{ fontSize: '1.2rem' }}>{icon}</span>
-            <span style={{ fontSize: '0.82rem', color: 'rgba(200,216,228,0.75)' }}>{text}</span>
+        {/* 로고 */}
+        <motion.div animate={{ rotate: [0, -8, 8, -4, 0] }} transition={{ duration: 2.5, repeat: Infinity, repeatDelay: 4 }} style={{ marginBottom: 14 }}>
+          <svg width="52" height="52" viewBox="0 0 100 100" fill="none">
+            <ellipse cx="50" cy="55" rx="32" ry="22" fill="#4A7FA5"/>
+            <ellipse cx="50" cy="53" rx="30" ry="20" fill="#5B9EC9"/>
+            <polygon points="82,55 100,40 100,70" fill="#4A7FA5"/>
+            <ellipse cx="46" cy="58" rx="18" ry="12" fill="#C8E6F5"/>
+            <circle cx="35" cy="48" r="5" fill="white"/>
+            <circle cx="35" cy="48" r="3" fill="#1E2D40"/>
+            <circle cx="36" cy="47" r="1" fill="white"/>
+            <path d="M 28 56 Q 32 60 36 56" stroke="#1E2D40" strokeWidth="1.5" fill="none" strokeLinecap="round"/>
+            <ellipse cx="50" cy="33" rx="10" ry="6" fill="#4A7FA5" transform="rotate(-10 50 33)"/>
+            <ellipse cx="30" cy="52" rx="4" ry="2.5" fill="#F4A0A0" opacity="0.6"/>
+          </svg>
+        </motion.div>
+
+        <h1 style={{ fontSize: '1.5rem', fontWeight: 800, margin: '0 0 6px', textAlign: 'center', letterSpacing: '-0.3px' }}>고독이의 원가계산기</h1>
+        <p style={{ fontSize: '0.82rem', color: 'rgba(200,216,228,0.4)', margin: '0 0 20px', textAlign: 'center' }}>음식점 사장님을 위한 메뉴 원가 관리 앱</p>
+
+        {/* LIVE 소셜 증명 */}
+        <div style={{ marginBottom: 20, display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 10 }}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: 7, background: 'rgba(255,80,80,0.08)', border: '1px solid rgba(255,80,80,0.15)', borderRadius: 20, padding: '6px 14px' }}>
+            <motion.div
+              animate={{ opacity: [1, 0.2, 1] }}
+              transition={{ duration: 1.2, repeat: Infinity }}
+              style={{ width: 7, height: 7, borderRadius: '50%', background: '#FF5050', flexShrink: 0 }}
+            />
+            <span style={{ fontSize: '0.75rem', color: 'rgba(200,216,228,0.7)' }}>전국 매출 상위 음식점 사장님들이 선택한 앱</span>
           </div>
-        ))}
-      </div>
+        </div>
 
-      <div style={{ display: 'flex', flexDirection: 'column', gap: 10, width: '100%', maxWidth: 320 }}>
-        <motion.button whileTap={{ scale: 0.97 }} onClick={() => { sessionStorage.setItem('godogi_guest', '1'); setIsGuest(true); setShowTutorial(true) }} style={{
-          background: 'linear-gradient(135deg, #3A6FA5, #2A5080)', color: 'white', border: 'none',
-          borderRadius: 14, padding: '14px', fontFamily: "'Noto Sans KR', sans-serif",
-          fontWeight: 700, fontSize: '0.95rem', cursor: 'pointer',
-        }}>✏️ 로그인 없이 바로 써보기</motion.button>
-        <motion.button whileTap={{ scale: 0.97 }} onClick={loginWithGoogle} style={{
-          background: 'white', color: '#1E2D40', border: 'none',
-          borderRadius: 14, padding: '14px', fontFamily: "'Noto Sans KR', sans-serif",
-          fontWeight: 700, fontSize: '0.95rem', cursor: 'pointer',
-        }}>🔑 Google로 로그인하기</motion.button>
-        <p style={{ textAlign: 'center', fontSize: '0.68rem', color: '#7DB8D8', margin: 0 }}>로그인하면 데이터가 저장돼요</p>
+        {/* 미리보기 슬라이더 */}
+        {(() => {
+          const slides = [
+            {
+              industry: '한식',
+              sets: [
+                { setName: '순두부찌개 정식', price: 12000, cost: 3360, rate: 28, items: ['순두부찌개', '공기밥', '깍두기', '젓가락'] },
+                { setName: '삼겹살 1인 A세트', price: 18000, cost: 7380, rate: 41, items: ['삼겹살 200g', '쌈채소', '된장찌개', '포장용기'] },
+              ],
+            },
+            {
+              industry: '카페',
+              sets: [
+                { setName: '아메리카노 세트', price: 8500, cost: 1530, rate: 18, items: ['아메리카노', '크로플', '일회용컵', '빨대'] },
+                { setName: '샌드위치 세트', price: 11000, cost: 3080, rate: 28, items: ['BLT 샌드위치', '아메리카노', '포장봉투', '냅킨'] },
+              ],
+            },
+            {
+              industry: '양식',
+              sets: [
+                { setName: '봉골레 파스타 런치', price: 15000, cost: 4950, rate: 33, items: ['봉골레 파스타', '샐러드', '마늘빵', '포크&나이프'] },
+                { setName: '함박스테이크 세트', price: 18000, cost: 6840, rate: 38, items: ['함박스테이크', '수프', '감자튀김', '소스'] },
+              ],
+            },
+            {
+              industry: '이자카야',
+              sets: [
+                { setName: '모둠사시미 세트', price: 28000, cost: 11760, rate: 42, items: ['모둠사시미', '미소된장국', '밥', '와사비', '나무젓가락'] },
+                { setName: '가라아게 정식', price: 14000, cost: 4900, rate: 35, items: ['가라아게', '밥', '미소국', '샐러드', '소스'] },
+              ],
+            },
+          ]
+          const current = slides[previewSlide]
+          const totalSlides = slides.length
+          return (
+            <div
+              style={{ width: '100%', marginBottom: 20 }}
+              onTouchStart={(e) => { (e.currentTarget as any)._touchX = e.touches[0].clientX }}
+              onTouchEnd={(e) => {
+                const startX = (e.currentTarget as any)._touchX
+                if (startX == null) return
+                const diff = startX - e.changedTouches[0].clientX
+                if (Math.abs(diff) < 40) return
+                if (diff > 0) setPreviewSlide(i => Math.min(i + 1, totalSlides - 1))
+                else setPreviewSlide(i => Math.max(i - 1, 0))
+              }}
+            >
+              {/* 업종 헤더 */}
+              <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 10 }}>
+                <span style={{ fontSize: '0.75rem', fontWeight: 700, color: '#7EC4E8', background: 'rgba(74,127,165,0.2)', border: '1px solid rgba(74,127,165,0.35)', borderRadius: 8, padding: '3px 10px' }}>{current.industry}</span>
+                <div style={{ display: 'flex', gap: 5 }}>
+                  {slides.map((_, i) => (
+                    <div key={i} onClick={() => setPreviewSlide(i)} style={{ width: i === previewSlide ? 16 : 6, height: 6, borderRadius: 3, background: i === previewSlide ? '#4A7FA5' : 'rgba(255,255,255,0.15)', cursor: 'pointer', transition: 'all 0.3s ease' }} />
+                  ))}
+                </div>
+              </div>
+
+              {/* 카드 2개 — 슬라이드 애니메이션 */}
+              <AnimatePresence mode="wait">
+                <motion.div
+                  key={previewSlide}
+                  initial={{ opacity: 0, x: 30 }}
+                  animate={{ opacity: 1, x: 0 }}
+                  exit={{ opacity: 0, x: -30 }}
+                  transition={{ duration: 0.35, ease: 'easeInOut' }}
+                  style={{ display: 'flex', flexDirection: 'column', gap: 10 }}
+                >
+                  {current.sets.map(({ setName, price, cost, rate, items }) => (
+                    <div key={setName} style={{ background: 'rgba(255,255,255,0.05)', borderRadius: 14, padding: '14px 16px', border: '1px solid rgba(255,255,255,0.09)' }}>
+                      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 10 }}>
+                        <span style={{ fontSize: '0.88rem', fontWeight: 700, color: 'rgba(200,216,228,0.95)' }}>{setName}</span>
+                        <span style={{ fontSize: '0.72rem', fontWeight: 700, color: rate > 35 ? '#FF8C8C' : '#7EC8A4', background: rate > 35 ? 'rgba(255,140,140,0.12)' : 'rgba(126,200,164,0.12)', padding: '2px 8px', borderRadius: 10 }}>원가율 {rate}%</span>
+                      </div>
+                      <div style={{ display: 'flex', gap: 6, flexWrap: 'wrap', marginBottom: 12 }}>
+                        {items.map(item => (
+                          <span key={item} style={{ fontSize: '0.7rem', color: 'rgba(200,216,228,0.55)', background: 'rgba(255,255,255,0.06)', borderRadius: 6, padding: '3px 9px', border: '1px solid rgba(255,255,255,0.07)' }}>{item}</span>
+                        ))}
+                      </div>
+                      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', paddingTop: 10, borderTop: '1px solid rgba(255,255,255,0.06)' }}>
+                        <div style={{ display: 'flex', gap: 12 }}>
+                          <div>
+                            <div style={{ fontSize: '0.6rem', color: 'rgba(200,216,228,0.3)', marginBottom: 2 }}>원가</div>
+                            <div style={{ fontSize: '0.82rem', fontWeight: 700, color: 'rgba(200,216,228,0.6)' }}>{cost.toLocaleString()}원</div>
+                          </div>
+                          <div>
+                            <div style={{ fontSize: '0.6rem', color: 'rgba(200,216,228,0.3)', marginBottom: 2 }}>판매가</div>
+                            <div style={{ fontSize: '0.82rem', fontWeight: 700, color: 'rgba(200,216,228,0.85)' }}>{price.toLocaleString()}원</div>
+                          </div>
+                        </div>
+                        <div>
+                          <div style={{ fontSize: '0.6rem', color: 'rgba(200,216,228,0.3)', marginBottom: 2 }}>수익</div>
+                          <div style={{ fontSize: '0.88rem', fontWeight: 800, color: 'rgba(200,216,228,0.9)', borderBottom: '2px solid rgba(200,216,228,0.4)', paddingBottom: 1, display: 'inline-block' }}>+{(price - cost).toLocaleString()}원</div>
+                        </div>
+                      </div>
+                    </div>
+                  ))}
+                </motion.div>
+              </AnimatePresence>
+            </div>
+          )
+        })()}
+
+        {/* 공감 문구 */}
+        <div style={{ display: 'flex', flexDirection: 'column', gap: 8, marginBottom: 24, width: '100%' }}>
+          {[
+            '"이 메뉴, 팔수록 손해인 거 아닐까?"',
+            '"배달 수수료 빼면 실제로 얼마 남지?"',
+            '"어떤 메뉴가 진짜 효자 메뉴인지 모르겠다"',
+          ].map((text) => (
+            <div key={text} style={{ display: 'flex', alignItems: 'center', gap: 10, background: 'rgba(255,255,255,0.03)', borderRadius: 12, padding: '10px 14px', border: '1px solid rgba(255,255,255,0.05)' }}>
+              <div style={{ width: 3, height: 28, borderRadius: 2, background: '#4A7FA5', flexShrink: 0 }} />
+              <span style={{ fontSize: '0.78rem', color: 'rgba(200,216,228,0.6)', lineHeight: 1.5 }}>{text}</span>
+            </div>
+          ))}
+        </div>
+
+        {/* 로그인 버튼 */}
+        <div style={{ display: 'flex', flexDirection: 'column', gap: 10, width: '100%' }}>
+          <p style={{ textAlign: 'center', fontSize: '0.72rem', color: 'rgba(200,216,228,0.35)', margin: '0 0 4px', letterSpacing: '0.2px' }}>
+            한식 · 양식 · 중식 · 일식 · 카페 · 분식, 모든 업종 지원
+          </p>
+          <motion.button whileTap={{ scale: 0.97 }} onClick={loginWithGoogle} style={{
+            background: 'white', color: '#1E2D40', border: 'none',
+            borderRadius: 14, padding: '15px', fontFamily: "'Noto Sans KR', sans-serif",
+            fontWeight: 800, fontSize: '0.95rem', cursor: 'pointer',
+            boxShadow: '0 4px 24px rgba(255,255,255,0.12)',
+          }}>
+            Google 계정으로 무료 시작하기
+          </motion.button>
+          <div style={{ display: 'flex', justifyContent: 'center', gap: 14 }}>
+            {['무료', '레시피 저장', '언제든 탈퇴 가능'].map((t) => (
+              <span key={t} style={{ fontSize: '0.65rem', color: 'rgba(200,216,228,0.3)', display: 'flex', alignItems: 'center', gap: 3 }}>
+                <span style={{ color: '#4A7FA5' }}>✓</span> {t}
+              </span>
+            ))}
+          </div>
+        </div>
       </div>
     </main>
   )
