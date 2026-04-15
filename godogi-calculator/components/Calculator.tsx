@@ -125,6 +125,15 @@ export default function Calculator({ menu, onChange, onOpenFridge, onSave }: Pro
       console.error('PNG export error:', err)
     }
   }
+  const [shopName, setShopName] = useState<string>('')
+  useEffect(() => {
+    supabase.auth.getUser().then(({ data }) => {
+      if (!data.user) return
+      supabase.from('shop_profiles').select('shop_name').eq('user_id', data.user.id).single().then(({ data: shop }) => {
+        if (shop?.shop_name) setShopName(shop.shop_name)
+      })
+    })
+  }, [])
   const [fridgeItems, setFridgeItems] = useState<any[]>([])
   const [suggestions, setSuggestions] = useState<{ [key: string]: any[] }>({})
   const [showSugg, setShowSugg] = useState<{ [key: string]: boolean }>({})
@@ -992,43 +1001,138 @@ export default function Calculator({ menu, onChange, onOpenFridge, onSave }: Pro
       {/* ── 숨겨진 레시피 공유용 (PNG 내보내기용) ── */}
       <div ref={recipeShareRef} style={{
         position: 'fixed', left: '-9999px', top: 0, zIndex: -1, opacity: 0,
-        width: 440, background: 'white', padding: '40px 36px',
-        fontFamily: "'Noto Sans KR', sans-serif",
+        width: 390,
+        background: '#ffffff',
+        fontFamily: '"Apple SD Gothic Neo", "Malgun Gothic", Arial, sans-serif',
+        borderRadius: 16,
+        overflow: 'hidden',
+        boxShadow: '0 8px 40px rgba(0,0,0,0.14)',
       }}>
-        {/* 메뉴명 + 이모지 */}
-        <div style={{ display: 'flex', alignItems: 'flex-end', gap: 12, marginBottom: 28 }}>
-          <span style={{ fontSize: '3rem' }}>{menu.emoji || '🍽️'}</span>
-          <div>
-            <div style={{ fontSize: '1.8rem', fontWeight: 800, color: '#1E2D40', fontFamily: 'Black Han Sans' }}>
-              {menu.name || '(메뉴명 없음)'}
+        {/* 좌측 포인트 바 + 헤더 영역 */}
+        <div style={{ display: 'flex' }}>
+          {/* 좌측 4px 포인트 바 */}
+          <div style={{ width: 5, background: '#4A7FA5', flexShrink: 0 }} />
+          {/* 헤더 */}
+          <div style={{
+            flex: 1,
+            padding: '22px 24px 18px',
+            background: '#F8FAFC',
+            borderBottom: '1px solid #EDF1F5',
+          }}>
+            {/* 매장명 + 날짜 */}
+            <div style={{
+              display: 'flex',
+              justifyContent: 'space-between',
+              alignItems: 'center',
+              marginBottom: 14,
+            }}>
+              <span style={{
+                fontSize: '12px',
+                fontWeight: 700,
+                color: '#4A7FA5',
+                letterSpacing: '0.5px',
+              }}>
+                {shopName || '고독이의 원가계산기'}
+              </span>
+              <span style={{
+                fontSize: '11px',
+                color: '#A8B8C6',
+              }}>
+                {new Date().toLocaleDateString('ko-KR', { year: 'numeric', month: 'long', day: 'numeric' })}
+              </span>
             </div>
+            {/* 메뉴명 */}
+            <div style={{
+              fontSize: '24px',
+              fontWeight: 800,
+              color: '#1E2D40',
+              lineHeight: 1.25,
+              marginBottom: 8,
+              letterSpacing: '-0.3px',
+            }}>
+              {menu.name || '메뉴명 없음'}
+            </div>
+            {/* 카테고리 */}
+            {menu.category && (
+              <div style={{
+                display: 'inline-block',
+                padding: '3px 10px',
+                background: '#EAF1F8',
+                borderRadius: 20,
+                fontSize: '11px',
+                fontWeight: 600,
+                color: '#4A7FA5',
+              }}>
+                {menu.category}
+              </div>
+            )}
           </div>
         </div>
 
-        {/* 구분선 */}
-        <div style={{ height: 2, background: '#EEF4F8', marginBottom: 28 }} />
-
         {/* 재료 목록 */}
-        <div style={{ fontSize: '0.75rem', fontWeight: 700, color: '#8FA3B5', letterSpacing: '0.08em', marginBottom: 14, textTransform: 'uppercase' }}>재료</div>
-        <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
-          {menu.ingredients.map((ing: any, idx: number) => (
-            ing.name && ing.use_amount > 0 && (
-              <div key={ing.id} style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
-                <div style={{ width: 6, height: 6, borderRadius: '50%', background: '#4A7FA5', flexShrink: 0 }} />
-                <span style={{ fontSize: '0.95rem', color: '#2C3E50', fontWeight: 500, flex: 1 }}>{ing.name}</span>
-                <span style={{ fontSize: '0.85rem', color: '#8FA3B5', minWidth: 80, textAlign: 'right' }}>
-                  {ing.use_amount.toLocaleString()} {ing.unit}
-                </span>
-              </div>
-            )
-          ))}
-        </div>
+        <div style={{ display: 'flex' }}>
+          <div style={{ width: 5, background: '#4A7FA5', flexShrink: 0 }} />
+          <div style={{ flex: 1, padding: '20px 24px 24px' }}>
+            {/* 섹션 레이블 */}
+            <div style={{
+              fontSize: '10px',
+              fontWeight: 700,
+              color: '#A8B8C6',
+              letterSpacing: '1.5px',
+              textTransform: 'uppercase',
+              marginBottom: 12,
+            }}>
+              재료
+            </div>
 
-        {/* 하단 여백 + 출처 */}
-        <div style={{ marginTop: 32, paddingTop: 20, borderTop: '1px solid #EEF4F8', textAlign: 'center' }}>
-          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 6 }}>
-            <span style={{ fontSize: '0.9rem' }}>🐟</span>
-            <span style={{ fontSize: '0.75rem', color: '#8FA3B5', fontFamily: 'Black Han Sans' }}>고독이의 원가계산기</span>
+            {/* 재료 행들 */}
+            {(() => {
+              const validIngs = menu.ingredients.filter((ing: any) => ing.name && ing.use_amount > 0)
+              if (validIngs.length === 0) {
+                return <div style={{ fontSize: '13px', color: '#A8B8C6', padding: '8px 0' }}>재료 없음</div>
+              }
+              return validIngs.map((ing: any, idx: number) => (
+                <div key={ing.id} style={{
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'space-between',
+                  padding: '10px 0',
+                  borderBottom: idx < validIngs.length - 1 ? '1px solid #F0F4F8' : 'none',
+                }}>
+                  <span style={{
+                    fontSize: '14px',
+                    fontWeight: 500,
+                    color: '#2C3E50',
+                  }}>
+                    {ing.name}
+                  </span>
+                  <span style={{
+                    fontSize: '14px',
+                    fontWeight: 700,
+                    color: '#4A7FA5',
+                    whiteSpace: 'nowrap',
+                  }}>
+                    {ing.use_amount.toLocaleString()}
+                    <span style={{ fontSize: '12px', fontWeight: 400, color: '#A8B8C6', marginLeft: 2 }}>{ing.unit}</span>
+                  </span>
+                </div>
+              ))
+            })()}
+
+            {/* 하단 워터마크 */}
+            <div style={{
+              marginTop: 20,
+              display: 'flex',
+              justifyContent: 'flex-end',
+            }}>
+              <span style={{
+                fontSize: '10px',
+                color: '#C8D6E0',
+                letterSpacing: '0.5px',
+              }}>
+                고독이의 원가계산기
+              </span>
+            </div>
           </div>
         </div>
       </div>
